@@ -25,10 +25,12 @@ import {
 // Utils
 import { getStoreName, formatGoliathDate } from "../../../../../utils";
 import { pickDefaultSaleTypeName } from "../../../../../utils/saleTypes";
+import { reasonOf } from "../../../../../utils/serverError";
+import { fetchAllPages } from "../../utils";
 
 // Interfaces
 import type { ExplorerOutcome } from "../interfaces";
-import type { JsonError, TransactionListItem } from "../../../../../interfaces";
+import type { TransactionListItem } from "../../../../../interfaces";
 
 /**
  * The explorer's two-stage fetch, used by the mobile explorer. Stage one
@@ -40,19 +42,6 @@ import type { JsonError, TransactionListItem } from "../../../../../interfaces";
 /** Receipts are fetched by id; past this the request gets unwieldy and the page
  *  reports how many were dropped rather than hanging. */
 const MAX_TRANSACTIONS = 400;
-
-const fetchAllPages = async <T>(
-  firstPage: { total_pages?: number },
-  rows: T[],
-  fetchPage: (page: number) => Promise<T[]>,
-) => {
-  const total = firstPage.total_pages ?? 1;
-  if (total <= 1) return rows;
-  const rest = await Promise.all(
-    Array.from({ length: total - 1 }, (_, i) => fetchPage(i + 2)),
-  );
-  return [...rows, ...rest.flat()];
-};
 
 export const useCashierExplorer = () => {
   const dispatch = useAppDispatch();
@@ -142,7 +131,7 @@ export const useCashierExplorer = () => {
       };
     } catch (err) {
       if (isStale()) return { types: [], fallback: "", outcome: "stale" };
-      toast.error("Error fetching exceptions: " + (err as JsonError).message);
+      toast.error("Error fetching exceptions: " + reasonOf(err));
       return { types: [], fallback: "", outcome: "error" };
     } finally {
       // Only the newest run owns the spinner.
@@ -258,7 +247,7 @@ export const useCashierExplorer = () => {
       return rows.length ? "loaded" : "empty";
     } catch (err) {
       if (isStale()) return "stale";
-      toast.error("Error loading transactions: " + (err as JsonError).message);
+      toast.error("Error loading transactions: " + reasonOf(err));
       apply([]);
       return "error";
     } finally {

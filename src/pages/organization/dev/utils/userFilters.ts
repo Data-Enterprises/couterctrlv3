@@ -7,7 +7,8 @@ import type { UsersGridFilters } from "../../../../features/dev/devOrganizationS
 export const NO_COMPANY_VALUE = "none";
 
 /** The status filter's value for the inactive list. */
-export const showsInactive = (f: UsersGridFilters) => f.statusFilter === "inactive";
+export const showsInactive = (f: UsersGridFilters) =>
+  f.statusFilter === "inactive";
 
 /**
  * The users grid's filters, as one function, so the header's Export can apply
@@ -22,7 +23,9 @@ export const filterUsers = (users: User[], f: UsersGridFilters): User[] => {
         : f.companyFilter
           ? u.companies.some((c) => c.company === Number(f.companyFilter))
           : true;
-    const levelCheck = f.levelFilter ? u.user_level === Number(f.levelFilter) : true;
+    const levelCheck = f.levelFilter
+      ? u.user_level === Number(f.levelFilter)
+      : true;
     const roleCheck = f.roleFilter ? u.role === Number(f.roleFilter) : true;
     // Mixed and no-groups people match neither choice, only All: they are
     // not By group or By store, and the column says so.
@@ -44,7 +47,9 @@ export const filterUsers = (users: User[], f: UsersGridFilters): User[] => {
       ? u.username.toLowerCase().includes(f.usernameFilter.trim().toLowerCase())
       : true;
     const emailCheck = f.emailFilter.trim()
-      ? (u.email ?? "").toLowerCase().includes(f.emailFilter.trim().toLowerCase())
+      ? (u.email ?? "")
+          .toLowerCase()
+          .includes(f.emailFilter.trim().toLowerCase())
       : true;
     return (
       companyCheck &&

@@ -16,6 +16,7 @@ import {
   EMPTY_FORM,
   NETWORK_ERROR,
   PREVIOUS_STEP,
+  RESET_EXPIRED,
   WHO_EMPTY,
   answerError,
   passwordError,
@@ -37,6 +38,9 @@ export const useForgotFlow = () => {
   const [form, setForm] = useState<ForgotForm>(EMPTY_FORM);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // The matched answer's proof, sent with the new password. Not in the form:
+  // nobody types it.
+  const [resetToken, setResetToken] = useState<string | undefined>(undefined);
   // A second click lands before React re-renders with `busy`, so the lock is a ref.
   const inFlight = useRef(false);
 
@@ -78,6 +82,7 @@ export const useForgotFlow = () => {
     return send(async () => {
       const j: ForgotReply = (await validateSecurityAnswer(url, form.username, answer)).data;
       if (j.error !== 0) return setError(answerError(j.msg));
+      setResetToken(j.reset_token);
       setStep("password");
     });
   };
@@ -86,7 +91,18 @@ export const useForgotFlow = () => {
     // The button is disabled until this holds; Enter in a field still lands here.
     if (!passwordOk(form.newPassword) || form.newPassword !== form.confirmPassword) return;
     return send(async () => {
-      const j: ForgotReply = (await resetForgotPassword(url, form.username, form.newPassword)).data;
+      let j: ForgotReply;
+      try {
+        j = (await resetForgotPassword(url, form.username, form.newPassword, resetToken)).data;
+      } catch (err) {
+        // A 401 here is a spent or expired proof: answer the question again.
+        if ((err as { response?: { status?: number } }).response?.status === 401) {
+          setResetToken(undefined);
+          setStep("question");
+          return setError(RESET_EXPIRED);
+        }
+        throw err;
+      }
       if (j.error !== 0) return setError(passwordError(j.msg));
       setStep("done");
     });
@@ -102,6 +118,7 @@ export const useForgotFlow = () => {
   const reset = () => {
     setStep("who");
     setForm(EMPTY_FORM);
+    setResetToken(undefined);
     setError(null);
   };
 

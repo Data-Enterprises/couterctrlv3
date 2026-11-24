@@ -14,12 +14,8 @@ const Footer = () => {
         <td className="px-3 py-2"></td>
         <td className="px-3 py-2"></td>
         <td className="px-3 py-2 text-right text-content/95">Totals</td>
-        <td className="cc-num text-content/95">
-          {totals.cases}
-        </td>
-        <td className="cc-num text-content/95">
-          {totals.units}
-        </td>
+        <td className="cc-num text-content/95">{totals.cases}</td>
+        <td className="cc-num text-content/95">{totals.units}</td>
         <td className="cc-num text-content/95">
           {formatCurrency2(totals.ucost)}
         </td>

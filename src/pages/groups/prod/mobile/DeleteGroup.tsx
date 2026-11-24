@@ -109,7 +109,6 @@ const DeleteGroup = () => {
             </div>
             <div className="text-center">Are you sure you want to delete</div>
             <div className="text-center">
-              <span className="pr-1">Base group =</span>
               <span className="font-medium">{selectedGroup.group_name}</span>
               <span>?</span>
             </div>

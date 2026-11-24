@@ -59,11 +59,19 @@ const TrendTab = () => {
       dispatch(setDevTrendLoading(true));
       let abandoned = false;
       try {
-        const res = await upcQueue.enqueue(`trend:${periods}:${missingKey}`, (signal) =>
-          getTrendDetect(
-            ctx.url, ctx.token, ctx.storeids, ctx.startDate, ctx.endDate,
-            periods, missingKey, signal,
-          ),
+        const res = await upcQueue.enqueue(
+          `trend:${periods}:${missingKey}`,
+          (signal) =>
+            getTrendDetect(
+              ctx.url,
+              ctx.token,
+              ctx.storeids,
+              ctx.startDate,
+              ctx.endDate,
+              periods,
+              missingKey,
+              signal,
+            ),
         );
         // Superseded by a newer search — see the same guard in PriceOptTab.
         if (!res) {
@@ -80,14 +88,18 @@ const TrendTab = () => {
           toast.warn(j.msg || "Trend detection failed for these UPCs");
           return;
         }
-        const rows: UpcTrend[] = answer === "ok" && j.trends?.length > 0 ? j.trends : [];
+        const rows: UpcTrend[] =
+          answer === "ok" && j.trends?.length > 0 ? j.trends : [];
         // j.top_5 / j.bottom_5 are ignored: the left list ranks by impact
         // itself, and a ranking of one delta call's subset would be wrong.
         dispatch(setDevTrendWindow(window));
         dispatch(mergeDevTrends({ rows, codes: missing }));
         dispatch(
           setDevUpcItems(
-            rows.map((t) => ({ product_code: t.product_code, description: t.product_description })),
+            rows.map((t) => ({
+              product_code: t.product_code,
+              description: t.product_description,
+            })),
           ),
         );
       } catch {
@@ -106,15 +118,20 @@ const TrendTab = () => {
       ctx.selectedUpcs.length > 0
         ? ctx.upcTrends.filter((t) => ctx.selectedUpcs.includes(t.product_code))
         : ctx.upcTrends;
-    return [...src]
-      .map((t) => ({ t, status: getTrendStatus(t, ctx.fixes, ctx.trendWindow) }))
-      // Worst first. Ranked on the same figure the rows print, so the order
-      // can be read off them.
-      .sort(
-        (a, b) =>
-          impactUnits(a.t, ctx.fixes, ctx.trendWindow) -
-          impactUnits(b.t, ctx.fixes, ctx.trendWindow),
-      );
+    return (
+      [...src]
+        .map((t) => ({
+          t,
+          status: getTrendStatus(t, ctx.fixes, ctx.trendWindow),
+        }))
+        // Worst first. Ranked on the same figure the rows print, so the order
+        // can be read off them.
+        .sort(
+          (a, b) =>
+            impactUnits(a.t, ctx.fixes, ctx.trendWindow) -
+            impactUnits(b.t, ctx.fixes, ctx.trendWindow),
+        )
+    );
   }, [ctx.upcTrends, ctx.selectedUpcs, ctx.fixes, ctx.trendWindow]);
 
   // Keep the detail panel on a valid item: the first row by default, re-picked
@@ -145,7 +162,8 @@ const TrendTab = () => {
     );
   }
 
-  const selected = rows.find((r) => r.t.product_code === selectedCode) ?? rows[0];
+  const selected =
+    rows.find((r) => r.t.product_code === selectedCode) ?? rows[0];
 
   return (
     <div className="flex flex-col min-h-0 flex-1">

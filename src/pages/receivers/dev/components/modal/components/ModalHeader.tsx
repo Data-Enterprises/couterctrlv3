@@ -23,9 +23,7 @@ const ModalHeader = ({
   return (
     <div className="cc-phone-header">
       <div>
-        <p className="cc-navy-title text-[13px]">
-          Export CSV
-        </p>
+        <p className="cc-navy-title text-[13px]">Export CSV</p>
         <p className="text-custom-white/95 text-[10px] mt-0.5">
           {vendorName} — Ref #{referenceNumber}
         </p>
@@ -45,10 +43,7 @@ const ModalHeader = ({
           </button>
         ))}
       </div>
-      <button
-        onClick={onClose}
-        className="cc-navy-link justify-self-end"
-      >
+      <button onClick={onClose} className="cc-navy-link justify-self-end">
         <XMarkIcon className="w-4 h-4" />
       </button>
     </div>

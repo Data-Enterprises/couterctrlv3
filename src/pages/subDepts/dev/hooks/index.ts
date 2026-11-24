@@ -28,7 +28,7 @@ export const useSubMarginCtx = () => {
     (state) => state.search,
   );
   const {
-    selectedSubDeptId,
+    selectedSubDeptKey,
     subDepts,
     margins,
     weekOneMargins,
@@ -81,7 +81,7 @@ export const useSubMarginCtx = () => {
     loadingSubDepts,
     margins,
     searchValue,
-    selectedSubDeptId,
+    selectedSubDeptKey,
     selectedWeek,
     selectedWeekDay,
     singleDate,

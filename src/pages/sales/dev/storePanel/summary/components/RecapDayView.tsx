@@ -2,7 +2,12 @@
 import { TRAY } from "../utils/recapGrid";
 
 // Interfaces
-import type { DayMixState, RecapDay, RecapMoney, WeekExceptionsState } from "../interfaces/index";
+import type {
+  DayMixState,
+  RecapDay,
+  RecapMoney,
+  WeekExceptionsState,
+} from "../interfaces/index";
 
 // Components
 import RecapBasketsCard from "./RecapBasketsCard";
@@ -80,7 +85,12 @@ const RecapDayView = ({
         <RecapExceptionsCard dates={dates} state={exceptions} short={short} />
       </div>
       <div className={`${narrow ? "col-span-2" : "col-span-3"} min-w-0`}>
-        <RecapShapeCard day={day} period={period} narrow={narrow} short={short} />
+        <RecapShapeCard
+          day={day}
+          period={period}
+          narrow={narrow}
+          short={short}
+        />
       </div>
     </div>
   </div>

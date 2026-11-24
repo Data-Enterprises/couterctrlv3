@@ -1,22 +1,29 @@
+// Hooks
 import { useEffect, useState } from "react";
-import SearchCard from "../../../components-dev/SearchCard";
-import SearchPopup from "../../../components-dev/SearchPopup";
-import ConfigPanel from "./ConfigPanel";
-import CsvPreview from "./CsvPreview";
-import SummaryPreview from "./SummaryPreview";
-import ExportBar from "./ExportBar";
-import SqlModal from "./SqlModal";
-import QueryPanel from "./QueryPanel";
-import DownloadsModal from "./DownloadsModal";
-import SavedExportsModal from "./SavedExportsModal";
-import SourcePicker from "./SourcePicker";
-import { useExportBuilderCtx } from "./hooks";
-import { keepSortable } from "./sortRows";
+import { useExportBuilderCtx } from "./hooks/index";
+
+// Redux
 import {
   clearSavedNotes,
   setOrderBy,
   setSearchSource,
 } from "../../../features/dev/devExportBuilderSlice";
+
+// Utils
+import { keepSortable } from "./utils/sortRows";
+
+// Components
+import SearchCard from "../../../components-dev/SearchCard";
+import SearchPopup from "../../../components-dev/SearchPopup";
+import ConfigPanel from "./config/ConfigPanel";
+import CsvPreview from "./preview/CsvPreview";
+import SummaryPreview from "./preview/SummaryPreview";
+import ExportBar from "./exportBar/ExportBar";
+import SqlModal from "./components/SqlModal";
+import QueryPanel from "./queryPanel/QueryPanel";
+import DownloadsModal from "./downloads/DownloadsModal";
+import SavedExportsModal from "./saved/SavedExportsModal";
+import SourcePicker from "./components/SourcePicker";
 
 /**
  * Data Export — pick a table and a scope, narrow what goes in the file,

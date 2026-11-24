@@ -8,12 +8,14 @@ files=$(git diff --cached --name-only --diff-filter=ACMR -- '*.ts' '*.tsx')
 
 src=$(printf '%s\n' "$files" | grep '^src/')
 
+# In batches: a large commit (a promoted page) is more file names than one
+# Windows command line holds. xargs fails if any batch does.
 echo "pre-commit: eslint"
-npx eslint --no-warn-ignored $files || { echo "pre-commit: eslint failed"; exit 1; }
+printf '%s\n' "$files" | xargs -n 100 npx eslint --no-warn-ignored || { echo "pre-commit: eslint failed"; exit 1; }
 
 if [ -n "$src" ]; then
   echo "pre-commit: check:rules"
-  node scripts/check-rules.mjs $src || { echo "pre-commit: check:rules found new rule breaks"; exit 1; }
+  printf '%s\n' "$src" | xargs -n 100 node scripts/check-rules.mjs || { echo "pre-commit: check:rules found new rule breaks"; exit 1; }
 
   echo "pre-commit: audit:theme"
   node scripts/theme-audit.mjs > /tmp/theme-audit.$$ 2>&1

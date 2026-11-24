@@ -70,9 +70,14 @@ export const buildSaleTypeBreakdown = (
   const byType = new Map<string, SaleTypeSummary & { dates: Set<string> }>();
   for (const h of rows) {
     const saleType = isSaleRow(h) ? "Sale" : h.sale_type!;
-    const acc =
-      byType.get(saleType) ??
-      { saleType, days: 0, sales: 0, qty: 0, units: 0, dates: new Set<string>() };
+    const acc = byType.get(saleType) ?? {
+      saleType,
+      days: 0,
+      sales: 0,
+      qty: 0,
+      units: 0,
+      dates: new Set<string>(),
+    };
     acc.sales += h.total_sales;
     acc.qty += h.qty;
     acc.units += pricedUnits(h);
@@ -82,7 +87,11 @@ export const buildSaleTypeBreakdown = (
   return [...byType.values()]
     .map(({ dates, ...s }) => ({ ...s, days: dates.size }))
     .sort((a, b) =>
-      a.saleType === "Sale" ? -1 : b.saleType === "Sale" ? 1 : b.sales - a.sales,
+      a.saleType === "Sale"
+        ? -1
+        : b.saleType === "Sale"
+          ? 1
+          : b.sales - a.sales,
     );
 };
 
@@ -115,10 +124,25 @@ export const buildDayBuckets = (
   history: ItemLookupHistory[],
   daysBack = 14,
 ): DayBucket[] => {
-  const byDate = new Map<string, { qty: number; units: number; revenue: number; cost: number; listPrice: number }>();
+  const byDate = new Map<
+    string,
+    {
+      qty: number;
+      units: number;
+      revenue: number;
+      cost: number;
+      listPrice: number;
+    }
+  >();
   history.forEach((h) => {
     const d = h.sale_date.split("T")[0];
-    const existing = byDate.get(d) ?? { qty: 0, units: 0, revenue: 0, cost: 0, listPrice: 0 };
+    const existing = byDate.get(d) ?? {
+      qty: 0,
+      units: 0,
+      revenue: 0,
+      cost: 0,
+      listPrice: 0,
+    };
     existing.qty += h.qty;
     existing.units += pricedUnits(h);
     existing.revenue += h.total_sales;
@@ -156,9 +180,17 @@ export const buildDayBuckets = (
 
 export const computeTrend = (buckets: DayBucket[]): TrendResult => {
   const half = Math.floor(buckets.length / 2);
-  const firstHalfUnits = buckets.slice(0, half).reduce((acc, b) => acc + b.units, 0);
-  const secondHalfUnits = buckets.slice(half).reduce((acc, b) => acc + b.units, 0);
-  return { firstHalfUnits, secondHalfUnits, isSlowing: secondHalfUnits < firstHalfUnits };
+  const firstHalfUnits = buckets
+    .slice(0, half)
+    .reduce((acc, b) => acc + b.units, 0);
+  const secondHalfUnits = buckets
+    .slice(half)
+    .reduce((acc, b) => acc + b.units, 0);
+  return {
+    firstHalfUnits,
+    secondHalfUnits,
+    isSlowing: secondHalfUnits < firstHalfUnits,
+  };
 };
 
 /** "12" for a count, "37.40 lb" for a scale item. */
@@ -177,7 +209,9 @@ export const computeMargin = (
   // nobody earned. New items commonly sell before their cost is set up.
   const costMissing = history.length > 0 && totalCost <= 0;
   const marginPct =
-    totalSales > 0 && !costMissing ? ((totalSales - totalCost) / totalSales) * 100 : null;
+    totalSales > 0 && !costMissing
+      ? ((totalSales - totalCost) / totalSales) * 100
+      : null;
   // Per priced unit, so it stays comparable to list price. Dividing by qty
   // reads as "$1.13 on a $0.59 item" when bananas ring ~1.9 lb at a time.
   const totalUnits = history.reduce((acc, h) => acc + pricedUnits(h), 0);
@@ -198,7 +232,9 @@ export const computeMargin = (
 
 // Only closed gaps here; a run of no-sale days still open today comes from
 // computeActiveGap, as a live signal.
-export const findGaps = (buckets: DayBucket[]): { start: string; end: string; days: number }[] => {
+export const findGaps = (
+  buckets: DayBucket[],
+): { start: string; end: string; days: number }[] => {
   const gaps: { start: string; end: string; days: number }[] = [];
   let runStartIndex = -1;
 

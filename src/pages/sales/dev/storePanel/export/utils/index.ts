@@ -1,8 +1,16 @@
 // API
-import { FINANCIALS_READY, type FinancialsRow } from "../../../../../../api/financials";
+import {
+  FINANCIALS_READY,
+  type FinancialsRow,
+} from "../../../../../../api/financials";
 
 // Utils
-import { fmtNum, rowsToCsv, type AggFn } from "../../../../../../utils/csvExport";
+import {
+  fmtNum,
+  rowsToCsv,
+  type AggFn,
+} from "../../../../../../utils/csvExport";
+import { subDeptKey } from "../../../../../../utils/subDeptKey";
 
 // Interfaces
 import type { SubSale, HourlySale, DayDot } from "../../../../../../interfaces";
@@ -69,7 +77,11 @@ export const buildFinancialsCsv = (rows: FinancialsRow[]) => {
   );
 };
 
-export const buildSubDeptCsv = (ty: SubSale[], lw: SubSale[], ly: SubSale[]) => {
+export const buildSubDeptCsv = (
+  ty: SubSale[],
+  lw: SubSale[],
+  ly: SubSale[],
+) => {
   const headers = [
     "Date",
     "Sub Dept #",
@@ -165,16 +177,23 @@ export const buildDeptDayGridCsv = (subs: SubSale[], days: DayDot[]) => {
     .map((d) => d.sale_date.split("T")[0])
     .sort((a, b) => a.localeCompare(b));
 
-  const deptName = new Map<number, string>();
+  // One line per number AND name: ACE stores file several departments under 0.
+  const depts = new Map<string, { id: number; name: string }>();
   const cell = new Map<string, number>();
   for (const s of subs) {
-    if (!deptName.has(s.sub_department))
-      deptName.set(s.sub_department, s.sub_department_description ?? "");
-    const key = `${s.sub_department}__${s.sale_date.split("T")[0]}`;
+    const dept = subDeptKey(s);
+    if (!depts.has(dept))
+      depts.set(dept, {
+        id: s.sub_department,
+        name: s.sub_department_description ?? "",
+      });
+    const key = `${dept}__${s.sale_date.split("T")[0]}`;
     cell.set(key, (cell.get(key) ?? 0) + s.net_sales);
   }
 
-  const ids = [...deptName.keys()].sort((a, b) => a - b);
+  const sorted = [...depts.entries()].sort(
+    ([, a], [, b]) => a.id - b.id || a.name.localeCompare(b.name),
+  );
   const headers = [
     "Sub Dept #",
     "Sub Dept",
@@ -182,11 +201,11 @@ export const buildDeptDayGridCsv = (subs: SubSale[], days: DayDot[]) => {
     "Week Total",
   ];
 
-  const rows: (string | number)[][] = ids.map((id) => {
-    const values = dates.map((d) => cell.get(`${id}__${d}`) ?? 0);
+  const rows: (string | number)[][] = sorted.map(([dept, { id, name }]) => {
+    const values = dates.map((d) => cell.get(`${dept}__${d}`) ?? 0);
     return [
       id,
-      deptName.get(id) ?? "",
+      name,
       ...values.map(fmtNum),
       fmtNum(values.reduce((acc, v) => acc + v, 0)),
     ];
@@ -195,7 +214,7 @@ export const buildDeptDayGridCsv = (subs: SubSale[], days: DayDot[]) => {
   // Column totals on the bottom row — the day figure to hold against the
   // store's day report without re-adding the column by hand.
   const dayTotals = dates.map((d) =>
-    ids.reduce((acc, id) => acc + (cell.get(`${id}__${d}`) ?? 0), 0),
+    sorted.reduce((acc, [dept]) => acc + (cell.get(`${dept}__${d}`) ?? 0), 0),
   );
   rows.push([
     "",
@@ -216,7 +235,10 @@ const SEV_LABEL: Record<ItemSev, string> = {
 const fmtPctRaw = (pct: number | null) =>
   pct === null ? "" : `${pct >= 0 ? "+" : ""}${pct.toFixed(2)}%`;
 
-export const buildItemsCsv = (items: ExportSubDeptItem[], sevs: Set<ItemSev>) => {
+export const buildItemsCsv = (
+  items: ExportSubDeptItem[],
+  sevs: Set<ItemSev>,
+) => {
   // Ungraded items (neither comparison covers the week) go out only with the
   // full export — they don't belong under any one severity.
   const everything = sevs.size >= 3;
@@ -315,8 +337,7 @@ export const PRESET_DATASETS: {
   {
     id: "subdept",
     label: "Sub Department",
-    description:
-      "Net sales, qty, and transactions by sub dept (TY / LW / LY)",
+    description: "Net sales, qty, and transactions by sub dept (TY / LW / LY)",
   },
   {
     id: "deptgrid",
@@ -350,20 +371,21 @@ export const PRESET_DATASETS: {
     : []),
 ];
 
-export const SEV_CHIP: { sev: ItemSev; label: string; activeClass: string }[] = [
-  {
-    sev: "critical",
-    label: "Critical",
-    activeClass: "bg-brand_danger border-brand_danger text-custom-white",
-  },
-  {
-    sev: "watch",
-    label: "Watch",
-    activeClass: "bg-amber-500 border-amber-500 text-custom-white",
-  },
-  {
-    sev: "healthy",
-    label: "Healthy",
-    activeClass: "bg-emerald-600 border-emerald-600 text-custom-white",
-  },
-];
+export const SEV_CHIP: { sev: ItemSev; label: string; activeClass: string }[] =
+  [
+    {
+      sev: "critical",
+      label: "Critical",
+      activeClass: "bg-brand_danger border-brand_danger text-custom-white",
+    },
+    {
+      sev: "watch",
+      label: "Watch",
+      activeClass: "bg-amber-500 border-amber-500 text-custom-white",
+    },
+    {
+      sev: "healthy",
+      label: "Healthy",
+      activeClass: "bg-emerald-600 border-emerald-600 text-custom-white",
+    },
+  ];

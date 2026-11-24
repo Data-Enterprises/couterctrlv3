@@ -25,13 +25,21 @@ interface RecapExceptionsCardProps {
  * of the recap. A No Sale rings nothing, so it shows only its count. Types
  * with nothing in the period are left out.
  */
-const RecapExceptionsCard = ({ dates, state, short }: RecapExceptionsCardProps) => {
+const RecapExceptionsCard = ({
+  dates,
+  state,
+  short,
+}: RecapExceptionsCardProps) => {
   if (state.status !== "ready") {
     return (
       <RecapStatCard
         title="Exceptions"
         hero={state.status === "error" ? "—" : "…"}
-        heroSub={state.status === "error" ? "could not be read" : "reading the week's exceptions"}
+        heroSub={
+          state.status === "error"
+            ? "could not be read"
+            : "reading the week's exceptions"
+        }
         short={short}
         rows={[]}
       />

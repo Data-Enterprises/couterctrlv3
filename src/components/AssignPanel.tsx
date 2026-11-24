@@ -67,6 +67,9 @@ interface AssignPanelProps {
     direction: "in" | "out",
     ids: number[],
   ) => { message: string; confirmLabel: string } | null;
+  /** Fill the height it is given: the lists stretch to what is left, so the
+   *  buttons under them stay in view, instead of a fixed 17.8rem each. */
+  fill?: boolean;
 }
 
 /** Two searchable columns with Assign / Unassign buttons between them: pick rows
@@ -91,6 +94,7 @@ const AssignPanel = ({
   searchHint,
   moving = false,
   confirmBulk,
+  fill = false,
 }: AssignPanelProps) => {
   const [leftFilter, setLeftFilter] = useState("");
   /** An Assign all / Unassign all waiting on its question, with the rows
@@ -189,7 +193,7 @@ const AssignPanel = ({
   };
 
   return (
-    <div className="flex gap-3">
+    <div className={fill ? "flex gap-3 flex-1 min-h-0" : "flex gap-3"}>
       {pending && (
         <ConfirmModal
           title={pending.direction === "in" ? `${verbs.assign} all?` : `${verbs.unassign} all?`}
@@ -220,7 +224,9 @@ const AssignPanel = ({
           </ul>
         </ConfirmModal>
       )}
-      <div className="flex-1 min-w-0 flex flex-col">
+      <div
+        className={fill ? "flex-1 min-w-0 min-h-0 flex flex-col" : "flex-1 min-w-0 flex flex-col"}
+      >
         <div className="text-[9px] cc-caps-strong mb-1.5">
           {leftTitle} ({countLabel(filteredLeft.length, leftItems.length)})
         </div>
@@ -253,7 +259,13 @@ const AssignPanel = ({
           }
           onClear={() => setStaged(new Set())}
         />
-        <div className="h-[17.8rem] overflow-y-auto thin-scrollbar border border-line_hair">
+        <div
+          className={
+            fill
+              ? "flex-1 min-h-[7rem] overflow-y-auto thin-scrollbar border border-line_hair"
+              : "h-[17.8rem] overflow-y-auto thin-scrollbar border border-line_hair"
+          }
+        >
           {filteredLeft.map((item) => (
             <div
               key={item.id}
@@ -296,7 +308,9 @@ const AssignPanel = ({
         </div>
       </div>
 
-      <div className="flex-1 min-w-0 flex flex-col">
+      <div
+        className={fill ? "flex-1 min-w-0 min-h-0 flex flex-col" : "flex-1 min-w-0 flex flex-col"}
+      >
         <div className="text-[9px] cc-caps-strong mb-1.5">
           {rightTitle} ({countLabel(filteredRight.length, rightItems.length)})
         </div>
@@ -322,7 +336,13 @@ const AssignPanel = ({
           }
           onClear={() => setUnstaged(new Set())}
         />
-        <div className="h-[17.8rem] overflow-y-auto thin-scrollbar border border-line_hair">
+        <div
+          className={
+            fill
+              ? "flex-1 min-h-[7rem] overflow-y-auto thin-scrollbar border border-line_hair"
+              : "h-[17.8rem] overflow-y-auto thin-scrollbar border border-line_hair"
+          }
+        >
           {filteredRight.map((item) => (
             <div
               key={item.id}

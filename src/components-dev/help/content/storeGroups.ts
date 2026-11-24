@@ -3,7 +3,7 @@ import type { HelpContent } from "../helpTypes";
 
 /** Help for Store Groups — your own named sets of stores. */
 export const STORE_GROUPS_HELP: HelpContent = {
-  screen: "Store Groups",
+  screen: "Groups",
   purpose:
     "Your own named sets of stores — “West Coast”, say — so a search can cover several stores at once instead of one at a time.",
 
@@ -17,7 +17,7 @@ export const STORE_GROUPS_HELP: HelpContent = {
           title: "Create it",
           pre: "Press the",
           chip: "+",
-          post: "button next to the search box, type a name and press Create. Each of your groups needs a different name.",
+          post: "button next to the search box, type a name and press Create. No two groups in your list can share a name.",
           anchor: "create",
         },
         {
@@ -51,7 +51,7 @@ export const STORE_GROUPS_HELP: HelpContent = {
           title: "Switch the search to Group",
           pre: "On any page with a store search, set Type to",
           chip: "Group",
-          post: ", then choose your group in the Group box.",
+          post: ", then choose your group in the Group box. For a shared group, set Type to Shared instead.",
           see: "Results covering every store in that group.",
         },
       ],
@@ -73,7 +73,7 @@ export const STORE_GROUPS_HELP: HelpContent = {
     },
     {
       term: "Whose groups these are",
-      def: "Only the groups you created. The search box at the top of the list finds one quickly.",
+      def: "The groups you created, plus any shared with you (marked Shared with you). A group you shared is marked Shared by you. Shared groups are read-only here; only the person who shared one can change it, under Groups > Shared Groups. A group shared with you shows only its stores you're assigned to. The search box at the top of the list finds one quickly.",
       anchor: "group-list",
     },
   ],

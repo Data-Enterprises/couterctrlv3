@@ -1,7 +1,13 @@
 // Utils
-import { isGroupSearch, type SEARCH_TYPE } from "../../../../../../features/searchSlice";
+import {
+  isGroupSearch,
+  type SEARCH_TYPE,
+} from "../../../../../../features/searchSlice";
 import { shiftIso } from "../../../../../../utils/grading";
-import { formatGoliathDate, sameWeekDayLastYear } from "../../../../../../utils";
+import {
+  formatGoliathDate,
+  sameWeekDayLastYear,
+} from "../../../../../../utils";
 
 // Interfaces
 import type { PairSort, PerfPair } from "./perfData";
@@ -51,7 +57,12 @@ export const scaleOf = (pairs: PerfPair[]) =>
   );
 
 /** Darkest to lightest, so the stack and the legend agree. */
-export const COUPON_KEYS = ["digital", "elecStore", "elecInstore", "store"] as const;
+export const COUPON_KEYS = [
+  "digital",
+  "elecStore",
+  "elecInstore",
+  "store",
+] as const;
 
 /** The store list's sort chips. Both comparisons can order the list, since
  *  both are drawn on every card. */
@@ -75,7 +86,11 @@ export const storeNumberOf = (p: { key: string; label: string }) =>
   p.key.split("__")[1] ?? p.label;
 
 /** What a search asks the endpoints for: one store, or a group. */
-export const perfScopeOf = (s: { type: SEARCH_TYPE; lastStore: number; lastGroup: number }) => {
+export const perfScopeOf = (s: {
+  type: SEARCH_TYPE;
+  lastStore: number;
+  lastGroup: number;
+}) => {
   const isStore = !isGroupSearch(s.type);
   return {
     isStore,
@@ -95,8 +110,9 @@ export const perfScopeOf = (s: { type: SEARCH_TYPE; lastStore: number; lastGroup
 export const perfWeekOf = (singleDate: string) => {
   const twEnd = formatGoliathDate(singleDate);
   const twStart = shiftIso(twEnd, -6);
-  const lyDates = Array.from({ length: 7 }, (_, i) =>
-    sameWeekDayLastYear(shiftIso(twStart, i)).date,
+  const lyDates = Array.from(
+    { length: 7 },
+    (_, i) => sameWeekDayLastYear(shiftIso(twStart, i)).date,
   ).sort();
   // Last week is fetched beside last year and used where last year is empty.
   const lwStart = shiftIso(twStart, -7);

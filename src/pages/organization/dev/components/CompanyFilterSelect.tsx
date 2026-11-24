@@ -11,7 +11,11 @@ interface CompanyFilterSelectProps {
  * "Any company", or one of them: the filter all three assign tabs share.
  * Renders nothing when there is only "Any" to pick.
  */
-const CompanyFilterSelect = ({ value, onChange, options }: CompanyFilterSelectProps) => {
+const CompanyFilterSelect = ({
+  value,
+  onChange,
+  options,
+}: CompanyFilterSelectProps) => {
   if (options.length === 0) return null;
   return (
     <div className="w-[170px]">

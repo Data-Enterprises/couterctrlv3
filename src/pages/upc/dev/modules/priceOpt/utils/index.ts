@@ -7,7 +7,10 @@ const HIGH_ELASTICITY = 2;
 
 // No current price or cost, so no "priced right" verdict: only how many prices
 // were tested and how price-sensitive the item looks.
-export function getPriceOptPhrase(points: PricePoint[], elasticity: number | null): PriceOptPhrase {
+export function getPriceOptPhrase(
+  points: PricePoint[],
+  elasticity: number | null,
+): PriceOptPhrase {
   if (points.length < 2) return { text: "Not enough history", tone: "muted" };
   if (elasticity !== null && Math.abs(elasticity) >= HIGH_ELASTICITY) {
     return { text: "Highly price-sensitive", tone: "muted" };
@@ -15,7 +18,10 @@ export function getPriceOptPhrase(points: PricePoint[], elasticity: number | nul
   return { text: `${points.length} price points tested`, tone: "muted" };
 }
 
-export function getPriceOptInsight(points: PricePoint[], elasticity: number | null): string {
+export function getPriceOptInsight(
+  points: PricePoint[],
+  elasticity: number | null,
+): string {
   if (points.length < 2) return "Not enough price history yet for this item.";
   const elasticityNote =
     elasticity !== null

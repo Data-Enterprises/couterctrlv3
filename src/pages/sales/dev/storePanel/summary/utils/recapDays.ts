@@ -10,7 +10,9 @@ const dayOf = (saleDate: string) => saleDate.split("T")[0];
 
 /** First sale's hour to last, inclusive, or 0 with no hourly rows. */
 const spanOf = (hours: RecapDayHours) =>
-  hours.first !== null && hours.last !== null ? hours.last - hours.first + 1 : 0;
+  hours.first !== null && hours.last !== null
+    ? hours.last - hours.first + 1
+    : 0;
 
 /**
  * Every day of the week, all seven of them.
@@ -69,7 +71,10 @@ export const weekOf = (days: RecapDay[], hourly: HourlySale[]): RecapDay => ({
   units: days.reduce((t, d) => t + d.units, 0),
   pounds: days.reduce((t, d) => t + d.pounds, 0),
   transactions: days.reduce((t, d) => t + d.transactions, 0),
-  hours: hoursForDates(hourly, days.map((d) => d.date)),
+  hours: hoursForDates(
+    hourly,
+    days.map((d) => d.date),
+  ),
   tradedHours: days.reduce((t, d) => t + d.tradedHours, 0),
   hasSales: days.some((d) => d.hasSales),
 });

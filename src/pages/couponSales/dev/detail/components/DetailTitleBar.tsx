@@ -22,7 +22,11 @@ interface DetailTitleBarProps {
 }
 
 /** The panel's title bar, tinted to the store's grade, with the export. */
-const DetailTitleBar = ({ storeTier, storeLabel, rangeLabel }: DetailTitleBarProps) => {
+const DetailTitleBar = ({
+  storeTier,
+  storeLabel,
+  rangeLabel,
+}: DetailTitleBarProps) => {
   const dispatch = useAppDispatch();
   return (
     <div

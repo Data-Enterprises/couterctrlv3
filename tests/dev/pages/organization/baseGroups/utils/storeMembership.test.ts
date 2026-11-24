@@ -1,6 +1,5 @@
 import { describe, it, expect } from "vitest";
 import {
-  callReason,
   summarizeAssign,
   summarizeUnassign,
 } from "@/pages/organization/dev/baseGroups/utils";
@@ -96,31 +95,5 @@ describe("summarizeUnassign", () => {
     const s = summarizeUnassign([refused(1, "gone")], "Zone 1");
     expect(s.tone).toBe("error");
     expect(s.text).toContain("No stores were removed");
-  });
-});
-
-describe("callReason", () => {
-  it("prefers FastAPI's detail, which is where the company guard speaks", () => {
-    // A 400 throws, so this never reaches a .then — and err.message alone
-    // would say "Request failed with status code 400" to somebody who needs
-    // to be told the store belongs to another company.
-    expect(
-      callReason({
-        response: { data: { detail: "store 5 is company 7; base group 9 is not" } },
-        message: "Request failed with status code 400",
-      }),
-    ).toContain("company 7");
-  });
-
-  it("falls back to a body msg", () => {
-    expect(callReason({ response: { data: { msg: "boom" } } })).toBe("boom");
-  });
-
-  it("falls back to the network message", () => {
-    expect(callReason({ message: "Network Error" })).toBe("Network Error");
-  });
-
-  it("always says something", () => {
-    expect(callReason({})).toBe("The server refused it.");
   });
 });

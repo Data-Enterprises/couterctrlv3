@@ -53,7 +53,6 @@ interface AdminPageState {
   subExclStores: Store[] | null;
   subExclCompanyId: string;
   subExclStoreKey: string;
-  subExclDays: string;
   subExclSearch: string;
   subExclHashOnly: boolean;
   subExclCatalog: SubDeptCatalogRow[] | null;
@@ -79,7 +78,6 @@ const initialState: AdminPageState = {
   subExclStores: null,
   subExclCompanyId: "",
   subExclStoreKey: SUB_EXCL_ALL_STORES,
-  subExclDays: "120",
   subExclSearch: "",
   subExclHashOnly: false,
   subExclCatalog: null,
@@ -161,9 +159,6 @@ const adminPageSlice = createSlice({
     setSubExclStoreKey: (state, action: PayloadAction<string>) => {
       state.subExclStoreKey = action.payload;
     },
-    setSubExclDays: (state, action: PayloadAction<string>) => {
-      state.subExclDays = action.payload;
-    },
     setSubExclSearch: (state, action: PayloadAction<string>) => {
       state.subExclSearch = action.payload;
     },
@@ -202,7 +197,6 @@ export const {
   setSubExclStores,
   setSubExclCompanyId,
   setSubExclStoreKey,
-  setSubExclDays,
   setSubExclSearch,
   setSubExclHashOnly,
   setSubExclCatalog,

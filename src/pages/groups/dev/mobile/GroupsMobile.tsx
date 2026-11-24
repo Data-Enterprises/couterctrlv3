@@ -13,6 +13,7 @@ import CreateGroup from "./CreateGroup";
 import UpdateGroup from "./UpdateGroup";
 import DeleteGroup from "./DeleteGroup";
 import GroupStoreAssignMobile from "./GroupStoreAssignMobile";
+import PageInfoButton from "../../../../components-dev/PageInfoButton";
 import {
   ArrowPathIcon,
   PlusCircleIcon,
@@ -20,7 +21,7 @@ import {
   LinkSlashIcon,
 } from "@heroicons/react/24/solid";
 
-/** The phone Groups page: a Create / Update / Delete / Assign tab row over the selected form. */
+/** The phone Groups page: a Create / Update / Delete / Assign tab row, with the help at its end, over the selected form. */
 const GroupsMobile = () => {
   const ctx = useGroupCtx();
   const dispatch = useAppDispatch();
@@ -47,7 +48,7 @@ const GroupsMobile = () => {
 
   return (
     <div className="space-y-3 min-h-[calc(100vh-3rem)] text-[10px]">
-      <div className="grid grid-cols-4">
+      <div className="grid grid-cols-[1fr_1fr_1fr_1fr_auto]">
         <div
           className={`py-2 transition-all duration-200 flex gap-2 items-center justify-center border-r border-content/15 ${ctx.selectedForm === "create" ? "text-orange-500" : "text-content"} bg-custom-white`}
           onClick={() => handleFormSelect("create")}
@@ -75,6 +76,13 @@ const GroupsMobile = () => {
         >
           <BuildingStorefrontIcon className="w-6 h-6" />
           <div className="text-content">Assign</div>
+        </div>
+        <div className="flex items-center justify-center px-3 border-l border-content/15 bg-custom-white">
+          <PageInfoButton
+            page="store-groups"
+            variant="light"
+            title="About Groups"
+          />
         </div>
       </div>
       <div className="px-3">{renderForm()}</div>

@@ -96,7 +96,12 @@ const ExplorerSearch = ({
 
         <button
           onClick={hasSaleTypes && exception ? onExplore : onFindExceptions}
-          disabled={loading || nothingPicked || rangeTooWide || (hasSaleTypes && !exception)}
+          disabled={
+            loading ||
+            nothingPicked ||
+            rangeTooWide ||
+            (hasSaleTypes && !exception)
+          }
           className="w-full py-2 text-sm font-semibold text-custom-white rounded-lg bg-brand_navy hover:bg-brand_navy_hover transition-colors cursor-pointer select-none disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {loading
@@ -104,8 +109,8 @@ const ExplorerSearch = ({
             : nothingPicked
               ? pickLabel
               : hasSaleTypes
-              ? "Explore transactions"
-              : "Find exceptions"}
+                ? "Explore transactions"
+                : "Find exceptions"}
         </button>
 
         {onBack && (

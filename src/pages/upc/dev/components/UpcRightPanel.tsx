@@ -4,7 +4,10 @@ import { useAppDispatch } from "../../../../hooks";
 import { useUpcDevCtx } from "../hooks/useUpcDevCtx";
 
 // Redux
-import { setDevActiveTab, UPC_DEV_TABS } from "../../../../features/dev/devUpcDevSlice";
+import {
+  setDevActiveTab,
+  UPC_DEV_TABS,
+} from "../../../../features/dev/devUpcDevSlice";
 
 // Components
 import { ArrowDownTrayIcon } from "@heroicons/react/16/solid";
@@ -24,7 +27,8 @@ const UpcRightPanel = () => {
   const dispatch = useAppDispatch();
   const [exportOpen, setExportOpen] = useState(false);
 
-  const activeTabLabel = UPC_DEV_TABS.find((t) => t.id === ctx.activeTab)?.label ?? "";
+  const activeTabLabel =
+    UPC_DEV_TABS.find((t) => t.id === ctx.activeTab)?.label ?? "";
 
   return (
     <div className="flex-1 min-w-0 shadow-lg">
@@ -47,7 +51,10 @@ const UpcRightPanel = () => {
 
         {/* Tabs — above the KPI strip, since the strip's content is now
             tab-contextual rather than one fixed shape */}
-        <div data-help="tabs" className="flex items-center border-b border-line_hair px-3 flex-shrink-0 overflow-x-auto thin-scrollbar">
+        <div
+          data-help="tabs"
+          className="flex items-center border-b border-line_hair px-3 flex-shrink-0 overflow-x-auto thin-scrollbar"
+        >
           {UPC_DEV_TABS.map((tab) => (
             <button
               key={tab.id}

@@ -1,7 +1,6 @@
 // Hooks
-import { useRef } from "react";
 import { useAppDispatch } from "../../../../../hooks";
-import { useSalesCtx } from "../../hooks";
+import { useLastValidThreshold, useSalesCtx } from "../../hooks";
 
 // Redux
 import {
@@ -70,8 +69,7 @@ const LedgerHeader = ({
   // keeps grading against the last valid amount so rows don't reshuffle. The
   // slider has to hold that same position or it would show a value nothing is
   // actually graded against.
-  const lastValidRef = useRef<number>(threshold?.amount ?? THRESHOLD_DEFAULT);
-  if (threshold?.amount != null) lastValidRef.current = threshold.amount;
+  const lastValid = useLastValidThreshold(threshold?.amount, THRESHOLD_DEFAULT);
 
   /**
    * A comparison missing days is not the same claim as a complete one.
@@ -82,9 +80,20 @@ const LedgerHeader = ({
    * the pill drops its red/green fill and says what it covers instead. Green
    * and red are for verdicts.
    */
-  const lwPill = headerDeltaPill(vsLWPct, lwDayCount, dayCount, "last week", isGroup);
-  const lyPill = headerDeltaPill(vsLYPct, lyDayCount, dayCount, "last year", isGroup);
-
+  const lwPill = headerDeltaPill(
+    vsLWPct,
+    lwDayCount,
+    dayCount,
+    "last week",
+    isGroup,
+  );
+  const lyPill = headerDeltaPill(
+    vsLYPct,
+    lyDayCount,
+    dayCount,
+    "last year",
+    isGroup,
+  );
 
   return (
     <div className="cc-navy-panel-header flex flex-col gap-0">
@@ -156,12 +165,15 @@ const LedgerHeader = ({
         {/* Threshold — slider for exploring, numeric input for committing to
             an exact figure. Both write the same value; the slider is capped at
             a range that's meaningful for grading rather than 0-100. */}
-        <div data-help="threshold" className="flex items-center gap-1.5 flex-shrink-0">
+        <div
+          data-help="threshold"
+          className="flex items-center gap-1.5 flex-shrink-0"
+        >
           <span className="text-[11px] text-custom-white font-medium">
             Store Threshold
           </span>
           <ThresholdSlider
-            value={lastValidRef.current}
+            value={lastValid}
             onChange={(amount) =>
               dispatch(setThreshold({ op: threshold?.op ?? "gt", amount }))
             }

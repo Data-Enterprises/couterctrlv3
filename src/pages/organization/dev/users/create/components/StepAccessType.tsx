@@ -124,7 +124,6 @@ const StepAccessType = ({
         );
       })}
     </div>
-
   </div>
 );
 

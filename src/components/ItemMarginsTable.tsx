@@ -1,12 +1,7 @@
+// Hooks
 import { useEffect, useMemo, useRef, useState } from "react";
-import { MinusCircleIcon } from "@heroicons/react/16/solid";
-import {
-  ExclamationTriangleIcon,
-  ExclamationCircleIcon,
-  CheckCircleIcon,
-  ChevronDownIcon,
-  ChevronUpIcon,
-} from "@heroicons/react/20/solid";
+
+// Utils
 import { formatCurrency2 } from "../utils";
 import {
   severityDotClass,
@@ -30,78 +25,32 @@ import {
   type ItemSeverity,
   type GradedSeverity,
   type RowMetricKey,
+  type MarginSourceRow,
+  type ItemGradingMetric,
 } from "../utils/itemMargins";
+import { colInputStyle } from "./filters/colFilterStyles";
+import { LW_OFFSET, LY_OFFSET, shiftIso, type Coverage } from "../utils/grading";
+import { formatPricedUnitsShort } from "../utils/pricedUnits";
+import { byDate, REPORT_ROW_LABELS } from "./utils";
+
+// Interfaces
+import type { SevFilter } from "./interfaces";
+
+// Components
+import {
+  ExclamationTriangleIcon,
+  ExclamationCircleIcon,
+  CheckCircleIcon,
+  ChevronDownIcon,
+  ChevronUpIcon,
+} from "@heroicons/react/20/solid";
 import ThresholdFilter from "./filters/ThresholdFilter";
 import ColFilter from "./filters/ColFilter";
-import { colInputStyle } from "./filters/colFilterStyles";
 import UpcContextMenu from "./UpcContextMenu";
-import SharedSeverityBadge from "./SeverityBadge";
-import { LW_OFFSET, LY_OFFSET, shiftIso, type Coverage } from "../utils/grading";
-import type { MarginSourceRow, ItemGradingMetric } from "../utils/itemMargins";
-import { formatPricedUnitsShort, PRICED_UNITS_LABEL } from "../utils/pricedUnits";
+import ItemSeverityBadge from "./ItemSeverityBadge";
+import GradeCell from "./GradeCell";
 
-/**
- * Item-level report, shared by the Performance pages that drill to items.
- *
- * A graded item list on the left, one item's report on the right — the same
- * anatomy Sub Dept Margins established, running on the shared maths in
- * src/utils/itemMargins.ts.
- *
- * Deliberately prop-driven and Redux-free: Categories grades the items inside
- * one category, Vendors grades the items behind one supplier, and the only
- * thing that differs is which rows get handed in. Reading a slice here would
- * have forced a second copy for the second caller.
- */
-
-type SevFilter = "all" | ItemSeverity;
-
-/** "ungraded" has no shared SeverityBadge equivalent — small local adapter. */
-const SeverityBadge = ({ severity }: { severity: ItemSeverity }) =>
-  severity === "ungraded" ? (
-    <div className="w-[18px] h-[18px] rounded flex items-center justify-center flex-shrink-0 bg-gray-100">
-      <MinusCircleIcon className="w-3 h-3 text-gray-400" />
-    </div>
-  ) : (
-    <SharedSeverityBadge severity={severity} />
-  );
-
-const GradeCell = ({
-  pct,
-  threshold,
-  isPts,
-  partial = false,
-}: {
-  pct: number | null;
-  threshold: number;
-  isPts: boolean;
-  /** The period is missing days: show the figure without a verdict colour. */
-  partial?: boolean;
-}) => {
-  if (pct === null)
-    return <span className="text-[13px] font-semibold text-gray-400">—</span>;
-  return (
-    <span
-      className={`text-[13px] font-semibold whitespace-nowrap ${partial ? "text-content" : deltaTextClass(pct, threshold)}`}
-    >
-      {`${pct >= 0 ? "+" : ""}${pct.toFixed(2)}${isPts ? "pt" : "%"}`}
-    </span>
-  );
-};
-
-const byDate = <T extends { sale_date: string }>(src: T[], dateStr: string) =>
-  src.filter((m) => m.sale_date.split("T")[0] === dateStr);
-
-const REPORT_ROW_LABELS: Record<RowMetricKey, string> = {
-  margin: "Margin",
-  contribution: "Contribution",
-  sales: "Sales",
-  // Names both units: the row prints pounds on a scale item and a count on
-  // everything else, and a bare "Qty" made the pounds look like a count.
-  qty: PRICED_UNITS_LABEL,
-  cogs: "COGS",
-};
-
-interface Props {
+interface ItemMarginsTableProps {
   /** Item rows for all three periods. Any row carrying the margin columns and a
    *  sale_date works — CatItem from categories/cats, SubDeptMargin from
    *  subs/subs. */
@@ -125,6 +74,18 @@ interface Props {
   coverage?: Coverage;
 }
 
+/**
+ * Item-level report, shared by the Performance pages that drill to items.
+ *
+ * A graded item list on the left, one item's report on the right — the same
+ * anatomy Sub Dept Margins established, running on the shared maths in
+ * src/utils/itemMargins.ts.
+ *
+ * Deliberately prop-driven and Redux-free: Categories grades the items inside
+ * one category, Vendors grades the items behind one supplier, and the only
+ * thing that differs is which rows get handed in. Reading a slice here would
+ * have forced a second copy for the second caller.
+ */
 const ItemMarginsTable = ({
   items,
   gradingMetric,
@@ -134,7 +95,7 @@ const ItemMarginsTable = ({
   selectedDay,
   loading = false,
   coverage,
-}: Props) => {
+}: ItemMarginsTableProps) => {
   const [colSort, setColSort] = useState<{
     col: "ty" | "lw" | "ly";
     dir: "desc" | "asc";
@@ -388,7 +349,7 @@ const ItemMarginsTable = ({
   if (loading) {
     return (
       <div className="flex-1 min-h-0 flex items-center justify-center gap-2">
-        <div className="w-3.5 h-3.5 border-2 border-gray-200 border-t-brand_navy rounded-full animate-spin" />
+        <div className="cc-spinner border-t-brand_navy" />
         <span className="text-[11px] text-content">Loading items…</span>
       </div>
     );
@@ -402,10 +363,10 @@ const ItemMarginsTable = ({
       >
         {/* ── Left: item list ── */}
         <div
-          className="flex flex-col border-r border-gray-100 min-w-0"
+          className="flex flex-col border-r border-line_hair min-w-0"
           style={{ width: "47%", flexShrink: 0 }}
         >
-          <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 border-b border-gray-100 flex-shrink-0">
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-fill_soft border-b border-line_hair flex-shrink-0">
             {sevChip("critical", "Crit")}
             {sevChip("watch", "Watch")}
             {sevChip("healthy", "OK")}
@@ -418,7 +379,7 @@ const ItemMarginsTable = ({
                 Thresh
               </button>
               {threshOpen && (
-                <div className="absolute top-full left-0 mt-1 p-1.5 rounded-md border border-gray-200 bg-custom-white shadow-lg z-20">
+                <div className="cc-dropdown left-0 p-1.5 z-20">
                   <ThresholdFilter
                     value={
                       threshold === null
@@ -439,9 +400,9 @@ const ItemMarginsTable = ({
           {/* Right padding is 4px wider than the rows' — matches the reserved
               scrollbar gutter below so columns line up whether or not the list
               is scrollable. */}
-          <div className="flex items-center gap-2.5 pl-3 pr-4 py-1.5 border-b border-gray-100 flex-shrink-0">
+          <div className="flex items-center gap-2.5 pl-3 pr-4 py-1.5 border-b border-line_hair flex-shrink-0">
             <span className="w-2.5 flex-shrink-0" />
-            <span className="text-[11.5px] font-semibold uppercase tracking-wide text-content/80 flex-1 flex items-center gap-2 min-w-0">
+            <span className="text-[11.5px] cc-caps flex-1 flex items-center gap-2 min-w-0">
               Item
               <ColFilter
                 label="UPC"
@@ -483,7 +444,7 @@ const ItemMarginsTable = ({
                 <button
                   key={col}
                   onClick={() => handleColSortClick(col)}
-                  className="flex items-center justify-center gap-0.5 text-[11.5px] font-semibold uppercase tracking-wide text-content/80 hover:text-content flex-shrink-0"
+                  className="flex items-center justify-center gap-0.5 text-[11.5px] cc-caps hover:text-content flex-shrink-0"
                   style={{ width: col === "ty" ? 76 : 68 }}
                 >
                   {col.toUpperCase()}
@@ -523,11 +484,11 @@ const ItemMarginsTable = ({
                     }}
                     className={`w-full flex items-center gap-2.5 p-3 text-left transition-colors border-l-2 border-b border-b-brand_navy/15 ${
                       isSel
-                        ? "bg-row_selected border-row_selected_border"
-                        : "border-transparent hover:bg-gray-50"
+                        ? "cc-row-selected"
+                        : "border-transparent hover:bg-fill_soft"
                     }`}
                   >
-                    <SeverityBadge severity={sev} />
+                    <ItemSeverityBadge severity={sev} />
                     <div className="flex flex-col justify-center min-w-0 flex-1">
                       <div className="text-[13px] font-medium text-content truncate">
                         {item.description}
@@ -639,7 +600,7 @@ const ItemMarginsTable = ({
                   )}
                 </div>
               ) : (
-                <div className="flex items-center gap-2 px-4 py-2 border-b border-gray-100 bg-gray-50">
+                <div className="flex items-center gap-2 px-4 py-2 border-b border-line_hair bg-fill_soft">
                   <span className="text-[14px] font-medium text-content truncate">
                     {selectedItem.description}
                   </span>
@@ -651,17 +612,17 @@ const ItemMarginsTable = ({
 
               {/* 40/60 rather than an even split — the supporting table has four
                   columns to fit, the lead card needs room for one number. */}
-              <div className="px-4 py-2.5 border-b border-gray-100">
+              <div className="px-4 py-2.5 border-b border-line_hair">
                 <div className="grid grid-cols-[40%_1fr] gap-2">
                   {reportRows.length > 0 && (
-                    <div className="rounded-md border border-brand_navy/15 shadow-sm bg-gray-50 p-2.5 text-center flex flex-col justify-center">
+                    <div className="rounded-md border border-brand_navy/15 shadow-sm bg-fill_soft p-2.5 text-center flex flex-col justify-center">
                       <div className="text-[11px] font-semibold text-content">
                         {reportRows[0].label}
                       </div>
                       <div className="text-[18px] font-semibold text-content leading-tight">
                         {reportRows[0].ty}
                       </div>
-                      <div className="grid grid-cols-2 gap-1.5 mt-1.5 pt-1.5 border-t border-gray-200">
+                      <div className="grid grid-cols-2 gap-1.5 mt-1.5 pt-1.5 border-t border-line_field">
                         {(["lw", "ly"] as const).map((side) => (
                           <div key={side}>
                             <div className="text-[11px] font-semibold uppercase tracking-wide text-content">
@@ -697,7 +658,7 @@ const ItemMarginsTable = ({
                   {/* Supporting metrics share one set of column headers so they
                       stay comparable to each other; prior values live in the
                       title attribute. */}
-                  <div className="rounded-md border border-brand_navy/15 shadow-sm bg-gray-50 px-2.5 py-1 flex flex-col justify-center">
+                  <div className="rounded-md border border-brand_navy/15 shadow-sm bg-fill_soft px-2.5 py-1 flex flex-col justify-center">
                     <div className="grid grid-cols-[1fr_56px_55px_55px] gap-1.5 pb-0.5 text-[11px] font-semibold uppercase tracking-wide text-content">
                       <span />
                       <span className="text-right">TY</span>
@@ -707,7 +668,7 @@ const ItemMarginsTable = ({
                     {reportRows.slice(1).map((row) => (
                       <div
                         key={row.key}
-                        className="grid grid-cols-[1fr_56px_55px_55px] gap-1.5 items-center py-1 border-t border-gray-200 text-[11.5px]"
+                        className="grid grid-cols-[1fr_56px_55px_55px] gap-1.5 items-center py-1 border-t border-line_field text-[11.5px]"
                       >
                         <span className="font-semibold text-content truncate">
                           {row.label}
@@ -812,7 +773,7 @@ const ItemMarginsTable = ({
                               <span
                                 className={`w-2 h-2 rounded-full ${
                                   sev === null
-                                    ? "bg-gray-300"
+                                    ? "bg-fill_track_strong"
                                     : severityDotClass[sev]
                                 }`}
                               />

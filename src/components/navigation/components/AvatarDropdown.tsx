@@ -10,6 +10,7 @@ import { openReportIssue, resetAppSlice } from "../../../features/appSlice";
 
 // Utils
 import { impersonatedBy } from "../../../utils/session";
+import { RELEASES, releasesForLevel } from "../../../content/releaseNotes";
 import { MENU_SHADOW } from "./utils";
 
 // Components
@@ -60,8 +61,8 @@ const AvatarDropdown = ({
   const realUser = impersonatedBy(context.token);
   const initials = `${(user.firstName?.[0] ?? "").toUpperCase()}${(user.lastName?.[0] ?? "").toUpperCase()}`;
 
-  // Release Notes: the sample set until real notes exist, so level 9 and dev only.
-  const showReleaseNotes = context.apiEnv === "dev" && user.userLevel === 9;
+  // Release Notes: in both modes, for anyone with notes their level can use.
+  const showReleaseNotes = releasesForLevel(RELEASES, user.userLevel).length > 0;
   // Report an issue opens the form over this page, so the problem stays in view.
   const showReportIssue = context.apiEnv === "dev";
   const hasEveryday = showReleaseNotes || showReportIssue;

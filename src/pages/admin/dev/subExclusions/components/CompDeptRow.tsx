@@ -5,10 +5,11 @@ import {
   COLS,
   coverageText,
   prettyDate,
+  CATALOG_DAYS,
 } from "../utils";
 
 // Interfaces
-import type { CompanyDeptRow, ExclusionWrite } from "../interfaces";
+import type { CompanyDeptRow, DeptAtStore } from "../interfaces";
 
 // Components
 import { ChevronRightIcon } from "@heroicons/react/20/solid";
@@ -17,26 +18,27 @@ import DeptAtStoreRow from "./DeptAtStoreRow";
 
 interface CompDeptRowProps {
   row: CompanyDeptRow;
-  open: string | null;
-  setOpen: (next: string | null) => void;
-  toggleRow: (row: CompanyDeptRow, next: boolean) => void;
+  expanded: boolean;
+  onToggleOpen: () => void;
   saving: boolean;
-  send: (writes: ExclusionWrite[], label: string, want: boolean) => void;
+  /** Exclude or count the department at every store that has it. */
+  onToggleRow: (next: boolean) => void;
+  /** Exclude or count it at one store. */
+  onToggleStore: (a: DeptAtStore, next: boolean) => void;
 }
 
 /** One sub department across a company: a checkbox to exclude it from net sales at every store, its number,
  *  where it stands and when it last rang. Expands to a row per store, and lists stores that never rang it. */
 const CompDeptRow = ({
   row,
-  open,
-  setOpen,
-  toggleRow,
+  expanded,
+  onToggleOpen,
   saving,
-  send,
+  onToggleRow,
+  onToggleStore,
 }: CompDeptRowProps) => {
   const state = deptState(row);
   const varies = differingNumbers(row);
-  const expanded = open === row.key;
   return (
     <div>
       <div
@@ -46,7 +48,7 @@ const CompDeptRow = ({
           checked={state === "all"}
           disabled={saving}
           ariaLabel={`Exclude ${row.label} from net sales`}
-          onChange={(next) => toggleRow(row, next)}
+          onChange={onToggleRow}
         />
         <div className="truncate font-semibold" title={row.label}>
           {row.label}
@@ -80,7 +82,7 @@ const CompDeptRow = ({
         <div className="flex justify-end">
           {row.at.length + row.absent.length > 1 && (
             <button
-              onClick={() => setOpen(expanded ? null : row.key)}
+              onClick={onToggleOpen}
               aria-label={`${expanded ? "Hide" : "Show"} stores for ${row.label}`}
               className="w-5 h-5 flex items-center justify-center rounded text-content/95 hover:bg-fill_muted"
             >
@@ -100,19 +102,18 @@ const CompDeptRow = ({
             <DeptAtStoreRow
               key={`${a.storeid}__${a.sub_department}`}
               a={a}
-              row={row}
-              send={send}
+              label={row.label}
               saving={saving}
+              onChange={(next) => onToggleStore(a, next)}
             />
           ))}
           {row.absent.length > 0 && (
             <p className="text-[11px] text-content/95 pt-1.5 leading-snug">
-              Not rung in this window at{" "}
+              Not rung in the last {CATALOG_DAYS} days at{" "}
               <span className="font-semibold text-content">
-                {row.absent.map((s) => s.store_number).join(", ")}
+                {row.absent.map((s) => s.store_name).join(", ")}
               </span>
-              . Nothing to exclude there — widen the window if the department is
-              seasonal.
+              . Nothing to exclude there.
             </p>
           )}
         </div>

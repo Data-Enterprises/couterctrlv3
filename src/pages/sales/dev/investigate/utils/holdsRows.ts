@@ -1,5 +1,10 @@
 // Utils
-import { CAUSE_LABEL, DEFAULT_BANDS, rangAt, splitGap } from "./deptInvestigation";
+import {
+  CAUSE_LABEL,
+  DEFAULT_BANDS,
+  rangAt,
+  splitGap,
+} from "./deptInvestigation";
 
 // Interfaces
 import type {
@@ -14,13 +19,20 @@ import type {
 } from "../interfaces";
 
 /** The Summary's rows, in the order they are listed. */
-export const ROW_ORDER: RowKind[] = ["onlyTheirs", "bothLess", "bothMore", "onlyMine"];
+export const ROW_ORDER: RowKind[] = [
+  "onlyTheirs",
+  "bothLess",
+  "bothMore",
+  "onlyMine",
+];
 
 /** Each row's item columns. Literal, so Tailwind emits them. */
 export const ROW_COLS: Record<RowKind, string> = {
   onlyTheirs: "grid-cols-[22px_minmax(0,1fr)_96px_72px_92px]",
-  bothLess: "grid-cols-[22px_minmax(0,1.3fr)_92px_minmax(150px,0.85fr)_minmax(170px,0.95fr)_83px]",
-  bothMore: "grid-cols-[22px_minmax(0,1.3fr)_92px_minmax(150px,0.85fr)_minmax(170px,0.95fr)_83px]",
+  bothLess:
+    "grid-cols-[22px_minmax(0,1.3fr)_92px_minmax(150px,0.85fr)_minmax(170px,0.95fr)_83px]",
+  bothMore:
+    "grid-cols-[22px_minmax(0,1.3fr)_92px_minmax(150px,0.85fr)_minmax(170px,0.95fr)_83px]",
   onlyMine: "grid-cols-[22px_minmax(0,1fr)_96px_72px_92px]",
 };
 
@@ -30,7 +42,12 @@ export const rowLabel = (kind: RowKind, us: string, them: string) =>
     ? { pre: "Rang at", store: them, mine: false, post: "only" }
     : kind === "onlyMine"
       ? { pre: "Rang at", store: us, mine: true, post: "only" }
-      : { pre: "Rang at both,", store: us, mine: true, post: kind === "bothLess" ? "sold less" : "sold more" };
+      : {
+          pre: "Rang at both,",
+          store: us,
+          mine: true,
+          post: kind === "bothLess" ? "sold less" : "sold more",
+        };
 
 /** The same, as it reads after an item count: "68 items rang at 003, not at 018". */
 export const rowPhrase = (kind: RowKind, us: string, them: string) =>
@@ -54,11 +71,19 @@ export const rowHeads = (kind: RowKind, us: string, them: string) =>
     ? ["", "Item", `${them} sold`, "", "Difference"]
     : kind === "onlyMine"
       ? ["", "Item", `${us} sold`, "", "Difference"]
-      : ["", "Item", "Why", `Sold · ${us} vs ${them}`, `Avg price · ${us} vs ${them}`, "Difference"];
+      : [
+          "",
+          "Item",
+          "Why",
+          `Sold · ${us} vs ${them}`,
+          `Avg price · ${us} vs ${them}`,
+          "Difference",
+        ];
 
 /** The row with the most money in it. */
 export const leadRow = (rows: HoldsRow[]): RowKind =>
-  [...rows].sort((a, b) => Math.abs(b.total) - Math.abs(a.total))[0]?.kind ?? "onlyTheirs";
+  [...rows].sort((a, b) => Math.abs(b.total) - Math.abs(a.total))[0]?.kind ??
+  "onlyTheirs";
 
 /**
  * The row the finding's figure shows and the Summary opens on: the one its
@@ -67,32 +92,44 @@ export const leadRow = (rows: HoldsRow[]): RowKind =>
  * sentence above it.
  */
 export const findingRow = (rows: HoldsRow[], about: RowKind): RowKind =>
-  rows.find((r) => r.kind === about && r.items.length > 0)?.kind ?? leadRow(rows);
+  rows.find((r) => r.kind === about && r.items.length > 0)?.kind ??
+  leadRow(rows);
 
 /** Why a reason chip says what it says: the price band nothing else shows. */
 export const REASON_TIP: Record<RowReason, string> = {
   units: "The two prices are within 8%, so units explain the gap.",
-  price: "The prices differ by more than 8%, and price is the bigger part of the gap.",
+  price:
+    "The prices differ by more than 8%, and price is the bigger part of the gap.",
   both: "The prices differ by more than 8%, but units are the bigger part of the gap.",
 };
 
 /** The Avg price column, which people will otherwise read as the shelf tag. */
-export const AVG_PRICE_TIP = "Sales ÷ units: what customers paid on average, not the shelf price.";
+export const AVG_PRICE_TIP =
+  "Sales ÷ units: what customers paid on average, not the shelf price.";
 
 /**
  * What a units or price line in a breakdown is. A line pulling against its
  * slide (fewer sold on a slide ahead, a higher price on one behind) says so,
  * since a red line on a green slide is the first thing a reader asks about.
  */
-export const partTip = (line: BreakdownLine, rowTotal: number, cash: (v: number) => string) => {
+export const partTip = (
+  line: BreakdownLine,
+  rowTotal: number,
+  cash: (v: number) => string,
+) => {
   const units = line.label === "Fewer sold" || line.label === "More sold";
   const base = units
     ? "What the difference in units sold was worth, at the two stores' average price."
     : "What the difference in price was worth, on the two stores' average units.";
-  if (line.amount === 0 || rowTotal === 0 || line.amount < 0 === rowTotal < 0) return base;
+  if (line.amount === 0 || rowTotal === 0 || line.amount < 0 === rowTotal < 0)
+    return base;
   const what = units
-    ? line.amount < 0 ? "selling fewer" : "selling more"
-    : line.amount < 0 ? "taking less a unit" : "the higher price";
+    ? line.amount < 0
+      ? "selling fewer"
+      : "selling more"
+    : line.amount < 0
+      ? "taking less a unit"
+      : "the higher price";
   const did = line.amount < 0 ? "gave back" : "won back";
   const of = rowTotal > 0 ? "the lead" : "the shortfall";
   return `${base} It works against this slide: ${what} ${did} ${cash(Math.abs(line.amount))} of ${of}.`;
@@ -101,9 +138,13 @@ export const partTip = (line: BreakdownLine, rowTotal: number, cash: (v: number)
 /** An item's reason, worded for the row it is in. */
 export const reasonLabel = (reason: RowReason, up: boolean) =>
   reason === "units"
-    ? up ? "More sold" : "Fewer sold"
+    ? up
+      ? "More sold"
+      : "Fewer sold"
     : reason === "price"
-      ? up ? "Higher price" : "Lower price"
+      ? up
+        ? "Higher price"
+        : "Lower price"
       : "Both";
 
 /** Which row an item belongs to, or null when neither store rang it. */
@@ -123,7 +164,10 @@ export const rowOf = (i: ItemVerdict): RowKind | null => {
  * with Price / mix. Past it, price wins when it is the bigger part of the
  * gap, and both are named when the units are bigger still.
  */
-export const reasonOf = (i: ItemVerdict, bands: Bands = DEFAULT_BANDS): RowReason => {
+export const reasonOf = (
+  i: ItemVerdict,
+  bands: Bands = DEFAULT_BANDS,
+): RowReason => {
   const r = i.ratios.price;
   if (r === null || Math.abs(r - 1) <= bands.price) return "units";
   const { units, price } = splitGap(i);
@@ -145,7 +189,9 @@ export const sectionsOf = (items: ItemVerdict[]): RowSection[] => {
   let run = 0;
   for (const i of items) {
     const before = whole > 0 ? run / whole : 0;
-    runs[before < SECTION_CUTS[0] ? 0 : before < SECTION_CUTS[1] ? 1 : 2].push(i);
+    runs[before < SECTION_CUTS[0] ? 0 : before < SECTION_CUTS[1] ? 1 : 2].push(
+      i,
+    );
     run += Math.abs(i.gap);
   }
   return runs
@@ -190,10 +236,21 @@ const byUnitsAndPrice = (items: ItemVerdict[]): BreakdownLine[] => {
   const units = items.reduce((t, i) => t + splitGap(i).units, 0);
   const price = items.reduce((t, i) => t + splitGap(i).price, 0);
   const gross = Math.abs(units) + Math.abs(price);
-  const pct = (v: number) => (gross > 0 ? `${Math.round((Math.abs(v) / gross) * 100)}%` : "0%");
+  const pct = (v: number) =>
+    gross > 0 ? `${Math.round((Math.abs(v) / gross) * 100)}%` : "0%";
   return [
-    { label: units < 0 ? "Fewer sold" : "More sold", amount: units, side: pct(units), money: true },
-    { label: price < 0 ? "Lower price" : "Higher price", amount: price, side: pct(price), money: true },
+    {
+      label: units < 0 ? "Fewer sold" : "More sold",
+      amount: units,
+      side: pct(units),
+      money: true,
+    },
+    {
+      label: price < 0 ? "Lower price" : "Higher price",
+      amount: price,
+      side: pct(price),
+      money: true,
+    },
   ];
 };
 
@@ -257,7 +314,10 @@ export const rowSays = (
     const phrase = (cause && CAUSE_PHRASE[cause]) ?? lead.label.toLowerCase();
     const most = Math.abs(lead.amount) >= Math.abs(row.total) / 2;
     const led = row.items.filter((i) => i.cause === cause).length;
-    if (led === n) return n === 1 ? `The one item was ${phrase}.` : `All ${items} were ${phrase}.`;
+    if (led === n)
+      return n === 1
+        ? `The one item was ${phrase}.`
+        : `All ${items} were ${phrase}.`;
     return `${most ? "Most of it was" : "The biggest part was"} ${phrase}: ${led.toLocaleString("en-US")} of the ${items}.`;
   }
 

@@ -56,9 +56,7 @@ const TicketSidebar = ({ ticket, tickets, onSelect }: TicketSidebarProps) => {
         {ticket.company_name && (
           <div className="mt-3 px-3.5">
             <div className="rounded-lg bg-bkg px-2.5 py-2">
-              <div className="cc-caps-mono text-[9.5px]">
-                Company
-              </div>
+              <div className="cc-caps-mono text-[9.5px]">Company</div>
               <div className="mt-0.5 truncate text-[12.5px] font-semibold">
                 {ticket.company_name}
               </div>

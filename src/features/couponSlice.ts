@@ -1,5 +1,54 @@
+
+// Utils
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
-import type { CouponItem, TransactionListItem } from "../interfaces";
+
+// Interfaces
+import type { CouponItem, ThresholdValue, TransactionListItem } from "../interfaces";
+import type { SEARCH_TYPE } from "./searchSlice";
+import type { Group } from "./groupSlice";
+
+/** The detail grid's applied column filters. */
+export interface CouponGridFilters {
+  upc: string;
+  product: string;
+  subDept: string;
+  amount: ThresholdValue | null;
+}
+
+const noGridFilters: CouponGridFilters = { upc: "", product: "", subDept: "", amount: null };
+
+/** The search the loaded coupons answer, kept with them so the labels name
+ *  it rather than whatever the shared picker has moved to since. */
+export interface CouponSearchedScope {
+  type: SEARCH_TYPE;
+  startDate: string;
+  endDate: string;
+  lastStore: number;
+  lastGroup: number;
+  selectedGroup: Group;
+}
+
+/** What the coupon lists sort by, desktop and phone alike. */
+export type CouponSortMetric = "amount" | "qty";
+
+/** Where the phone is: its screen, the store picked (null is every store in a
+ *  group), the grouping tab and the section open. */
+export interface CouponMobilePlace {
+  screen: "entry" | "stores" | "overview" | "detail";
+  storeId: number | null;
+  /** Co-located stores share a storeid; the number picks the location. */
+  storeNumber: string | null;
+  tab: "subdept" | "date" | "cashier";
+  section: { key: string; label: string } | null;
+}
+
+const mobileStart: CouponMobilePlace = {
+  screen: "entry",
+  storeId: null,
+  storeNumber: null,
+  tab: "subdept",
+  section: null,
+};
 
 export type FilterType =
   | "Store"
@@ -40,6 +89,14 @@ interface CouponState {
    *  empty when none is. Was parked in LP's slice (transactionDrillDown) —
    *  Coupons keeps its own, as Coupon Sales does. */
   receiptLines: TransactionListItem[];
+  /** Kept when the page is left; a new search clears them. */
+  gridFilters: CouponGridFilters;
+  /** The desktop list's picked store, `storeid__store_number`; "" is all. */
+  selectedKey: string;
+  sortMetric: CouponSortMetric;
+  mobile: CouponMobilePlace;
+  /** Null until the first search. */
+  searched: CouponSearchedScope | null;
 }
 
 const initialState: CouponState = {
@@ -64,6 +121,11 @@ const initialState: CouponState = {
   subDeptMobileFilter: [],
   showSubsMobileFilter: false,
   receiptLines: [],
+  gridFilters: noGridFilters,
+  selectedKey: "",
+  sortMetric: "amount",
+  mobile: mobileStart,
+  searched: null,
 };
 
 const couponSlice = createSlice({
@@ -188,7 +250,14 @@ const couponSlice = createSlice({
 
       if (action.payload === true) {
         state.noCouponsFound = false;
+        state.gridFilters = noGridFilters;
       }
+    },
+    setCouponGridFilter: (
+      state,
+      action: PayloadAction<Partial<CouponGridFilters>>,
+    ) => {
+      state.gridFilters = { ...state.gridFilters, ...action.payload };
     },
     setThresh: (state, action: PayloadAction<"less" | "greater" | "equal">) => {
       state.amtLessThan = action.payload === "less";
@@ -244,6 +313,24 @@ const couponSlice = createSlice({
     setShowSubsMobileFilter: (state, action: PayloadAction<boolean>) => {
       state.showSubsMobileFilter = action.payload;
     },
+    setCouponSelectedKey: (state, action: PayloadAction<string>) => {
+      state.selectedKey = action.payload;
+    },
+    setCouponSortMetric: (state, action: PayloadAction<CouponSortMetric>) => {
+      state.sortMetric = action.payload;
+    },
+    setCouponMobilePlace: (
+      state,
+      action: PayloadAction<Partial<CouponMobilePlace>>,
+    ) => {
+      state.mobile = { ...state.mobile, ...action.payload };
+    },
+    resetCouponMobilePlace: (state) => {
+      state.mobile = mobileStart;
+    },
+    setCouponSearched: (state, action: PayloadAction<CouponSearchedScope>) => {
+      state.searched = action.payload;
+    },
     resetCouponsSlice: () => initialState,
   },
 });
@@ -256,11 +343,17 @@ export const {
   applyFilters,
   resetFilters,
   setIsFetching,
+  setCouponGridFilter,
   setFilterModalOpen,
   setFilterType,
   setThresh,
   setNoCouponsFound,
   resetCouponsSlice,
+  setCouponSelectedKey,
+  setCouponSortMetric,
+  setCouponMobilePlace,
+  resetCouponMobilePlace,
+  setCouponSearched,
   setCouponMobileStage,
   setUniqueCpnDates,
   setUniqueSubDepts,

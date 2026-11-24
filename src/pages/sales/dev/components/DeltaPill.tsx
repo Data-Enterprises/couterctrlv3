@@ -24,7 +24,15 @@ interface DeltaPillProps {
  * this would drift, and a store's figure reading one way in the ledger and
  * another in the grid beside it is worse than either.
  */
-const DeltaPill = ({ has, pct, threshold, complete, matched, days, period }: DeltaPillProps) => (
+const DeltaPill = ({
+  has,
+  pct,
+  threshold,
+  complete,
+  matched,
+  days,
+  period,
+}: DeltaPillProps) => (
   <span
     className={`text-[13px] font-semibold px-1.5 py-1 rounded text-center flex-shrink-0 whitespace-nowrap ${
       has

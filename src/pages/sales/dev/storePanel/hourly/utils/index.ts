@@ -18,6 +18,7 @@ import type { Severity } from "../../../../../../utils/severity";
 import type {
   HourCta,
   HourRow,
+  Row,
   HourSortColumn,
   HourSortState,
   WeekHourDay,
@@ -144,10 +145,7 @@ export const buildHourRows = (
   const isQty = gradingMetric === "qty";
   const buildMap = (src: HourlySale[]) =>
     src.reduce(
-      (
-        acc: Record<number, { net: number; trans: number; qty: number }>,
-        h,
-      ) => {
+      (acc: Record<number, { net: number; trans: number; qty: number }>, h) => {
         if (!acc[h.hour]) acc[h.hour] = { net: 0, trans: 0, qty: 0 };
         acc[h.hour].net += h.total_sales - h.total_tax;
         acc[h.hour].trans += h.transactions;
@@ -176,11 +174,9 @@ export const buildHourRows = (
 
   const allHours = Array.from(
     new Set(
-      [
-        ...Object.keys(twMap),
-        ...Object.keys(lwMap),
-        ...Object.keys(lyMap),
-      ].map(Number),
+      [...Object.keys(twMap), ...Object.keys(lwMap), ...Object.keys(lyMap)].map(
+        Number,
+      ),
     ),
   ).sort((a, b) => a - b);
 
@@ -248,8 +244,7 @@ export const buildWeekHourDays = (
   const sumFor = (src: HourlySale[], dateStr: string) =>
     src
       .filter(
-        (h) =>
-          h.hour === selectedHour && h.sale_date.split("T")[0] === dateStr,
+        (h) => h.hour === selectedHour && h.sale_date.split("T")[0] === dateStr,
       )
       .reduce((acc, h) => acc + (h.total_sales - h.total_tax), 0);
 
@@ -290,23 +285,33 @@ const hourSortValue = (row: HourRow, column: HourSortColumn, isQty: boolean) =>
         ? row.vsLYQtyPct
         : row.vsLYPct;
 
-export const sortHourRows = (rows: HourRow[], sort: HourSortState, isQty: boolean) =>
+export const sortHourRows = (
+  rows: HourRow[],
+  sort: HourSortState,
+  isQty: boolean,
+) =>
   sort
     ? [...rows].sort((a, b) => {
         const diff =
-          hourSortValue(a, sort.column, isQty) - hourSortValue(b, sort.column, isQty);
+          hourSortValue(a, sort.column, isQty) -
+          hourSortValue(b, sort.column, isQty);
         return sort.direction === "desc" ? -diff : diff;
       })
     : rows;
 
 /** Change against a reference, in percent. */
-export const pctChange = (value: number, ref: number) => ((value - ref) / ref) * 100;
+export const pctChange = (value: number, ref: number) =>
+  ((value - ref) / ref) * 100;
 
 /** Average basket: net sales over transactions, 0 with none. */
-export const basket = (net: number, trans: number) => (trans > 0 ? net / trans : 0);
+export const basket = (net: number, trans: number) =>
+  trans > 0 ? net / trans : 0;
 
 /** A real minus, not a hyphen: these sit in tabular figures beside a plus. */
 export const MINUS = "−";
+
+/** The store-against-store hour list's columns: hour, the two bars, the gap. */
+export const HOUR_COLS = "70px minmax(90px,2fr) 104px";
 
 /** An hour as a short clock label, e.g. 9a or 12p. */
 export const hourLabel = (h: number) => {
@@ -332,3 +337,82 @@ export const day = (v: string) => (v ?? "").split("T")[0];
 /** The hourly signal list's sortable heading. */
 export const HEAD =
   "flex items-center gap-0.5 text-[11.5px] font-semibold uppercase tracking-wide text-content/95 hover:text-content flex-shrink-0";
+
+/** Three weeks of hourly rows for one store: this week, last week, last year. */
+export type HourWeeks = {
+  tw: HourlySale[];
+  lw: HourlySale[];
+  ly: HourlySale[];
+};
+
+/** The store-against-store hour list: every hour either store traded in any
+ *  period, the open store's figure against the counterpart's, and the gap in
+ *  each period. An hour one of them is shut for is a finding, not a row to
+ *  drop. */
+export const compareHourRows = (
+  mine: HourWeeks,
+  theirs: HourWeeks,
+  metric: GradingMetric,
+): Row[] => {
+  const mineTw = byHour(mine.tw, metric);
+  const mineLw = byHour(mine.lw, metric);
+  const mineLy = byHour(mine.ly, metric);
+  const theirTw = byHour(theirs.tw, metric);
+  const theirLw = byHour(theirs.lw, metric);
+  const theirLy = byHour(theirs.ly, metric);
+
+  const hours = [
+    ...new Set(
+      [mineTw, mineLw, mineLy, theirTw, theirLw, theirLy]
+        .flatMap((m) => Object.keys(m))
+        .map(Number),
+    ),
+  ].sort((x, y) => x - y);
+
+  return hours.map((h) => {
+    const a = mineTw[h] ?? 0;
+    const b = theirTw[h] ?? 0;
+    return {
+      hour: h,
+      label: hourLabel(h),
+      a,
+      b,
+      tyDiff: a - b,
+      lwDiff: (mineLw[h] ?? 0) - (theirLw[h] ?? 0),
+      lyDiff: (mineLy[h] ?? 0) - (theirLy[h] ?? 0),
+    };
+  });
+};
+
+/** The hour list's bars and gaps. In money each store's figure is drawn as
+ *  it is; in mix each hour is its share of that store's day, so two stores of
+ *  different sizes can be read against each other. */
+export const hourBars = (
+  rows: Row[],
+  mode: "money" | "mix",
+  fmt: (v: number) => string,
+) => {
+  const mineTotal = rows.reduce((t, r) => t + r.a, 0);
+  const theirsTotal = rows.reduce((t, r) => t + r.b, 0);
+  const shareMine = (r: Row) => (mineTotal > 0 ? (r.a / mineTotal) * 100 : 0);
+  const shareTheirs = (r: Row) =>
+    theirsTotal > 0 ? (r.b / theirsTotal) * 100 : 0;
+
+  const barMax =
+    mode === "money"
+      ? Math.max(1, ...rows.flatMap((r) => [r.a, r.b]))
+      : Math.max(1, ...rows.flatMap((r) => [shareMine(r), shareTheirs(r)]));
+
+  const widthOf = (v: number) => Math.min(100, (v / barMax) * 100) + "%";
+  const gapOf = (r: Row) =>
+    mode === "money" ? r.tyDiff : shareMine(r) - shareTheirs(r);
+  const gapText = (r: Row) => {
+    const g = gapOf(r);
+    const sign = g >= 0 ? "+" : MINUS;
+    return mode === "money"
+      ? sign + fmt(Math.abs(g))
+      : sign + Math.abs(g).toFixed(1) + " pts";
+  };
+
+  return { shareMine, shareTheirs, widthOf, gapOf, gapText };
+};

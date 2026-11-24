@@ -13,7 +13,13 @@ interface ThreshInputProps {
 }
 
 /** A threshold filter: an operator select and a value box. */
-const ThreshInput = ({ operator, value, onOperatorChange, onValueChange, placeholder }: ThreshInputProps) => (
+const ThreshInput = ({
+  operator,
+  value,
+  onOperatorChange,
+  onValueChange,
+  placeholder,
+}: ThreshInputProps) => (
   <div className="flex gap-1">
     <select
       value={operator}

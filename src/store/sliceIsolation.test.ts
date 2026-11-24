@@ -42,9 +42,6 @@ const DEV_ONLY_SLICES = new Set([
   // The Markdown management page is dev-only, so its slice has no prod twin.
   "markdowns",
   "exportBuilder",
-  // What the Sales comparison has already fetched. The comparison itself is
-  // dev-only, so there is nothing in prod for it to be a twin of.
-  "salesCache",
   // The Upc Scanner batch. The page is dev-only — Coming Soon, no prod tree —
   // so there is no prod slice for it to be a twin of.
   "upcScanner",

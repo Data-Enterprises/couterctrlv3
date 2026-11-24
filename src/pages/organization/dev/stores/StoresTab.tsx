@@ -51,7 +51,9 @@ const StoresTab = ({ exportOpen, onCloseExport }: StoresTabProps) => {
         setStores([
           ...validOnly(j.assigned_stores ?? []),
           // The unassigned half is other operators' stores for anyone else.
-          ...(ctx.canSeeAllCompanies ? validOnly(j.unassigned_stores ?? []) : []),
+          ...(ctx.canSeeAllCompanies
+            ? validOnly(j.unassigned_stores ?? [])
+            : []),
         ]);
       })
       .catch((err: JsonError) => toast.error(err.message));
@@ -129,9 +131,6 @@ const StoresTab = ({ exportOpen, onCloseExport }: StoresTabProps) => {
                     : "hover:bg-fill_soft text-content"
                 }`}
               >
-                <span className="text-[12px] font-semibold tabular-nums flex-shrink-0 w-[44px]">
-                  {s.store_number}
-                </span>
                 <span
                   className={`text-[12px] truncate ${
                     isSel ? "text-custom-white/95" : "text-content/95"
@@ -145,7 +144,7 @@ const StoresTab = ({ exportOpen, onCloseExport }: StoresTabProps) => {
         </div>
       </div>
 
-      <div className="flex-1 min-w-0 overflow-y-auto p-4">
+      <div className="flex-1 min-w-0 flex flex-col overflow-y-auto p-4">
         {store === null ? (
           <div className="flex items-center justify-center h-full text-[12px] text-content">
             Select a store

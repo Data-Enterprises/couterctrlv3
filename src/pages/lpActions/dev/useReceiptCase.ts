@@ -1,9 +1,9 @@
 import { useCallback, useRef, useState } from "react";
 import { useAppSelector } from "../../../hooks";
 import { getCashierTransaction } from "../../../api/lossPrevention";
+import { reasonOf } from "../../../utils/serverError";
 import type {
   CashierTransaction,
-  JsonError,
   TransactionListItem,
 } from "../../../interfaces";
 
@@ -101,7 +101,7 @@ export const useReceiptCase = () => {
           exceptionType: row.sale_type,
           lines: [],
           loading: false,
-          error: (err as JsonError).message,
+          error: reasonOf(err),
         });
       }
     },

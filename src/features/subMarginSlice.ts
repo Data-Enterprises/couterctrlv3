@@ -1,7 +1,11 @@
-import type { Coverage, MarginDollars } from "../utils/grading";
+
+// Utils
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
-import type { SubDeptMargin, SubDept, SubDeptCost } from "../interfaces";
-import type { ItemRow, ItemRowMobile } from "../interfaces";
+
+// Interfaces
+import type { Coverage, MarginDollars } from "../utils/grading";
+import type { SubDeptMargin, SubDeptCost, ItemRow, ItemRowMobile } from "../interfaces";
+import type { SubDeptEntry } from "../pages/subDepts/prod/interfaces";
 import type { ItemLookupHistory } from "./itemLookupSlice";
 
 export type SubDeptGridView = "item" | "cost" | "nocost";
@@ -37,15 +41,17 @@ export type StoreSalesTotals = {
 
 export type SubDeptGrade = {
   tyMarginPct: number;
-  lyMarginPct: number;
-  ptsDelta: number;
+  /** Null where the period had no sales, or where either side of a
+   *  comparison had none — see SubDeptGrade for the reasoning. */
+  lyMarginPct: number | null;
+  ptsDelta: number | null;
   noCostCount: number;
   tySales: number;
   lySales: number;
   vsLYSalesPct: number;
   lwSales: number;
-  lwMarginPct: number;
-  lwPtsDelta: number;
+  lwMarginPct: number | null;
+  lwPtsDelta: number | null;
   vsLWSalesPct: number;
   /** Net and COGS behind the rates above, so the store header can weight
    *  the departments instead of averaging their percentages. */
@@ -53,6 +59,10 @@ export type SubDeptGrade = {
   tyWeekOneMargins: SubDeptMargin[];
   lyWeekOneMargins: SubDeptMargin[];
   lwWeekOneMargins: SubDeptMargin[];
+  /** Net by day, set on a grade built from the rollup before the item rows
+   *  land, so the list's sparkline has something to draw. The item arrays
+   *  above are empty on such a grade; the full grade replaces it. */
+  tyDaily?: Record<string, number>;
   /** The STORE's coverage for the week, the same on every department. A
    *  comparison grades only when it covers every day; see utils/grading. */
   coverage: Coverage;
@@ -80,7 +90,7 @@ export type MSort = {
 };
 
 interface SubMarginState {
-  subDepts: SubDept[];
+  subDepts: SubDeptEntry[];
   margins: SubDeptMargin[];
   weekOneMargins: SubDeptMargin[];
   weekTwoMargins: SubDeptMargin[];
@@ -95,7 +105,8 @@ interface SubMarginState {
   // null = nothing selected. Must not be 0 — sub_department 0 is a real
   // department id in the data, and using it as the sentinel made it
   // unselectable.
-  selectedSubDeptId: number | null;
+  /** The picked department's `subDeptKey`. */
+  selectedSubDeptKey: string | null;
   /** The day the mobile list and report are both scoped to, or null for the
    *  whole week. In the slice rather than local state so opening a sub dept
    *  keeps whichever day was picked on the list behind it — the same way
@@ -110,6 +121,9 @@ interface SubMarginState {
   loadingMargins: boolean;
   selectedWeek: MarginWeek;
   searchValue: number;
+  /** The search date (MM/DD/YYYY) the results were fetched for. The panels
+   *  build their week from this, not the live picker, which other pages move. */
+  searchedDate: string | null;
   selectedWeekDay: string;
   openExportModal: boolean;
   openCostExportModal: boolean;
@@ -138,7 +152,8 @@ interface SubMarginState {
   unitCostFilter: ThresholdFilter;
   caseCostFilter: ThresholdFilter;
 
-  subDeptGrades: Record<number, SubDeptGrade>;
+  /** Keyed by `subDeptKey`. */
+  subDeptGrades: Record<string, SubDeptGrade>;
   gradingThreshold: number | null;
   gradingMetric: GradingMetric;
   loadingGrades: boolean;
@@ -183,7 +198,7 @@ const initialState: SubMarginState = {
   weekFourMarginsLY: [],
   weekFourMarginsLW: [],
   filteredMargins: [],
-  selectedSubDeptId: null,
+  selectedSubDeptKey: null,
   selectedDay: null,
   lastFetchedTrendKey: null,
   subDeptFitlerText: "",
@@ -191,6 +206,7 @@ const initialState: SubMarginState = {
   loadingMargins: false,
   selectedWeek: 0,
   searchValue: 0,
+  searchedDate: null,
   selectedWeekDay: "",
   filterTextInput: "",
   upcFilter: "",
@@ -245,14 +261,14 @@ const subMarginSlice = createSlice({
   name: "subMargin",
   initialState,
   reducers: {
-    setSubDepts(state, action: PayloadAction<SubDept[]>) {
+    setSubDepts(state, action: PayloadAction<SubDeptEntry[]>) {
       state.subDepts = action.payload;
     },
     setMargins: (state, action: PayloadAction<SubDeptMargin[]>) => {
       state.margins = action.payload;
     },
-    setSelectedSubDeptId: (state, action: PayloadAction<number | null>) => {
-      state.selectedSubDeptId = action.payload;
+    setSelectedSubDeptKey: (state, action: PayloadAction<string | null>) => {
+      state.selectedSubDeptKey = action.payload;
     },
     setWeekTrendMargins: (
       state,
@@ -302,9 +318,9 @@ const subMarginSlice = createSlice({
     },
     setSubDeptGrade(
       state,
-      action: PayloadAction<{ id: number; grade: SubDeptGrade }>,
+      action: PayloadAction<{ key: string; grade: SubDeptGrade }>,
     ) {
-      state.subDeptGrades[action.payload.id] = action.payload.grade;
+      state.subDeptGrades[action.payload.key] = action.payload.grade;
     },
     // Switching co-located locations re-grades from cached raw data. The
     // grades map is keyed by sub dept id, so it has to be emptied first —
@@ -343,7 +359,7 @@ const subMarginSlice = createSlice({
       state.weekFourMarginsLY = [];
       state.weekFourMarginsLW = [];
       state.filteredMargins = [];
-      state.selectedSubDeptId = null;
+      state.selectedSubDeptKey = null;
       state.selectedDay = null;
       state.lastFetchedTrendKey = null;
       state.subDeptFitlerText = "";
@@ -376,6 +392,9 @@ const subMarginSlice = createSlice({
     },
     setSearchValue: (state, action: PayloadAction<number>) => {
       state.searchValue = action.payload;
+    },
+    setSearchedDate: (state, action: PayloadAction<string | null>) => {
+      state.searchedDate = action.payload;
     },
     setItemFilterType: (state, action: PayloadAction<ItemFilterType>) => {
       state.itemFilterType = action.payload;
@@ -462,6 +481,7 @@ const subMarginSlice = createSlice({
 });
 
 export const {
+  setSearchedDate,
   setSubDeptGrade,
   setGradingThreshold,
   setGradingMetric,
@@ -473,7 +493,7 @@ export const {
   setLoadingSubDepts,
   setMargins,
   setSearchValue,
-  setSelectedSubDeptId,
+  setSelectedSubDeptKey,
   setSelectedWeek,
   setSubDepts,
   setWeekTrendMargins,

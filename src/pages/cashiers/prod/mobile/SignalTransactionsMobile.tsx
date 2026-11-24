@@ -1,40 +1,47 @@
+// Hooks
 import { useEffect, useMemo, useRef } from "react";
-import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/20/solid";
-import { useAppDispatch, useAppSelector } from "../../../../hooks";
+import { useAppDispatch } from "../../../../hooks";
+import { useCashierSignals, useCashiersState } from "../hooks";
+
+// Redux
 import { setExplorerReceipt } from "../../../../features/cashiersSlice";
+
+// Utils
 import { formatCurrency2 } from "../../../../utils";
-import BottomSheet from "../../../../components/BottomSheet";
-import Transaction from "../../../../components/transactions/Transaction";
 import {
   describeSignal,
   groupSignalByTransaction,
-  formatClock,
+  lensListLabel,
   receiptLinesFor,
-} from "../explorer/lensUtils";
-import { useCashierSignals } from "../useCashierSignals";
+} from "../utils";
+
+// Components
+import BottomSheet from "../../../../components/BottomSheet";
+import MobilePerfDetail from "../../../../components/mobile/MobilePerfDetail";
+import Transaction from "../../../../components/transactions/Transaction";
+import PhoneFigure from "./components/PhoneFigure";
+import TxnRowMobile from "./components/TxnRowMobile";
+
+interface SignalTransactionsMobileProps {
+  onBack: () => void;
+}
 
 /**
- * One signal's transactions — the drill-down between the signal list and a
- * receipt.
- *
- * A screen rather than a sheet, matching Loss Prevention: the receipt itself is
- * the sheet, and stacking one inside another is the thing that pattern exists
- * to avoid.
- *
- * The band under the header is `describeSignal()` — the explorer's own reading
- * of what the signal means ("…likely an unmapped item rather than cashier
- * behavior"). It is the most useful thing the desktop produces and had no
- * mobile home before this.
+ * One signal's transactions, between the signal list and a receipt: a screen
+ * (the receipt is the sheet) in `MobilePerfDetail`, with one tab (no tab row).
+ * The band under the header is `describeSignal()`, the explorer's reading of
+ * what the signal means.
  */
-
-const SignalTransactionsMobile = ({ onBack }: { onBack: () => void }) => {
+const SignalTransactionsMobile = ({
+  onBack,
+}: SignalTransactionsMobileProps) => {
   const {
     explorerSignalKey,
     explorerLens,
     explorerFetchedException,
     explorerAllRows,
     explorerReceiptSaleId: openSaleId,
-  } = useAppSelector((s) => s.prod.cashier);
+  } = useCashiersState();
   const dispatch = useAppDispatch();
   const { signals, transactionLengths } = useCashierSignals();
   // A receipt left open shouldn't greet you as a sheet the next time you
@@ -67,121 +74,61 @@ const SignalTransactionsMobile = ({ onBack }: { onBack: () => void }) => {
 
   return (
     <>
-      <div className="flex flex-col h-[calc(100dvh-3rem)] bg-gray-50 overflow-hidden">
-        <div className="bg-brand_navy px-3 pt-2 pb-2.5 flex items-start gap-3 flex-shrink-0">
-          <button
-            onClick={onBack}
-            aria-label="Back to signals"
-            className="text-custom-white/85 mt-0.5 flex-shrink-0"
-          >
-            <ChevronLeftIcon className="w-5 h-5" />
-          </button>
-          <div className="flex-1 min-w-0">
-            <div className="text-[13px] font-semibold text-custom-white truncate">
-              {signal.label}
-            </div>
-            <div className="text-[11px] mt-0.5 text-custom-white/85 truncate">
-              {explorerFetchedException} · {signal.sublabel}
-            </div>
-          </div>
-        </div>
-
-        <div className="px-3 py-2 bg-custom-white border-b border-brand_navy/15 flex-shrink-0">
-          <p className="text-[11px] leading-relaxed text-content/85">
+      <MobilePerfDetail
+        tabs={[{ key: "transactions" as const, label: "Transactions" }]}
+        active="transactions"
+        onTab={() => {}}
+        scopeName={signal.label}
+        when={`${explorerFetchedException} · ${signal.sublabel}`}
+        backLabel={`Back to ${lensListLabel(explorerLens)}`}
+        onBack={onBack}
+        levelKey={`signal|${signal.key}`}
+      >
+        <section className="cc-card-phone">
+          <p className="border-b border-brand_line px-3.5 py-2.5 text-[12px] leading-relaxed text-content/95">
             {describeSignal(signal, explorerLens)}
           </p>
-        </div>
 
-        <div className="grid grid-cols-3 divide-x divide-gray-100 bg-custom-white border-b border-brand_navy/15 flex-shrink-0">
-          <div className="px-3 py-2">
-            <div className="text-[10px] font-medium uppercase tracking-wide text-content/85">
-              Trans
-            </div>
-            <div className="text-[12px] font-semibold text-content mt-0.5 tabular-nums">
-              {signal.transactions.toLocaleString()}
-            </div>
+          <div className="grid grid-cols-3 gap-x-4 gap-y-2.5 border-b border-brand_line px-3.5 py-2.5">
+            <PhoneFigure
+              label="Trans"
+              value={signal.transactions.toLocaleString()}
+              tabular
+            />
+            <PhoneFigure
+              label="Lines"
+              value={signal.count.toLocaleString()}
+              tabular
+            />
+            <PhoneFigure
+              label="Total"
+              value={formatCurrency2(signal.amount)}
+              tabular
+            />
           </div>
-          <div className="px-3 py-2">
-            <div className="text-[10px] font-medium uppercase tracking-wide text-content/85">
-              Lines
-            </div>
-            <div className="text-[12px] font-semibold text-content mt-0.5 tabular-nums">
-              {signal.count.toLocaleString()}
-            </div>
-          </div>
-          <div className="px-3 py-2">
-            <div className="text-[10px] font-medium uppercase tracking-wide text-content/85">
-              Total
-            </div>
-            <div className="text-[12px] font-semibold text-content mt-0.5 tabular-nums">
-              {formatCurrency2(signal.amount)}
-            </div>
-          </div>
-        </div>
 
-        <div className="flex items-center justify-between px-3 py-1.5 bg-gray-100 border-b border-brand_navy/15 flex-shrink-0 text-[10px] font-medium uppercase tracking-wide text-content/85">
-          <span>Transaction · cashier</span>
-          <span>Lines · qty · amount</span>
-        </div>
-
-        {/* pb-14 clears the fixed bottom tab bar. */}
-        <div className="flex-1 overflow-y-auto pb-14">
           {rows.map((r) => (
-            <button
+            <TxnRowMobile
               key={r.saleId}
-              onClick={() => dispatch(setExplorerReceipt(r.saleId))}
-              className="w-full px-3 py-2.5 bg-custom-white border-b border-brand_navy/15 even:bg-row_stripe text-left active:bg-gray-50"
-            >
-              <div className="flex items-center gap-2">
-                <span className="text-[12px] font-medium text-content">
-                  #{r.saleId}
-                </span>
-                {/* The cashier is the answer on every lens except Cashier —
-                    on Store, Item and Terminal it is exactly who you are
-                    trying to identify. */}
-                <span className="flex-1 text-[12px] text-content/85 truncate">
-                  {r.cashierName}
-                </span>
-                <span className="text-[12px] font-semibold text-content tabular-nums">
-                  {formatCurrency2(r.amount)}
-                </span>
-                <ChevronRightIcon className="w-4 h-4 text-content/85 flex-shrink-0" />
-              </div>
-              <div className="flex items-center gap-2 mt-1">
-                <span className="flex-1 text-[11px] text-content/85 tabular-nums truncate">
-                  {r.saleDate.split("T")[0].slice(5).replace("-", "/")}
-                  {r.startTime ? ` · ${formatClock(r.startTime)}` : ""}
-                </span>
-                {/* "1 of 2 · last" — position in the receipt, and whether the
-                    exception was the final line. Voiding the last line is the
-                    classic tell, and desktop calls it out in its own summary,
-                    so it cannot be dropped on mobile. */}
-                <span className="text-[11px] text-content/85 tabular-nums">
-                  {r.lineCount} of {r.totalLines}
-                </span>
-                {r.hasLastLine && (
-                  <span className="text-[11px] font-semibold px-1.5 py-0.5 rounded bg-amber-100 text-amber-800">
-                    last
-                  </span>
-                )}
-                <span className="text-[11px] text-content/85 tabular-nums">
-                  {r.qty} qty
-                </span>
-              </div>
-            </button>
+              txn={r}
+              onOpen={() => dispatch(setExplorerReceipt(r.saleId))}
+            />
           ))}
-        </div>
-      </div>
+        </section>
+      </MobilePerfDetail>
 
       {receipt.length > 0 && (
         <BottomSheet
           onClose={() => dispatch(setExplorerReceipt(null))}
           closeRef={sheetCloseRef}
         >
-          {/* saleType is passed rather than left to the component: LP's
-              receipt otherwise reads Loss Prevention's own selected type,
-              which has nothing to do with the exception loaded here. */}
-          <Transaction trans={receipt} saleType={explorerFetchedException} compact />
+          {/* saleType is passed so the receipt doesn't read Loss
+              Prevention's own selected type. */}
+          <Transaction
+            trans={receipt}
+            saleType={explorerFetchedException}
+            compact
+          />
         </BottomSheet>
       )}
     </>

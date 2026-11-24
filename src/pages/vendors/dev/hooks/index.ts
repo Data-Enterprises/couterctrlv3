@@ -141,7 +141,9 @@ export const useVendorSearch = () => {
         .catch(() => {
           if (seq !== searchSeq) return;
           dispatch(
-            setItemsError("Couldn't load the item rows. Search again to retry."),
+            setItemsError(
+              "Couldn't load the item rows. Search again to retry.",
+            ),
           );
         });
 

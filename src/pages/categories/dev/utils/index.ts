@@ -9,10 +9,23 @@ import {
 } from "../../../../utils/severity";
 
 // Interfaces
-import type { CatSalesDaily, CategoryMetric, CategoryTier, CategoryRow, CategoryDay, DayDetail } from "../../../../interfaces";
+import type {
+  CatSalesDaily,
+  CategoryMetric,
+  CategoryTier,
+  CategoryRow,
+  CategoryDay,
+  DayDetail,
+} from "../../../../interfaces";
 
 // Defined in src/interfaces — Categories. Re-exported for this page's files.
-export type { CategoryMetric, CategoryTier, CategoryRow, CategoryDay, DayDetail } from "../../../../interfaces";
+export type {
+  CategoryMetric,
+  CategoryTier,
+  CategoryRow,
+  CategoryDay,
+  DayDetail,
+} from "../../../../interfaces";
 
 /** Category performance: turning three weeks of daily rows into graded rows.
  *
@@ -27,8 +40,15 @@ export type { CategoryMetric, CategoryTier, CategoryRow, CategoryDay, DayDetail 
  */
 
 export const emptyDetail = (): DayDetail => ({
-  gross: 0, net: 0, tax: 0, qty: 0, weight: 0,
-  elecInstore: 0, elecStore: 0, digital: 0, storeCoupon: 0,
+  gross: 0,
+  net: 0,
+  tax: 0,
+  qty: 0,
+  weight: 0,
+  elecInstore: 0,
+  elecStore: 0,
+  digital: 0,
+  storeCoupon: 0,
 });
 
 /* ── date helpers ─────────────────────────────────────────────────────────
@@ -336,10 +356,15 @@ export const sortGraded = <T extends CategoryRow & { tier: CategoryTier }>(
 /** Ungraded has no severity colour of its own, so the header falls back to the
  *  navy every other panel uses rather than borrowing a verdict colour. */
 export const headerBg = (tier: CategoryTier) =>
-  tier === "ungraded" ? "bg-brand_navy" : severityHeaderBgClass[tier as Severity];
+  tier === "ungraded"
+    ? "bg-brand_navy"
+    : severityHeaderBgClass[tier as Severity];
 
 /** Grades a percent change: critical past minus the threshold, watch below zero, else healthy. */
-export const tierOf = (pct: number | null, threshold: number): Severity | null => {
+export const tierOf = (
+  pct: number | null,
+  threshold: number,
+): Severity | null => {
   if (pct === null) return null;
   if (pct < -threshold) return "critical";
   if (pct < 0) return "watch";
@@ -374,7 +399,9 @@ export const TOGGLE_OPTS = [
 /** Ungraded has no severity equivalent, so it falls back to the neutral dot
  *  rather than borrowing a colour that would imply a verdict. */
 export const dotFor = (tier: CategoryTier) =>
-  tier === "ungraded" ? "bg-fill_track_strong" : severityDotClass[tier as Severity];
+  tier === "ungraded"
+    ? "bg-fill_track_strong"
+    : severityDotClass[tier as Severity];
 
 /** Tier summary chips, in Sales' tinted-fill register rather than the solid
  *  `chipClass` fill the Data pages use. Written out in full because Tailwind
@@ -393,3 +420,18 @@ export const CHIP_ON: Record<CategoryTier, string> = {
   healthy: "ring-2 ring-severity_healthy_text/40 shadow-sm",
   ungraded: "ring-2 ring-ungraded/40 shadow-sm",
 };
+
+/** One location's rows across all three periods, for the per-category drill
+ *  loads. They are fetched by storeid, so a co-located pair arrives as both
+ *  stores; the list beside them is showing one. */
+export const scopeStoreNumber = <T extends { store_number: string }>(
+  rows: { tw: T[]; lw: T[]; ly: T[] },
+  storeNumber: string | null,
+) =>
+  storeNumber === null
+    ? rows
+    : {
+        tw: onlyStoreNumber(rows.tw, storeNumber),
+        lw: onlyStoreNumber(rows.lw, storeNumber),
+        ly: onlyStoreNumber(rows.ly, storeNumber),
+      };

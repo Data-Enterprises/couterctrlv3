@@ -1,12 +1,27 @@
 // Utils
-import { applyStoreNumberToName, numbersByStoreId } from "../../../../utils/storeIdentity";
-import { fmtNum, rowsToCsv, type AggFn, type AggRow } from "../../../../utils/csvExport";
+import {
+  applyStoreNumberToName,
+  numbersByStoreId,
+} from "../../../../utils/storeIdentity";
+import {
+  fmtNum,
+  rowsToCsv,
+  type AggFn,
+  type AggRow,
+} from "../../../../utils/csvExport";
 
 // Interfaces
-import type { ExplorerTotals, Signal, SignalTransaction, SpreadKind, StoreNameResolver } from "../interfaces";
+import type {
+  ExplorerTotals,
+  Signal,
+  SignalTransaction,
+  SortCol,
+  SpreadKind,
+  StoreNameResolver,
+  TxnSort,
+} from "../interfaces";
 import type { TransactionListItem } from "../../../../interfaces";
 import type { ExplorerLens } from "../../../../features/dev/devCashiersSlice";
-
 
 export const LENSES: { key: ExplorerLens; label: string }[] = [
   { key: "store", label: "Store" },
@@ -94,8 +109,10 @@ export const cashierKeyOf = (r: TransactionListItem) =>
 export const terminalKeyOf = (r: TransactionListItem) =>
   `${storeKeyOf(r)}__${r.terminal || ""}`;
 
-const distinct = <T>(rows: TransactionListItem[], pick: (r: TransactionListItem) => T) =>
-  new Set(rows.map(pick)).size;
+const distinct = <T>(
+  rows: TransactionListItem[],
+  pick: (r: TransactionListItem) => T,
+) => new Set(rows.map(pick)).size;
 
 const topItemOf = (rows: TransactionListItem[]) => {
   const counts = new Map<string, { label: string; count: number }>();
@@ -137,7 +154,10 @@ const spreadFor = (
   return { spread: "wide", spreadLabel: label };
 };
 
-const groupKeyFor = (lens: ExplorerLens, row: TransactionListItem): string | null => {
+const groupKeyFor = (
+  lens: ExplorerLens,
+  row: TransactionListItem,
+): string | null => {
   switch (lens) {
     case "store":
       return storeKeyOf(row);
@@ -165,7 +185,10 @@ const labelsFor = (
     case "store":
       return {
         label: applyStoreNumberToName(
-          resolveStoreName(row.storeid, row.store_name || `Store ${row.storeid}`),
+          resolveStoreName(
+            row.storeid,
+            row.store_name || `Store ${row.storeid}`,
+          ),
           row.store_number,
           numbersForStoreId,
         ),
@@ -219,7 +242,13 @@ export const buildSignals = (
     const { spread, spreadLabel } = spreadFor(lens, rows, cashiers);
     signals.push({
       key,
-      ...labelsFor(lens, rows[0], key, resolveStoreName, numbersById[rows[0].storeid] ?? []),
+      ...labelsFor(
+        lens,
+        rows[0],
+        key,
+        resolveStoreName,
+        numbersById[rows[0].storeid] ?? [],
+      ),
       count: rows.length,
       amount: rows.reduce((sum, r) => sum + (r.total_sales ?? 0), 0),
       transactions: distinct(rows, (r) => r.sale_id),
@@ -362,6 +391,21 @@ export const dayDiff = (start: string, end: string) => {
   const b = new Date(end).getTime();
   if (Number.isNaN(a) || Number.isNaN(b)) return 0;
   return Math.round(Math.abs(b - a) / 86400000) + 1;
+};
+
+/** Every page of a paged endpoint: the first page's rows, then the rest
+ *  fetched together. */
+export const fetchAllPages = async <T>(
+  firstPage: { total_pages?: number },
+  rows: T[],
+  fetchPage: (page: number) => Promise<T[]>,
+) => {
+  const total = firstPage.total_pages ?? 1;
+  if (total <= 1) return rows;
+  const rest = await Promise.all(
+    Array.from({ length: total - 1 }, (_, i) => fetchPage(i + 2)),
+  );
+  return [...rows, ...rest.flat()];
 };
 
 /** How a custom export combines a figure. */
@@ -555,8 +599,7 @@ export const formatQty = (qty: number) =>
   Number.isInteger(qty) ? String(qty) : qty.toFixed(2);
 
 /** The signal detail table's columns. */
-export const GRID_COLS =
-  "grid-cols-[1.1fr_0.75fr_1.1fr_0.65fr_0.45fr_0.75fr]";
+export const GRID_COLS = "grid-cols-[1.1fr_0.75fr_1.1fr_0.65fr_0.45fr_0.75fr]";
 
 /** The sunken navy fill of a transaction's chips. */
 export const chipStyle = {
@@ -568,4 +611,52 @@ export const chipStyle = {
 export const fmtTime = (raw: string) => {
   const s = raw.length === 5 ? "0" + raw : raw;
   return `${s.slice(0, 2)}:${s.slice(2, 4)}:${s.slice(4)}`;
+};
+
+/** A signal's transaction columns; the ones with a `col` sort. */
+export const TXN_COLUMNS: {
+  col: SortCol | null;
+  label: string;
+  align: string;
+}[] = [
+  { col: "date", label: "Date · time", align: "" },
+  { col: "transaction", label: "Transaction", align: "" },
+  { col: null, label: "Cashier", align: "" },
+  { col: null, label: "Lines", align: "" },
+  { col: "qty", label: "Qty", align: "justify-end text-right" },
+  { col: "amount", label: "Amount", align: "justify-end text-right" },
+];
+
+/** A signal's transactions in the chosen order, or as they came when unsorted. */
+export const sortSignalTransactions = (
+  grouped: SignalTransaction[],
+  sort: TxnSort,
+) => {
+  if (!sort) return grouped;
+  const rows = [...grouped];
+  rows.sort((a, b) => {
+    let diff: number;
+    switch (sort.col) {
+      case "date":
+        diff = `${a.saleDate}${a.startTime}`.localeCompare(
+          `${b.saleDate}${b.startTime}`,
+        );
+        break;
+      case "transaction":
+        diff = transactionLabel(a.saleId).localeCompare(
+          transactionLabel(b.saleId),
+          undefined,
+          { numeric: true },
+        );
+        break;
+      case "qty":
+        diff = a.qty - b.qty;
+        break;
+      case "amount":
+        diff = a.amount - b.amount;
+        break;
+    }
+    return sort.dir === "asc" ? diff : -diff;
+  });
+  return rows;
 };

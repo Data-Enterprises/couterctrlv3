@@ -16,18 +16,28 @@ import type { RecapDayHours, RecapHour } from "../interfaces/index";
  * are opening and closing part-hours, and naming one of them as the slowest
  * would be true every day and say nothing.
  */
-export const hoursForDates = (hourly: HourlySale[], dates: string[]): RecapDayHours => {
+export const hoursForDates = (
+  hourly: HourlySale[],
+  dates: string[],
+): RecapDayHours => {
   const wanted = new Set(dates);
   const byHour = new Map<number, RecapHour>();
   for (const h of hourly) {
     if (!wanted.has(h.sale_date.split("T")[0])) continue;
-    const held = byHour.get(h.hour) ?? { hour: h.hour, net: 0, transactions: 0, qty: 0 };
+    const held = byHour.get(h.hour) ?? {
+      hour: h.hour,
+      net: 0,
+      transactions: 0,
+      qty: 0,
+    };
     held.net += h.total_sales - h.total_tax;
     held.transactions += h.transactions || 0;
     held.qty += h.qty || 0;
     byHour.set(h.hour, held);
   }
-  const traded = [...byHour.values()].filter((h) => h.net !== 0).map((h) => h.hour);
+  const traded = [...byHour.values()]
+    .filter((h) => h.net !== 0)
+    .map((h) => h.hour);
   if (!traded.length) {
     return { hours: [], peak: null, slowest: null, first: null, last: null };
   }
@@ -42,11 +52,14 @@ export const hoursForDates = (hourly: HourlySale[], dates: string[]): RecapDayHo
   for (const h of hours) if (!peak || h.net > peak.net) peak = h;
 
   let slowest: RecapHour | null = null;
-  for (const h of hours.slice(1, -1)) if (!slowest || h.net < slowest.net) slowest = h;
+  for (const h of hours.slice(1, -1))
+    if (!slowest || h.net < slowest.net) slowest = h;
 
   return { hours, peak, slowest, first, last };
 };
 
 /** One day's shape by hour. */
-export const hoursForDay = (hourly: HourlySale[], date: string): RecapDayHours =>
-  hoursForDates(hourly, [date]);
+export const hoursForDay = (
+  hourly: HourlySale[],
+  date: string,
+): RecapDayHours => hoursForDates(hourly, [date]);

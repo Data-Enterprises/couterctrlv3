@@ -23,12 +23,10 @@ import {
   applyStoreNumberToName,
   scopeToStoreNumber,
 } from "../../../../../utils/storeIdentity";
+import { reasonOf } from "../../../../../utils/serverError";
 
 // Interfaces
-import type {
-  JsonError,
-  ReceiverDetailsResponse,
-} from "../../../../../interfaces";
+import type { ReceiverDetailsResponse } from "../../../../../interfaces";
 
 // Components
 import LocationTabs from "../../../../../components-dev/filters/LocationTabs";
@@ -92,7 +90,7 @@ const ReceiverListPanel = ({ onOpenSearch }: ReceiverListPanelProps) => {
           dispatch(setTotals(j.totals));
         }
       })
-      .catch((err: JsonError) => toast.error(err.message))
+      .catch((err) => toast.error(reasonOf(err)))
       .finally(() => dispatch(setIsFetchingDetails(false)));
   };
 
@@ -137,10 +135,7 @@ const ReceiverListPanel = ({ onOpenSearch }: ReceiverListPanelProps) => {
   const hasFilters = !!vendorFilter || !!dateFilter;
 
   return (
-    <div
-      className="cc-panel shadow-lg flex-shrink-0"
-      style={{ width: "26%" }}
-    >
+    <div className="cc-panel shadow-lg flex-shrink-0" style={{ width: "26%" }}>
       <ListNavyHeader onOpenSearch={onOpenSearch} storeName={storeName} />
 
       <LocationTabs

@@ -1,4 +1,7 @@
+// Hooks
 import { useAppSelector } from "../../hooks";
+
+// Components
 import ProdCouponSales from "./prod/CouponSales";
 import DevCouponSales from "./dev/CouponSales";
 

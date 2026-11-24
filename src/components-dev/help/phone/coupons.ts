@@ -23,7 +23,7 @@ export const COUPONS_PHONE_HELP: PhoneHelp = {
     {
       q: "What do the numbers at the top mean?",
       a: [
-        "Coupons is how many were used, Total is their total value, Avg is the average per coupon and Products is how many different items they were used on.",
+        "The big figure is the coupons' total value. Under it, Coupons is how many were used, Avg is the average per coupon and Products is how many different items they were used on.",
       ],
     },
     {
@@ -33,9 +33,9 @@ export const COUPONS_PHONE_HELP: PhoneHelp = {
       ],
     },
     {
-      q: "What does the Amt / Qty switch do?",
+      q: "What do the Amount and Qty buttons do?",
       a: [
-        "It sorts the lists by total coupon amount (Amt) or by number of coupons (Qty). The Date tab always stays in date order.",
+        "They sort the lists by total coupon amount or by number of coupons. The Date tab always stays in date order.",
       ],
     },
     {
@@ -64,16 +64,12 @@ export const COUPONS_PHONE_HELP: PhoneHelp = {
       def: "The combined total across every store in the group, not one store's number.",
     },
     {
-      term: "Amt / Qty toggle",
+      term: "Amount / Qty buttons",
       def: "Switches the store list ranking between total coupon dollar amount and number of coupons used.",
     },
     {
       term: "Sub dept / Date / Cashier tabs",
       def: "Same coupon activity, just re-grouped a different way — not separate data sets.",
-    },
-    {
-      term: "Amount filter",
-      def: "Narrows the list to coupons within a dollar range; unrelated to grading or thresholds.",
     },
   ],
 };

@@ -22,7 +22,16 @@ export const loadDayRows = async (
   storeNumber: string,
   date: string,
 ): Promise<SubDeptMargin[]> => {
-  const rows = await fetchSubDeptRowsOrEmpty(url, token, 0, date, date, 0, storeId, 1);
+  const rows = await fetchSubDeptRowsOrEmpty(
+    url,
+    token,
+    0,
+    date,
+    date,
+    0,
+    storeId,
+    1,
+  );
   return countedRows(scopeToStoreNumber(rows, storeNumber));
 };
 

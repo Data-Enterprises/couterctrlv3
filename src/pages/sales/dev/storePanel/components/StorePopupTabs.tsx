@@ -38,7 +38,9 @@ const StorePopupTabs = ({ hasGroup }: StorePopupTabsProps) => {
           key={t}
           onClick={() => dispatch(setLedgerTab(t))}
           className={`px-3 py-1.5 text-[12px] font-medium border-b-2 transition-colors ${
-            tab === t ? "border-brand_navy text-content" : "border-transparent text-content"
+            tab === t
+              ? "border-brand_navy text-content"
+              : "border-transparent text-content"
           }`}
         >
           {LABELS[t]}

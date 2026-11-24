@@ -10,6 +10,7 @@ import type { ExportDataset } from "../interfaces";
 
 // Components
 import ResizableModalShell from "../../../../../components-dev/modals/ResizableModalShell";
+import DatasetOption from "./DatasetOption";
 import { XMarkIcon, ArrowDownTrayIcon } from "@heroicons/react/20/solid";
 
 interface StoreActivityExportModalProps {
@@ -27,6 +28,13 @@ const StoreActivityExportModal = ({
   const [selected, setSelected] = useState<Set<ExportDataset>>(() => new Set());
 
   const missingStores = stores.filter((s) => s.inactive_or_missing_days > 0);
+
+  const toggle = (dataset: ExportDataset) =>
+    setSelected((p) => {
+      const n = new Set(p);
+      n.has(dataset) ? n.delete(dataset) : n.add(dataset);
+      return n;
+    });
 
   const handleDownload = () => {
     const sections: string[] = [];
@@ -53,16 +61,11 @@ const StoreActivityExportModal = ({
     >
       <div className="cc-phone-header">
         <div>
-          <p className="cc-navy-title text-[13px]">
-            Export CSV
-          </p>
+          <p className="cc-navy-title text-[13px]">Export CSV</p>
           <p className="text-custom-white text-[10px] mt-0.5">{companyName}</p>
         </div>
         <div />
-        <button
-          onClick={onClose}
-          className="cc-navy-link justify-self-end"
-        >
+        <button onClick={onClose} className="cc-navy-link justify-self-end">
           <XMarkIcon className="w-4 h-4" />
         </button>
       </div>
@@ -72,56 +75,24 @@ const StoreActivityExportModal = ({
           Select data to include
         </p>
 
-        <label className="flex items-start gap-3 cursor-pointer group">
-          <input
-            type="checkbox"
-            checked={selected.has("all")}
-            onChange={() =>
-              setSelected((p) => {
-                const n = new Set(p);
-                n.has("all") ? n.delete("all") : n.add("all");
-                return n;
-              })
-            }
-            className="mt-0.5 cc-checkbox border-line_strong cursor-pointer flex-shrink-0"
-          />
-          <div>
-            <p className="text-[13px] cc-row-title">
-              All stores
-            </p>
-            <p className="text-[12px] text-content mt-0.5">
-              {stores.length} stores for {companyName}
-            </p>
-          </div>
-        </label>
+        <DatasetOption
+          title="All stores"
+          detail={`${stores.length} stores for ${companyName}`}
+          checked={selected.has("all")}
+          onToggle={() => toggle("all")}
+        />
 
-        <label
-          className={`flex items-start gap-3 ${missingStores.length ? "cursor-pointer" : "opacity-40 cursor-not-allowed"} group`}
-        >
-          <input
-            type="checkbox"
-            checked={selected.has("missing")}
-            disabled={!missingStores.length}
-            onChange={() =>
-              setSelected((p) => {
-                const n = new Set(p);
-                n.has("missing") ? n.delete("missing") : n.add("missing");
-                return n;
-              })
-            }
-            className="mt-0.5 cc-checkbox border-line_strong cursor-pointer flex-shrink-0"
-          />
-          <div>
-            <p className="text-[13px] cc-row-title">
-              Missing only
-            </p>
-            <p className="text-[12px] text-content mt-0.5">
-              {missingStores.length
-                ? `${missingStores.length} stores with 1+ missing days`
-                : "No stores currently missing days"}
-            </p>
-          </div>
-        </label>
+        <DatasetOption
+          title="Missing only"
+          detail={
+            missingStores.length
+              ? `${missingStores.length} stores with 1+ missing days`
+              : "No stores currently missing days"
+          }
+          checked={selected.has("missing")}
+          disabled={!missingStores.length}
+          onToggle={() => toggle("missing")}
+        />
       </div>
 
       <div className="cc-bar-footer mt-2">

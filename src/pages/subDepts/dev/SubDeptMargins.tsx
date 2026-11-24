@@ -2,7 +2,12 @@
 import { useEffect, useRef, useState } from "react";
 import { useAppDispatch } from "../../../hooks";
 import { useToast } from "../../../components/toasts/hooks/useToast";
-import { useSubMarginCtx, useSubMarginActions, useSubMarginState, useParams } from "./hooks";
+import {
+  useSubMarginCtx,
+  useSubMarginActions,
+  useSubMarginState,
+  useParams,
+} from "./hooks";
 
 // Redux
 import {
@@ -40,8 +45,8 @@ import {
 import { costCols, itemCols } from "./utils/gridColumns";
 
 // Interfaces
-import type { JsonError, SubDept } from "../../../interfaces";
-import type { RawSearch } from "./interfaces";
+import type { JsonError } from "../../../interfaces";
+import type { RawSearch, SubDeptEntry } from "./interfaces";
 
 // Components
 import ExportModal from "../../../components-dev/modals/ExportModal";
@@ -112,7 +117,6 @@ const SubDeptMargins = () => {
     }
   };
 
-  
   // The ungraded rebuild, shared with Vendors — same fetch and screen, a
   // different list open first. mobile/devMobile is still on disk to compare.
   if (ctx.isMobile)
@@ -139,7 +143,7 @@ const SubDeptMargins = () => {
       return;
     }
     // The previously selected sub dept may not trade at this location.
-    dispatch(actions.setSelectedSubDeptId(null));
+    dispatch(actions.setSelectedSubDeptKey(null));
     dispatch(resetSubDeptGrades());
     if (rawRef.current.itemsReady) deriveFromItems();
     else deriveFromTotals();
@@ -166,22 +170,23 @@ const SubDeptMargins = () => {
     const lwBy = groupTotalsBySubDept(lw);
     const lyBy = groupTotalsBySubDept(ly);
 
-    const subDepts: SubDept[] = [...tyBy.entries()]
-      .map(([id, rows]) => ({
-        id,
+    const subDepts: SubDeptEntry[] = [...tyBy.entries()]
+      .map(([key, rows]) => ({
+        id: Number(rows[0].key),
+        key,
         desc: rows.find((r) => r.name)?.name ?? "",
       }))
-      .sort((a, b) => a.id - b.id);
+      .sort((a, b) => a.id - b.id || a.desc.localeCompare(b.desc));
     dispatch(actions.setSubDepts(subDepts));
 
     for (const sd of subDepts) {
       dispatch(
         setSubDeptGrade({
-          id: sd.id,
+          key: sd.key,
           grade: computeTotalsGrade(
-            tyBy.get(sd.id) ?? [],
-            lyBy.get(sd.id) ?? [],
-            lwBy.get(sd.id) ?? [],
+            tyBy.get(sd.key) ?? [],
+            lyBy.get(sd.key) ?? [],
+            lwBy.get(sd.key) ?? [],
             coverage,
           ),
         }),
@@ -216,15 +221,18 @@ const SubDeptMargins = () => {
 
     const subDepts = deriveSubDepts(ty);
     dispatch(actions.setSubDepts(subDepts));
+    // The totals phase keyed a merged department-0 row (the rollup groups by
+    // number only); clear it so it isn't counted beside the split rows.
+    dispatch(resetSubDeptGrades());
 
     for (const sd of subDepts) {
       dispatch(
         setSubDeptGrade({
-          id: sd.id,
+          key: sd.key,
           grade: computeSubDeptGrade(
-            tyBy.get(sd.id) ?? [],
-            lyBy.get(sd.id) ?? [],
-            lwBy.get(sd.id) ?? [],
+            tyBy.get(sd.key) ?? [],
+            lyBy.get(sd.key) ?? [],
+            lwBy.get(sd.key) ?? [],
             coverage,
           ),
         }),
@@ -413,8 +421,8 @@ const SubDeptMargins = () => {
    * those fetches refiring on remount, and there is nothing left to refire.
    */
   useEffect(() => {
-    if (ctx.selectedSubDeptId == null) return;
-    const grade = subDeptGrades[ctx.selectedSubDeptId];
+    if (ctx.selectedSubDeptKey == null) return;
+    const grade = subDeptGrades[ctx.selectedSubDeptKey];
     if (!grade) return;
 
     dispatch(setWeekTrendMargins({ data: grade.tyWeekOneMargins, week: 1 }));
@@ -426,7 +434,10 @@ const SubDeptMargins = () => {
     dispatch(actions.setSelectedWeekDay(""));
     // The grade object changes once, when the item rows replace the totals
     // grade, and the open department's items have to follow.
-  }, [ctx.selectedSubDeptId, subDeptGrades[ctx.selectedSubDeptId ?? -1]?.tyWeekOneMargins]);
+  }, [
+    ctx.selectedSubDeptKey,
+    subDeptGrades[ctx.selectedSubDeptKey ?? ""]?.tyWeekOneMargins,
+  ]);
 
   useEffect(() => {
     dispatch(actions.resetFilters());

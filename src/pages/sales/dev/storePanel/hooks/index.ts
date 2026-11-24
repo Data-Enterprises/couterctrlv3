@@ -1,6 +1,10 @@
 // Hooks
 import { useEffect, useMemo, useState } from "react";
-import { useAppDispatch, useAppSelector, useStoreName } from "../../../../../hooks";
+import {
+  useAppDispatch,
+  useAppSelector,
+  useStoreName,
+} from "../../../../../hooks";
 import { useSalesCtx } from "../../hooks";
 
 // Redux
@@ -18,12 +22,16 @@ import {
 } from "../../../../../features/dev/devSalesLedgerSlice";
 
 // API
-import { getSubs, getHourly } from "../../../../../api/sales";
+import { getHourly } from "../../../../../api/sales";
+import { getSubDeptDailySales } from "../../../../../api/salesReads";
 
 // Utils
 import { shiftIso } from "../../../../../utils/grading";
 import { sameWeekDayLastYear } from "../../../../../utils";
-import { applyStoreNumberToName, scopeToStoreNumber } from "../../utils/ledgerUtils";
+import {
+  applyStoreNumberToName,
+  scopeToStoreNumber,
+} from "../../utils/ledgerUtils";
 import { buildDateLabels, buildWeekWindow } from "../utils";
 
 // Interfaces
@@ -60,7 +68,10 @@ export const useDateLabels = () => {
  * swapped to this location's.
  */
 export const useStoreNames = (selection: StoreSelection) => {
-  const resolvedStoreName = useStoreName(selection.storeId, selection.storeName);
+  const resolvedStoreName = useStoreName(
+    selection.storeId,
+    selection.storeName,
+  );
   const headerStoreName = applyStoreNumberToName(
     resolvedStoreName,
     selection.storeNumber,
@@ -113,32 +124,32 @@ export const useStorePanelFetch = (selection: StoreSelection) => {
           lwHourlyResp,
           lyHourlyResp,
         ] = await Promise.all([
-          getSubs(
+          getSubDeptDailySales(
             context.url,
             context.token,
+            context.apiEnv,
             twStart,
             twEnd,
             0,
             selection.storeId,
-            1,
           ),
-          getSubs(
+          getSubDeptDailySales(
             context.url,
             context.token,
+            context.apiEnv,
             lwStart,
             lwEnd,
             0,
             selection.storeId,
-            1,
           ),
-          getSubs(
+          getSubDeptDailySales(
             context.url,
             context.token,
+            context.apiEnv,
             lyStart,
             lyEnd,
             0,
             selection.storeId,
-            1,
           ),
           getHourly(
             context.url,

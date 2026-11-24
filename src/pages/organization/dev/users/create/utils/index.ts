@@ -79,6 +79,10 @@ export const identityOf = (info: {
   role: number | string;
   user_level: number;
 }) =>
-  [info.first_name, info.last_name, info.email, String(info.role), info.user_level].join(
-    "\u0000",
-  );
+  [
+    info.first_name,
+    info.last_name,
+    info.email,
+    String(info.role),
+    info.user_level,
+  ].join("\u0000");

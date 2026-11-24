@@ -31,7 +31,7 @@ export const FORECASTING_HELP: HelpContent = {
           title: "Forecast",
           pre: "Press",
           chip: "Forecast",
-          post: ".",
+          post: ". With more than one item it reads Forecast and the number of items.",
           see: "A grid of items, each at the price it sold the most units at over the 90 days.",
         },
       ],
@@ -63,13 +63,13 @@ export const FORECASTING_HELP: HelpContent = {
     {
       id: "bulk",
       title: "Change price, ad days or notes for many rows",
-      desc: "The toolbar applies to what is on screen",
+      desc: "The toolbar applies to every row the filters leave",
       steps: [
         {
           title: "Narrow to the rows you mean",
-          pre: "The toolbar changes only the rows on screen, so filter first with",
+          pre: "The toolbar changes every row the filters leave, including a band you have folded away, so filter first with",
           chip: "Driving",
-          post: ", Supporting or Tail.",
+          post: ", Supporting or Tail. Price and ad days skip items marked 1pt; a note goes on every row.",
           anchor: "bands",
         },
         {

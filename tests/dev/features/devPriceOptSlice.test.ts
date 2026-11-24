@@ -10,27 +10,27 @@ import type { ProductSummary } from "@/pages/inventory/dev/interfaces";
 const items = (tag: string) =>
   [{ productCode: tag, description: tag }] as unknown as ProductSummary[];
 
-const withDepts = (...ids: number[]) =>
+const withDepts = (...ids: string[]) =>
   ids.reduce(
     (state, id) =>
-      reducer(state, cacheSubDeptProducts({ subDept: id, products: items(String(id)) })),
+      reducer(state, cacheSubDeptProducts({ subDept: id, products: items(id) })),
     reducer(undefined, { type: "@@init" }),
   );
 
 describe("the Sub Department item cache", () => {
   it("keeps every department opened in the window", () => {
-    const state = withDepts(5, 23);
-    expect(state.subDept.productsBySubDept[5]).toEqual(items("5"));
-    expect(state.subDept.productsBySubDept[23]).toEqual(items("23"));
+    const state = withDepts("5|Grocery", "23|Deli");
+    expect(state.subDept.productsBySubDept["5|Grocery"]).toEqual(items("5|Grocery"));
+    expect(state.subDept.productsBySubDept["23|Deli"]).toEqual(items("23|Deli"));
   });
 
   it("replaces one department without touching the others", () => {
     const state = reducer(
-      withDepts(5, 23),
-      cacheSubDeptProducts({ subDept: 5, products: items("new") }),
+      withDepts("5|Grocery", "23|Deli"),
+      cacheSubDeptProducts({ subDept: "5|Grocery", products: items("new") }),
     );
-    expect(state.subDept.productsBySubDept[5]).toEqual(items("new"));
-    expect(state.subDept.productsBySubDept[23]).toEqual(items("23"));
+    expect(state.subDept.productsBySubDept["5|Grocery"]).toEqual(items("new"));
+    expect(state.subDept.productsBySubDept["23|Deli"]).toEqual(items("23|Deli"));
   });
 
   it("remembers a department that really is empty", () => {
@@ -38,15 +38,15 @@ describe("the Sub Department item cache", () => {
     // empty department must not look like one that was never fetched, or
     // opening it would re-ask forever.
     const state = reducer(
-      withDepts(5),
-      cacheSubDeptProducts({ subDept: 9, products: [] }),
+      withDepts("5|Grocery"),
+      cacheSubDeptProducts({ subDept: "9|Bakery", products: [] }),
     );
-    expect(9 in state.subDept.productsBySubDept).toBe(true);
+    expect("9|Bakery" in state.subDept.productsBySubDept).toBe(true);
   });
 
   it("empties on a new search, so another store's items cannot answer", () => {
     const state = reducer(
-      withDepts(5, 23),
+      withDepts("5|Grocery", "23|Deli"),
       patchSubDeptView({ openSubDept: null, productsBySubDept: {} }),
     );
     expect(state.subDept.productsBySubDept).toEqual({});

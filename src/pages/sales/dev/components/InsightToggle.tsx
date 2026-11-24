@@ -23,7 +23,13 @@ interface InsightToggleProps {
 
 /** The open row's name (a sub department, an hour), coloured by its grade;
  *  a click shows the insight line under it. */
-const InsightToggle = ({ name, cta, open, onToggle, small = false }: InsightToggleProps) => {
+const InsightToggle = ({
+  name,
+  cta,
+  open,
+  onToggle,
+  small = false,
+}: InsightToggleProps) => {
   const c = ctaClasses(cta.severity);
   return (
     <div className={`relative border-b ${c.border}`}>
@@ -32,16 +38,24 @@ const InsightToggle = ({ name, cta, open, onToggle, small = false }: InsightTogg
         className={`w-full flex items-center gap-1.5 px-3 py-1.5 ${c.bg} ${c.hoverBg} transition-colors`}
       >
         {cta.severity === "critical" && (
-          <ExclamationTriangleIcon className={`w-3.5 h-3.5 ${c.text} flex-shrink-0`} />
+          <ExclamationTriangleIcon
+            className={`w-3.5 h-3.5 ${c.text} flex-shrink-0`}
+          />
         )}
         {cta.severity === "watch" && (
-          <ExclamationCircleIcon className={`w-3.5 h-3.5 ${c.text} flex-shrink-0`} />
+          <ExclamationCircleIcon
+            className={`w-3.5 h-3.5 ${c.text} flex-shrink-0`}
+          />
         )}
         {cta.severity === "healthy" && (
           <CheckCircleIcon className={`w-3.5 h-3.5 ${c.text} flex-shrink-0`} />
         )}
-        <span className={`text-[12px] font-semibold truncate ${c.text}`}>{name}</span>
-        <span className={`${small ? "text-[10px]" : "text-[12px]"} font-semibold flex-shrink-0 ${c.text}`}>
+        <span className={`text-[12px] font-semibold truncate ${c.text}`}>
+          {name}
+        </span>
+        <span
+          className={`${small ? "text-[10px]" : "text-[12px]"} font-semibold flex-shrink-0 ${c.text}`}
+        >
           Insight
         </span>
         <span className="flex-1" />
@@ -55,7 +69,9 @@ const InsightToggle = ({ name, cta, open, onToggle, small = false }: InsightTogg
         <div
           className={`absolute top-full left-0 right-0 z-20 px-3 py-2 border-b shadow-lg ${c.bg} ${c.border}`}
         >
-          <span className={`text-[11px] leading-relaxed ${c.text}`}>{cta.text}</span>
+          <span className={`text-[11px] leading-relaxed ${c.text}`}>
+            {cta.text}
+          </span>
         </div>
       )}
     </div>

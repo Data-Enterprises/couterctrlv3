@@ -12,7 +12,11 @@ interface ReceiptViewProps {
 }
 
 /** One transaction's receipt, with a way back to the list. */
-const ReceiptView = ({ isReceiptLoading, receiptData, onBack }: ReceiptViewProps) => {
+const ReceiptView = ({
+  isReceiptLoading,
+  receiptData,
+  onBack,
+}: ReceiptViewProps) => {
   return (
     <>
       {/* Back bar — same height slot as the filter header so layout doesn't shift */}

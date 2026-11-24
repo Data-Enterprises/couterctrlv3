@@ -1,5 +1,8 @@
 // Utils
-import { severityHeaderBgClass, type Severity } from "../../../../../utils/severity";
+import {
+  severityHeaderBgClass,
+  type Severity,
+} from "../../../../../utils/severity";
 
 // Interfaces
 
@@ -25,7 +28,9 @@ const TransactionTitleBar = ({
   onExport,
 }: TransactionTitleBarProps) => {
   return (
-    <div className={`relative grid grid-cols-[1fr_auto_1fr] items-center gap-2 px-4 py-3 flex-shrink-0 ${severityHeaderBgClass[tier]}`}>
+    <div
+      className={`relative grid grid-cols-[1fr_auto_1fr] items-center gap-2 px-4 py-3 flex-shrink-0 ${severityHeaderBgClass[tier]}`}
+    >
       <p className="text-custom-white text-[13px] font-bold leading-tight justify-self-start">
         {storeName}
         <span className="ml-2 text-[11px] font-normal text-custom-white/95">

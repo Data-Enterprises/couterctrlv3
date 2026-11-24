@@ -6,7 +6,12 @@ import type { Cause, HandoffList, HandoffOwner } from "../interfaces";
 import type { Desk } from "./investigationSteps";
 
 /** The lists in the order they are handed out; nobody's comes last. */
-export const HANDOFF_ORDER: HandoffOwner[] = ["buyer", "receiving", "price", null];
+export const HANDOFF_ORDER: HandoffOwner[] = [
+  "buyer",
+  "receiving",
+  "price",
+  null,
+];
 
 /** Who a list is for, as a row says it. */
 export const HANDOFF_NAME: Record<string, string> = {
@@ -55,17 +60,22 @@ export const handoffOf = (desks: Desk[]): HandoffList[] =>
 const PHRASE: Partial<Record<Cause, (us: string, them: string) => string>> = {
   "never-ordered": (us) => `never ordered at ${us}`,
   "not-carried": (us) => `not carried at ${us}`,
-  "not-received": (us) => `ordered at ${us}, with no receiver on file since the order`,
+  "not-received": (us) =>
+    `ordered at ${us}, with no receiver on file since the order`,
   cost: (us, them) => `bought for more at ${us} than at ${them}`,
-  "price-mix": (us, them) => `${us} took less a unit than ${them}, and price is most of the gap`,
+  "price-mix": (us, them) =>
+    `${us} took less a unit than ${them}, and price is most of the gap`,
 };
 
 /** Why a cause goes on nobody's list, said under its section line. */
-export const NOBODY_WHY: Partial<Record<Cause, (us: string, them: string) => string>> = {
+export const NOBODY_WHY: Partial<
+  Record<Cause, (us: string, them: string) => string>
+> = {
   "not-moving": (us) =>
     `Both stores sold these at about the same price and ${us} sold fewer. No record names who could fix that.`,
   streamlined: (_us, them) => `Within $5 of ${them}. Nothing to chase.`,
-  unsold: (us) => `Delivered to ${us} and none of it rang. Nothing on record says why.`,
+  unsold: (us) =>
+    `Delivered to ${us} and none of it rang. Nothing on record says why.`,
   "no-receipts": () =>
     "The receivers couldn't be read, so nothing says whether these were delivered.",
 };
@@ -83,11 +93,17 @@ export const handoffSays = (
   if (list.owner === null)
     return `${n} no list can fix, worth ${worth}. Each section says why.`;
   const who =
-    list.owner === "buyer" ? "the buyer" : list.owner === "price" ? "whoever sets price" : "receiving";
+    list.owner === "buyer"
+      ? "the buyer"
+      : list.owner === "price"
+        ? "whoever sets price"
+        : "receiving";
   const lead = list.desks[0];
-  const phrase = PHRASE[lead.cause]?.(us, them) ?? CAUSE_LABEL[lead.cause].toLowerCase();
+  const phrase =
+    PHRASE[lead.cause]?.(us, them) ?? CAUSE_LABEL[lead.cause].toLowerCase();
   const mostly =
-    list.desks.length > 1 && Math.abs(lead.dollars) >= (Math.abs(list.total) * 2) / 3
+    list.desks.length > 1 &&
+    Math.abs(lead.dollars) >= (Math.abs(list.total) * 2) / 3
       ? "mostly "
       : "";
   return `${n} for ${who}, worth ${worth}: ${mostly}${phrase}.`;

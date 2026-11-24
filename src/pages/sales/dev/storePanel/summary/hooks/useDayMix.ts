@@ -3,7 +3,10 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../../../../../hooks";
 
 // Redux
-import { cacheRecapItems, cacheRecapMix } from "../../../../../../features/dev/devSalesLedgerSlice";
+import {
+  cacheRecapItems,
+  cacheRecapMix,
+} from "../../../../../../features/dev/devSalesLedgerSlice";
 
 // Utils
 import { foldItems } from "../utils/recapItems";
@@ -12,7 +15,11 @@ import { loadDayRows } from "../utils/recapLoad";
 import { mixForDay } from "../utils/recapMix";
 
 // Interfaces
-import type { DayItemsState, DayMixState, RecapItem } from "../interfaces/index";
+import type {
+  DayItemsState,
+  DayMixState,
+  RecapItem,
+} from "../interfaces/index";
 
 /**
  * Days whose item rows are on the wire right now, so a second ask (a tab
@@ -66,7 +73,11 @@ export const useDayMix = (storeId: number, storeNumber: string) => {
       const key = mixKey(storeId, storeNumber, date);
       const held = itemsRef.current;
       const itemsHeld = !!(held.kept[key] || held.fresh[key]);
-      if (inFlight.has(key) || (cacheRef.current[key] && (!wantItems || itemsHeld))) return;
+      if (
+        inFlight.has(key) ||
+        (cacheRef.current[key] && (!wantItems || itemsHeld))
+      )
+        return;
       inFlight.add(key);
       setPending((n) => n + 1);
       setFailed((f) => {
@@ -100,7 +111,8 @@ export const useDayMix = (storeId: number, storeNumber: string) => {
   const requestAll = useCallback(
     (dates: string[]) => {
       for (const d of dates) {
-        if (!failedRef.current.has(mixKey(storeId, storeNumber, d))) start(d, false);
+        if (!failedRef.current.has(mixKey(storeId, storeNumber, d)))
+          start(d, false);
       }
     },
     [start, storeId, storeNumber],
@@ -110,7 +122,8 @@ export const useDayMix = (storeId: number, storeNumber: string) => {
   const requestItems = useCallback(
     (dates: string[]) => {
       for (const d of dates) {
-        if (!failedRef.current.has(mixKey(storeId, storeNumber, d))) start(d, true);
+        if (!failedRef.current.has(mixKey(storeId, storeNumber, d)))
+          start(d, true);
       }
     },
     [start, storeId, storeNumber],

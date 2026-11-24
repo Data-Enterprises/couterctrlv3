@@ -3,7 +3,7 @@ import { useMemo, useState } from "react";
 
 // Utils
 import { sumCouponAmount } from "../../../../utils/couponValue";
-import { TABS } from "./utils";
+import { GROUP_TABS } from "../utils";
 
 // Interfaces
 import type { CouponItem } from "../../../../interfaces";
@@ -12,9 +12,9 @@ import type { GroupTab } from "../interfaces";
 // Components
 import MobilePerfDetail from "../../../../components-dev/mobile/MobilePerfDetail";
 import CpnExportSheet from "./CpnExportSheet";
-import CpnListControls from "./CpnListControls";
-import CpnSectionRow from "./CpnSectionRow";
-import CpnTotalsCard from "./CpnTotalsCard";
+import CpnListControls from "./components/CpnListControls";
+import CpnSectionRow from "./components/CpnSectionRow";
+import CpnTotalsCard from "./components/CpnTotalsCard";
 
 interface CpnOverviewProps {
   coupons: CouponItem[];
@@ -108,7 +108,7 @@ const CpnOverview = ({
           Cashier are its tabs. Back goes to the store list on a group search,
           to the search card on a single store. */}
       <MobilePerfDetail
-        tabs={TABS}
+        tabs={GROUP_TABS}
         active={selectedTab}
         onTab={onTabChange}
         scopeName={storeName}

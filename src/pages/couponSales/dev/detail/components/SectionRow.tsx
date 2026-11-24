@@ -10,7 +10,6 @@ import { couponDotClass, type buildBreakdownRows } from "../../utils";
 
 // Interfaces
 
-
 interface SectionRowProps {
   row: ReturnType<typeof buildBreakdownRows>[number];
   isSel: boolean;

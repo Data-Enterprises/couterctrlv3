@@ -65,8 +65,8 @@ describe("Price Opt keeps its result", () => {
   });
 
   it("keeps the two pages apart", () => {
-    const state = reducer(undefined, patchSubDeptView({ openSubDept: 40 }));
-    expect(state.subDept.openSubDept).toBe(40);
+    const state = reducer(undefined, patchSubDeptView({ openSubDept: "40|Frozen" }));
+    expect(state.subDept.openSubDept).toBe("40|Frozen");
     expect(state.vendor.openVendor).toBeNull();
   });
 });

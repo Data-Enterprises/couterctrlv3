@@ -22,6 +22,9 @@ export const canSubmit = (c: Company) =>
   c.zip !== 0 &&
   c.phone !== "";
 
+/** The Companies table's columns: name, city, state, phone, email, actions. */
+export const COMPANY_GRID = "grid-cols-[22%_18%_10%_16%_24%_10%]";
+
 export const companyCols = [
   "Name",
   "City",

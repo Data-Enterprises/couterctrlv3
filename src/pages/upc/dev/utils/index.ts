@@ -1,3 +1,6 @@
+// Utils
+import { serverDetail, serverStatus } from "../../../../utils/serverError";
+
 // Interfaces
 import type { CtaTone, UpcAnswer } from "../interfaces";
 
@@ -13,16 +16,17 @@ export const answerOf = (
  *  status, else unreachable. axios puts a refused call's body under
  *  `response.data`. */
 export const failureReason = (err: unknown): string => {
-  const e = err as { response?: { status?: number; data?: { detail?: unknown; msg?: unknown } } };
-  const body = e.response?.data;
-  const said = typeof body?.detail === "string" ? body.detail : typeof body?.msg === "string" ? body.msg : "";
+  const said = serverDetail(err);
   if (said) return said;
-  if (e.response?.status) return `error ${e.response.status}`;
-  return "the server couldn't be reached";
+  const status = serverStatus(err);
+  return status ? `error ${status}` : "the server couldn't be reached";
 };
 
 /** Each insight tone's fill, hover fill, text and border classes. */
-export const TONE_CLASSES: Record<CtaTone, { bg: string; hoverBg: string; text: string; border: string }> = {
+export const TONE_CLASSES: Record<
+  CtaTone,
+  { bg: string; hoverBg: string; text: string; border: string }
+> = {
   up: {
     bg: "bg-severity_healthy_bg",
     hoverBg: "hover:bg-severity_healthy_text/10",
@@ -65,7 +69,13 @@ export const buildScopeKey = (
   groupId: number | string | undefined,
   startDate: string,
   endDate: string,
-) => [type, type === "Store" ? storeid ?? "" : groupId ?? "", startDate, endDate].join("|");
+) =>
+  [
+    type,
+    type === "Store" ? (storeid ?? "") : (groupId ?? ""),
+    startDate,
+    endDate,
+  ].join("|");
 
 /** Whether two comma-joined store lists hold the same stores, in any order. */
 export const sameStores = (a: string, b: string) => {

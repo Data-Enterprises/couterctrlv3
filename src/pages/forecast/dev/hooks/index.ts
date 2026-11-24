@@ -1,10 +1,202 @@
 // Hooks
-import { useAppSelector } from "../../../../hooks";
+import { useAppDispatch, useAppSelector } from "../../../../hooks";
+import { useToast } from "../../../../components/toasts/hooks/useToast";
 
-/** Forecasting's slice, the search and the user's stores, read where they are used instead of passed down. */
+// Redux
+import { setSelectedGroupStores } from "../../../../features/userSlice";
+import {
+  reQuery,
+  setIsLoading,
+  setIsLoadingMore,
+  setItems,
+  setForecastResults,
+  setSingleResults,
+  setRowData,
+  setNoResults,
+  setNotFoundUpcs,
+  appendNotFoundUpcs,
+  appendBatchResults,
+  setStoreids,
+} from "../../../../features/dev/devForecastDevSlice";
+import { isGroupSearch } from "../../../../features/searchSlice";
+
+// API
+import { getHistoryFromList } from "../../../../api/priceSim";
+import { getStoresAssignedToUserGroup } from "../../../../api/groups";
+
+// Utils
+import { enrichForecastRows } from "../utils/enrichRows";
+import { BATCH_SIZE } from "../utils";
+import { NONE_ASSIGNED, onlyAssigned } from "../../../../utils/assignedStores";
+import { reasonOf } from "../../../../utils/serverError";
+
+// Interfaces
+import type { PriceHistoryFromListResp, Store } from "../../../../interfaces";
+
+/** Forecasting's slice, the connection, the search and the user's stores, read where they are used instead of passed down. */
 export const useForecastCtx = () => {
+  const dispatch = useAppDispatch();
   const forecast = useAppSelector((s) => s.dev.forecastDev);
+  const { url, token } = useAppSelector((s) => s.app);
   const search = useAppSelector((s) => s.search);
+  const userid = useAppSelector((s) => s.user.userid);
   const assignedStores = useAppSelector((s) => s.user.assignedStores);
-  return { ...forecast, search, assignedStores };
+  return { ...forecast, dispatch, url, token, search, userid, assignedStores };
+};
+
+/**
+ * The search: resolve the store or group to a store list, then ask for the
+ * UPCs' price history in two batches.
+ */
+export const useForecastSearch = (
+  ctx: ReturnType<typeof useForecastCtx>,
+  closeSearch: () => void,
+) => {
+  const toast = useToast();
+  const { dispatch, url, token, userid, assignedStores, upcs, adListRows } =
+    ctx;
+  const { type, lastStore, lastGroup, singleDate } = ctx.search;
+
+  /* Same request sequence the legacy page runs — two batches, the second
+     appended rather than replacing the first — pointed at the dev slice. */
+  /** The endpoint takes a list of stores, so a group is resolved first.
+   *  Inactive stores are dropped (their history has stopped), and so are
+   *  stores the user isn't assigned: sending one fails the whole request.
+   *  Null means the user has already been told why there is nothing to send.
+   *  A shared group resolves like a group: the server reads it as the caller. */
+  const resolveStoreids = async (): Promise<string | null> => {
+    if (!isGroupSearch(type)) return String(lastStore);
+    const resp = await getStoresAssignedToUserGroup(
+      url,
+      token,
+      userid,
+      lastGroup,
+    );
+    const active: Store[] = (resp.data.stores ?? []).filter(
+      (s: { active: number | boolean }) => Boolean(s.active),
+    );
+    const stores = onlyAssigned(active, assignedStores);
+    if (active.length && !stores.length) {
+      toast.warn(NONE_ASSIGNED);
+      return null;
+    }
+    dispatch(setSelectedGroupStores(stores));
+    return stores.map((s) => s.storeid).join(",");
+  };
+
+  const handleSearch = async () => {
+    closeSearch();
+    dispatch(setIsLoading(true));
+    dispatch(reQuery());
+
+    let storeids: string | null = "";
+    try {
+      storeids = await resolveStoreids();
+    } catch {
+      dispatch(setIsLoading(false));
+      toast.error("Couldn't load the stores for that group.");
+      return;
+    }
+    if (storeids === null) {
+      dispatch(setIsLoading(false));
+      return;
+    }
+    if (!storeids) {
+      dispatch(setIsLoading(false));
+      toast.warn("Pick a store or group first.");
+      return;
+    }
+    dispatch(setStoreids(storeids));
+
+    // `singleDate` is already mm/dd/yyyy, as this endpoint wants; the ISO form
+    // other pages send gets "Invalid date formats".
+    const batch1 = upcs.slice(0, BATCH_SIZE);
+    const batch2 = upcs.slice(BATCH_SIZE);
+
+    getHistoryFromList(url, token, storeids, singleDate, batch1.join(","))
+      .then((resp) => {
+        const j: PriceHistoryFromListResp = resp.data;
+        // A failed request is not "no history": the search never ran, so the
+        // backend's own reason is shown as written.
+        if (j.error === 1) {
+          toast.warn(j.msg || "Couldn't load price history.");
+          return;
+        }
+        if (j.results.length > 0) {
+          const { rows, singlePrices, enrichedResults } = enrichForecastRows(
+            j.results,
+            adListRows,
+          );
+          const returned = new Set(j.results.map((r) => r.upc));
+          dispatch(
+            setItems(
+              enrichedResults.map((i) => ({
+                upc: i.upc,
+                description: i.description,
+              })),
+            ),
+          );
+          dispatch(setForecastResults(enrichedResults));
+          dispatch(setSingleResults(singlePrices));
+          dispatch(setRowData(rows));
+          dispatch(setNotFoundUpcs(batch1.filter((u) => !returned.has(u))));
+        } else {
+          dispatch(setNoResults(true));
+          dispatch(setNotFoundUpcs(batch1));
+        }
+
+        if (batch2.length === 0) return;
+
+        dispatch(setIsLoadingMore(true));
+        getHistoryFromList(url, token, storeids, singleDate, batch2.join(","))
+          .then((resp2) => {
+            const j2: PriceHistoryFromListResp = resp2.data;
+            if (j2.error === 1) {
+              dispatch(setIsLoadingMore(false));
+              toast.warn(
+                j2.msg
+                  ? `Second batch failed — ${j2.msg}`
+                  : "Some items could not be loaded — partial results shown.",
+              );
+              return;
+            }
+            if (j2.results.length > 0) {
+              const {
+                rows: rows2,
+                singlePrices: single2,
+                enrichedResults: enriched2,
+              } = enrichForecastRows(j2.results, adListRows);
+              const returned2 = new Set(j2.results.map((r) => r.upc));
+              dispatch(
+                appendBatchResults({
+                  rows: rows2,
+                  results: enriched2,
+                  singleResults: single2,
+                  items: enriched2.map((i) => ({
+                    upc: i.upc,
+                    description: i.description,
+                  })),
+                }),
+              );
+              dispatch(
+                appendNotFoundUpcs(batch2.filter((u) => !returned2.has(u))),
+              );
+            } else {
+              dispatch(setIsLoadingMore(false));
+              dispatch(appendNotFoundUpcs(batch2));
+            }
+          })
+          .catch(() => {
+            dispatch(setIsLoadingMore(false));
+            toast.warn(
+              "Some items could not be loaded — partial results shown.",
+            );
+          });
+      })
+      // A store the user isn't assigned is a 403 whose reason is in `detail`.
+      .catch((err) => toast.error(reasonOf(err)))
+      .finally(() => dispatch(setIsLoading(false)));
+  };
+
+  return { handleSearch };
 };

@@ -85,14 +85,7 @@ const fetchRange = (scope: VendorScope, range: PeriodRange) =>
     SINGLE_STORE,
   );
 
-/**
- * The whole search.
- *
- * `subDeptIds` still comes from this week only. A department that sold last
- * year and not this one contributes nothing to a this-week-rooted comparison,
- * and the callers use this list to decide whether the search found anything at
- * all.
- */
+/** The whole search: this week, last week and last year's item rows. */
 export const fetchVendorPeriods = async (
   scope: VendorScope,
   twStart: string,
@@ -111,11 +104,7 @@ export const fetchVendorPeriods = async (
   const tw = inRange(span, ranges.tw.start, ranges.tw.end);
   const lw = inRange(span, ranges.lw.start, ranges.lw.end);
 
-  const subDeptIds = [...new Set(tw.map((r) => r.sub_department))].sort(
-    (a, b) => a - b,
-  );
-
-  return { tw, lw, ly, subDeptIds };
+  return { tw, lw, ly };
 };
 
 /** One rollup read, unpaged. Throws on a failed answer, as the item reads do

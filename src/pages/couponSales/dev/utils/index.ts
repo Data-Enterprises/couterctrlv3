@@ -1,6 +1,9 @@
 // Utils
 import { formatDateSimple } from "../../../../utils";
-import { applyStoreNumberToName, numbersByStoreId } from "../../../../utils/storeIdentity";
+import {
+  applyStoreNumberToName,
+  numbersByStoreId,
+} from "../../../../utils/storeIdentity";
 import {
   couponValueOf,
   usesFallbackValue,
@@ -228,7 +231,10 @@ const buildRows = (
    *  row's own key, and only differs where baselineKeyOf does. */
   lookupKeyOf: (c: CouponItem) => string = keyOf,
 ): CouponRow[] => {
-  const groups = new Map<string, { label: string; rows: CouponItem[]; sample: CouponItem }>();
+  const groups = new Map<
+    string,
+    { label: string; rows: CouponItem[]; sample: CouponItem }
+  >();
   for (const c of coupons) {
     const key = keyOf(c);
     const existing = groups.get(key);
@@ -350,8 +356,11 @@ export const cashierKeyOf = (c: CouponItem): string =>
   c.cashier_name || "unknown";
 
 export const buildCashierRows = (coupons: CouponItem[], opts: GradingOptions) =>
-  buildRows(coupons, opts, cashierKeyOf, (c) =>
-    c.cashier_name || "Unknown cashier",
+  buildRows(
+    coupons,
+    opts,
+    cashierKeyOf,
+    (c) => c.cashier_name || "Unknown cashier",
   );
 
 // Keyed on the product code, NOT the description — unlike sub dept and cashier
@@ -368,8 +377,11 @@ export const itemKeyOf = (c: CouponItem): string =>
     : c.product_description;
 
 export const buildItemRows = (coupons: CouponItem[], opts: GradingOptions) =>
-  buildRows(coupons, opts, itemKeyOf, (c) =>
-    c.product_description || c.product_code || "Unknown item",
+  buildRows(
+    coupons,
+    opts,
+    itemKeyOf,
+    (c) => c.product_description || c.product_code || "Unknown item",
   );
 
 export const buildBreakdownRows = (
@@ -445,7 +457,9 @@ export const buildTransactions = (
         qty: t.qty,
         lines: t.lines,
         avgAmount: t.avgAmount,
-        tier: (isCouponOutlier(t.avgAmount, threshold) ? "critical" : "ok") as CouponTier,
+        tier: (isCouponOutlier(t.avgAmount, threshold)
+          ? "critical"
+          : "ok") as CouponTier,
         items: [...items].sort((a, b) => a.line_number - b.line_number),
       };
     })
@@ -461,7 +475,9 @@ export const weekdayOf = (iso: string) => new Date(iso + "T12:00:00").getDay();
 
 /** The average coupon amount over rows, or null with none. */
 export const avgOf = (rows: CouponItem[]): number | null =>
-  rows.length === 0 ? null : avgCouponAmount(sumCouponAmount(rows), rows.length);
+  rows.length === 0
+    ? null
+    : avgCouponAmount(sumCouponAmount(rows), rows.length);
 
 /** The store list's Trend / Avg $ toggle. */
 export const METRIC_OPTS: { key: CouponMetric; label: string }[] = [

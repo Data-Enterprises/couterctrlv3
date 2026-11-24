@@ -50,19 +50,26 @@ export const fmtTime = (t?: string) => {
 /** One receipt as a CSV, and the file name it downloads under. */
 export const transactionCsv = (txLines: TransactionListItem[]) => {
   const txMeta = txLines[0] ?? null;
-    const headers = ["Line", "Description", "Qty", "Sale Type", "Total", "Coupon Amount"];
-    const rows = txLines.map((item) => [
-      item.line_number,
-      `"${(item.product_description ?? "").replace(/"/g, '""')}"`,
-      item.qty ?? "",
-      item.sale_type ?? "",
-      item.is_coupon === 1 ? "" : (item.total_sales ?? ""),
-      item.is_coupon === 1 ? couponValueOf(item) : "",
-    ]);
-    const csv = [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");
-    const txId = txMeta?.transaction_id ?? txMeta?.sale_id?.split("-")[1] ?? "tx";
-    const store = txMeta?.store_name?.replace(/\s+/g, "_") ?? "store";
-    const date = txMeta?.sale_date?.split("T")[0] ?? "";
+  const headers = [
+    "Line",
+    "Description",
+    "Qty",
+    "Sale Type",
+    "Total",
+    "Coupon Amount",
+  ];
+  const rows = txLines.map((item) => [
+    item.line_number,
+    `"${(item.product_description ?? "").replace(/"/g, '""')}"`,
+    item.qty ?? "",
+    item.sale_type ?? "",
+    item.is_coupon === 1 ? "" : (item.total_sales ?? ""),
+    item.is_coupon === 1 ? couponValueOf(item) : "",
+  ]);
+  const csv = [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");
+  const txId = txMeta?.transaction_id ?? txMeta?.sale_id?.split("-")[1] ?? "tx";
+  const store = txMeta?.store_name?.replace(/\s+/g, "_") ?? "store";
+  const date = txMeta?.sale_date?.split("T")[0] ?? "";
   return { csv, filename: `transaction_${store}_${date}_${txId}.csv` };
 };
 

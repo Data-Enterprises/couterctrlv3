@@ -1,8 +1,14 @@
 // Utils
 import { calculateCogs } from "../../../utils/cogs";
-import { dayOf, lyDateFor, netOf, type DayMatch } from "../../../utils/perfPairs";
+import {
+  dayOf,
+  lyDateFor,
+  netOf,
+  type DayMatch,
+} from "../../../utils/perfPairs";
 import { normalizeProductCode } from "../../../utils/productCode";
 import { DEPT_RING_KEY, DEPT_RING_NOTE } from "../../../utils/departmentRings";
+import { subDeptKey } from "../../../utils/subDeptKey";
 
 // Interfaces
 import type {
@@ -11,7 +17,6 @@ import type {
   MarginMeasure,
   MarginSort,
 } from "../../../features/dev/devItemPerfSlice";
-
 
 export {
   isPartialMatch,
@@ -76,11 +81,12 @@ const gpmOf = (sales: number, cogs: number) =>
   sales > 0 ? ((sales - cogs) / sales) * 100 : null;
 
 /** Which field this page groups on. A row only carries the column its own
- *  endpoint grouped by, so the others read undefined and key to "". */
+ *  endpoint grouped by, so the others read undefined and key to "". A
+ *  department is its number and name: ACE stores file several under one. */
 const keyOf = (r: ItemRow, d: ItemDimension) => {
   if (d === "vendor") return String(r.vendor_id ?? "");
   if (d === "category") return String(r.category ?? "");
-  return String(r.sub_department ?? "");
+  return r.sub_department == null ? "" : subDeptKey(r);
 };
 
 /**
@@ -650,17 +656,16 @@ export const sortMarginRows = (
   const flip = reversed ? -1 : 1;
   const size = (r: MarginRow) => (measure === "units" ? r.units : r.sales);
   const bySales = (a: MarginRow, b: MarginRow) => size(b) - size(a);
-  const nullsLast = (
-    pick: (r: MarginRow) => number | null,
-    dir: number,
-  ) => (a: MarginRow, b: MarginRow) => {
-    const va = pick(a);
-    const vb = pick(b);
-    if (va === null && vb === null) return bySales(a, b);
-    if (va === null) return 1;
-    if (vb === null) return -1;
-    return (va - vb) * dir || bySales(a, b);
-  };
+  const nullsLast =
+    (pick: (r: MarginRow) => number | null, dir: number) =>
+    (a: MarginRow, b: MarginRow) => {
+      const va = pick(a);
+      const vb = pick(b);
+      if (va === null && vb === null) return bySales(a, b);
+      if (va === null) return 1;
+      if (vb === null) return -1;
+      return (va - vb) * dir || bySales(a, b);
+    };
   const out = [...rows];
   switch (sort) {
     case "sales":
@@ -705,4 +710,8 @@ export const marginDirOf = (
   sort: MarginSort,
   reversed: boolean,
 ): "asc" | "desc" =>
-  reversed ? (MARGIN_SORT_DIR[sort] === "asc" ? "desc" : "asc") : MARGIN_SORT_DIR[sort];
+  reversed
+    ? MARGIN_SORT_DIR[sort] === "asc"
+      ? "desc"
+      : "asc"
+    : MARGIN_SORT_DIR[sort];

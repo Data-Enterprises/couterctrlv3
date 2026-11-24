@@ -4,7 +4,10 @@ import { chipStyle, fmtDate } from "./utils";
 
 // Interfaces
 import type { AllOrder, Store } from "../../../../interfaces";
-import type { SelectedOrderKey, SelectedOrder } from "../../../../features/dev/devOrdersSlice";
+import type {
+  SelectedOrderKey,
+  SelectedOrder,
+} from "../../../../features/dev/devOrdersSlice";
 
 // Components
 import { ArrowDownTrayIcon } from "@heroicons/react/20/solid";
@@ -21,7 +24,14 @@ interface OrdersLineItemsScreenProps {
 
 /** The phone Orders sheet for one order: store, order number and date, item/retail/cost chips with an Export button,
  *  and the order's line items. Only that order's store and location are counted. */
-const OrdersLineItemsScreen = ({ orders, selectedKey, selectedOrder, assignedStores, groupStores, onExport }: OrdersLineItemsScreenProps) => {
+const OrdersLineItemsScreen = ({
+  orders,
+  selectedKey,
+  selectedOrder,
+  assignedStores,
+  groupStores,
+  onExport,
+}: OrdersLineItemsScreenProps) => {
   // The order's own store, not selectedKey.storeids[0] — with "select all
   // stores" a selected order can belong to any store in the selection.
   const storeName = resolveStoreName(
@@ -52,7 +62,9 @@ const OrdersLineItemsScreen = ({ orders, selectedKey, selectedOrder, assignedSto
       <div className="px-4 pt-1 pb-3 border-b border-line_hair flex-shrink-0">
         <div className="flex items-start justify-between gap-2 mb-1">
           <div>
-            <div className="text-[13px] font-medium text-brand_navy">{storeName}</div>
+            <div className="text-[13px] font-medium text-brand_navy">
+              {storeName}
+            </div>
             {/* The order's own date, not selectedKey.order_date — that's the
                 start of the fetched range, and "select all stores" with no
                 date filter spans the whole search window. */}
@@ -70,17 +82,32 @@ const OrdersLineItemsScreen = ({ orders, selectedKey, selectedOrder, assignedSto
           </button>
         </div>
         <div className="flex items-center gap-1.5 mt-2">
-          <div className="flex items-baseline gap-1 rounded px-1.5 py-0.5" style={chipStyle}>
+          <div
+            className="flex items-baseline gap-1 rounded px-1.5 py-0.5"
+            style={chipStyle}
+          >
             <span className="text-[10px] text-content">Items</span>
-            <span className="text-[11px] font-semibold text-content">{items.length}</span>
+            <span className="text-[11px] font-semibold text-content">
+              {items.length}
+            </span>
           </div>
-          <div className="flex items-baseline gap-1 rounded px-1.5 py-0.5" style={chipStyle}>
+          <div
+            className="flex items-baseline gap-1 rounded px-1.5 py-0.5"
+            style={chipStyle}
+          >
             <span className="text-[10px] text-content">Retail</span>
-            <span className="text-[11px] font-semibold text-content">{formatCurrency2(totalExtRetail)}</span>
+            <span className="text-[11px] font-semibold text-content">
+              {formatCurrency2(totalExtRetail)}
+            </span>
           </div>
-          <div className="flex items-baseline gap-1 rounded px-1.5 py-0.5" style={chipStyle}>
+          <div
+            className="flex items-baseline gap-1 rounded px-1.5 py-0.5"
+            style={chipStyle}
+          >
             <span className="text-[10px] text-content">Cost</span>
-            <span className="text-[11px] font-semibold text-content">{formatCurrency2(totalCost)}</span>
+            <span className="text-[11px] font-semibold text-content">
+              {formatCurrency2(totalCost)}
+            </span>
           </div>
         </div>
       </div>
@@ -88,12 +115,17 @@ const OrdersLineItemsScreen = ({ orders, selectedKey, selectedOrder, assignedSto
       {/* Line items */}
       <div className="flex-1 overflow-y-auto thin-scrollbar divide-y divide-line_hair">
         {items.map((o) => (
-          <div key={o.line_number} className="flex items-start justify-between px-4 py-3 gap-3">
+          <div
+            key={o.line_number}
+            className="flex items-start justify-between px-4 py-3 gap-3"
+          >
             <div className="flex-1 min-w-0">
               <div className="text-[10px] text-content mb-0.5">
                 #{o.line_number} · {o.product_code}
               </div>
-              <div className="text-[12px] font-medium text-content truncate">{o.description}</div>
+              <div className="text-[12px] font-medium text-content truncate">
+                {o.description}
+              </div>
               <div className="text-[10px] text-content mt-0.5">
                 {o.sub_department_description}
                 {o.vendor_name ? ` · ${o.vendor_name}` : ""}
@@ -101,8 +133,12 @@ const OrdersLineItemsScreen = ({ orders, selectedKey, selectedOrder, assignedSto
               </div>
             </div>
             <div className="text-right flex-shrink-0">
-              <div className="text-[10px] text-content">{formatCurrency2(o.e_ret)} retail</div>
-              <div className="text-[10px] text-content mt-0.5">{formatCurrency2(o.cogs)} cost</div>
+              <div className="text-[10px] text-content">
+                {formatCurrency2(o.e_ret)} retail
+              </div>
+              <div className="text-[10px] text-content mt-0.5">
+                {formatCurrency2(o.cogs)} cost
+              </div>
             </div>
           </div>
         ))}

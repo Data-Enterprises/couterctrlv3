@@ -33,6 +33,8 @@ export const useUpcDevCtx = () => {
     selectedGroup,
     searchType,
     groups,
+    /** The search card as it is being edited, for running a new search. */
+    liveSearch: live,
     ...dev,
   };
 };

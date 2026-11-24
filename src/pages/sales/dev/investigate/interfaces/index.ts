@@ -1,5 +1,9 @@
 // Interfaces
-import type { AllOrder, ReceiverItemSearchReceiver, SubDeptMargin } from "../../../../../interfaces";
+import type {
+  AllOrder,
+  ReceiverItemSearchReceiver,
+  SubDeptMargin,
+} from "../../../../../interfaces";
 import type { GradingMetric } from "../../../../../features/dev/devSalesLedgerSlice";
 import type {
   OrdersWave,
@@ -62,7 +66,8 @@ export interface HandoffList {
 }
 
 /** The Supply tab's rows: which store, and orders or receipts. */
-export type SupplyKind = "ordersMine" | "ordersTheirs" | "receiptsMine" | "receiptsTheirs";
+export type SupplyKind =
+  "ordersMine" | "ordersTheirs" | "receiptsMine" | "receiptsTheirs";
 
 /** One Supply row and the documents its slide lists. */
 export interface SupplyRow {
@@ -416,4 +421,47 @@ export interface PriceLadder {
    * pounds, and is the only per-unit figure this data can honestly produce.
    */
   weighted: boolean;
+}
+
+/** How a grid figure is formatted: the page's money or quantity. */
+export type Fmt = (v: number) => string;
+
+/** What one grid cell shows, described rather than drawn so the column table
+ *  holds no markup; `GridCellContent` draws it. `signed` is a cell's change
+ *  pill and `signedTotal` the footer's; `text` is the figure already
+ *  formatted (a signed one without its sign). */
+export type GridCell =
+  | { kind: "text"; text: string; look?: "bold" | "muted" | "caps" }
+  | { kind: "signed"; value: number; text: string }
+  | { kind: "signedTotal"; value: number; text: string }
+  | { kind: "cause"; cause: Cause };
+
+export interface ColumnDef {
+  key: string;
+  /** A column that can be narrowed. The popover lives in the heading, which
+   *  is where this app puts column filters everywhere else. */
+  filter?: FilterKind;
+  /** Whose figure this is. Eight of the columns belong to one store or the
+   *  other and read identically without it — the tint is what stops somebody
+   *  comparing 015 LW against 015 LY and thinking they have compared the
+   *  stores. */
+  of?: "open" | "compare";
+  /** `{mine}` and `{theirs}` are filled with the two store numbers, so a
+   *  heading names the store rather than leaving the reader to remember
+   *  which side of the comparison it is. */
+  label: string;
+  width: number;
+  right?: boolean;
+  sort?: Col;
+  render: (r: ItemVerdict, fmt: Fmt) => GridCell;
+  /**
+   * This column's total, across the FILTERED set rather than the 300 rows
+   * drawn. A footer that summed only what fits would be wrong by whatever
+   * the cap left out, and nothing on screen would say so.
+   *
+   * Columns with no total leave it off: a per-unit cost and a ratio cannot
+   * be added across items, and a blended figure over a case of soda and a
+   * candy bar is a number that looks right and means nothing.
+   */
+  foot?: (rows: ItemVerdict[], fmt: Fmt) => GridCell;
 }

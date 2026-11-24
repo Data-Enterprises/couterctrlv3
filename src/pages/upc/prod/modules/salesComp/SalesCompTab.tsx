@@ -1,7 +1,11 @@
+// Hooks
 import { useEffect, useMemo, useState } from "react";
-import { useUpcDevCtx } from "../../hooks/useUpcDevCtx";
 import { useAppDispatch } from "../../../../../hooks";
 import { useToast } from "../../../../../components/toasts/hooks/useToast";
+import { useUpcDevCtx } from "../../hooks/useUpcDevCtx";
+import { useAbandonedRetry } from "../../hooks/useAbandonedRetry";
+
+// Redux
 import {
   mergeDevSalesComp,
   mergeDevSalesCompLY,
@@ -9,138 +13,165 @@ import {
   setDevSalesCompLYLoading,
   setDevUpcItems,
 } from "../../../../../features/upcDevSlice";
+
+// API
 import { getSalesComp } from "../../../../../api/upc";
+
+// Utils
 import { sameWeekDayLastYear } from "../../../../../utils";
 import { upcQueue } from "../../upcQueue";
 import { missingFrom } from "../../coverage";
-import { combineSalesCompRows, computeUpcSalesCompStats } from "./salesCompStats";
+import { answerOf } from "../../utils";
+import {
+  combineSalesCompRows,
+  computeUpcSalesCompStats,
+  salesCompCodes,
+  salesCompRange,
+} from "./salesCompStats";
+import { isoToMdy } from "./utils";
+
+// Interfaces
 import type { UpcSalesComp } from "../../../../../interfaces";
-import SalesCompLeftList from "./SalesCompLeftList";
-import SalesCompDetailPanel from "./SalesCompDetailPanel";
 
-/** sameWeekDayLastYear returns ISO (YYYY-MM-DD); the API rejects that with a
- *  400 ("Please use mm/dd/yyyy") — reformat to match ctx.startDate/endDate's
- *  own m/d/yyyy format. Plain string split, not `new Date(iso)` +
- *  getMonth/getDate — that round-trip parses as UTC midnight and can roll back
- *  a day in any negative-UTC-offset timezone (all of the US). */
-const isoToMdy = (iso: string) => {
-  const [y, m, d] = iso.split("-");
-  return `${Number(m)}/${Number(d)}/${y}`;
-};
+// Components
+import SalesCompLeftList from "./components/SalesCompLeftList";
+import SalesCompDetailPanel from "./components/SalesCompDetailPanel";
 
+/** The UPC List's Sales Comp tab: fetches this year's and last year's sales for the
+ *  searched UPCs on its first visit, then shows the items in a left list and the picked
+ *  item's comparison on the right. */
 const SalesCompTab = () => {
   const ctx = useUpcDevCtx();
   const dispatch = useAppDispatch();
   const toast = useToast();
   const [selectedCode, setSelectedCode] = useState<string | null>(null);
+  const [retryTick, retry] = useAbandonedRetry();
 
-  // Both fetches ask only for the UPCs they're missing. Joined into a string so
-  // they can be effect dependencies: the effect then fires exactly when the
-  // gap changes — on a first visit, and again when a search adds a UPC — and
-  // not on any other render.
-  // searchedUpcs, not upcs: `upcs` is the search card's working list and
-  // changes live as the user edits chips in the re-search popup, which would
-  // start fetching the moment they typed rather than when they clicked Search.
-  // `searchedUpcs` only moves when a search is actually committed.
+  // Both fetches ask only for the UPCs they're missing, joined into a string so
+  // the effect fires exactly when the gap changes. searchedUpcs, not upcs (see
+  // PriceOptTab).
   const missingTy = missingFrom(ctx.searchedUpcs, ctx.salesCompCoverage);
   const missingLy = missingFrom(ctx.searchedUpcs, ctx.salesCompLYCoverage);
   const missingTyKey = missingTy.join(",");
   const missingLyKey = missingLy.join(",");
 
-  // This year. Used to be fetched by the page as part of the search, which made
-  // it the one call every search paid for regardless of which module the user
-  // opened. It's this tab's own data like anything else now.
+  // This year: this tab's own fetch, made on its first visit.
   useEffect(() => {
     if (ctx.activeTab !== "salesComp") return;
     if (ctx.salesCompLoading || !ctx.storeids || !missingTyKey) return;
 
     const load = async () => {
       dispatch(setDevSalesCompLoading(true));
+      let abandoned = false;
       try {
-        const res = await upcQueue.enqueue(`salesComp:ty:${missingTyKey}`, (signal) =>
-          getSalesComp(ctx.url, ctx.token, ctx.storeids, ctx.startDate, ctx.endDate, missingTyKey, signal),
+        const res = await upcQueue.enqueue(
+          `salesComp:ty:${missingTyKey}`,
+          (signal) =>
+            getSalesComp(
+              ctx.url,
+              ctx.token,
+              ctx.storeids,
+              ctx.startDate,
+              ctx.endDate,
+              missingTyKey,
+              signal,
+            ),
         );
-        // Superseded by a newer search — that run owns this state now.
-        if (!res) return;
+        // Superseded by a newer search — that run owns this state now. Looked
+        // at again once loading clears, against the search as it is then.
+        if (!res) {
+          abandoned = true;
+          return;
+        }
 
         const j = res.data;
-        // An endpoint-level failure is a failure, not an empty answer. Taking
-        // the success path extended coverage below, which recorded these UPCs
-        // as fetched-and-empty and meant the tab never asked again — the catch
-        // deliberately leaves coverage alone for exactly this reason.
-        if (ctx.fixes && j.error !== 0) {
+        const answer = answerOf(j);
+        // A failure is a failure, not an empty answer, so coverage is left
+        // alone and the tab asks again. "No data was returned." is a real
+        // answer and covers them (see answerOf).
+        if (ctx.fixes && answer === "failed") {
           toast.warn(j.msg || "Sales comparison failed for these UPCs");
           return;
         }
         // Combined on the way in, so the table, KPI strip and export all see
         // one row per UPC per week — see combineSalesCompRows.
         const rows: UpcSalesComp[] =
-          j.error === 0 && j.daily?.length > 0 ? combineSalesCompRows(j.daily) : [];
-        // Merged against the UPCs that were *asked for*, not the ones that
-        // answered: a UPC with no sales in the window returns nothing, and it
-        // still has to count as covered or it would be re-requested forever.
+          answer === "ok" && j.daily?.length > 0
+            ? combineSalesCompRows(j.daily)
+            : [];
+        // Merged against the UPCs asked for, not those that answered: a UPC with
+        // no sales returns nothing and still counts as covered.
         dispatch(mergeDevSalesComp({ rows, codes: missingTy }));
         // Descriptions for the left panel roster, which was seeded with codes
         // only at search time.
         dispatch(
           setDevUpcItems(
-            rows.map((r) => ({ product_code: r.product_code, description: r.description })),
+            rows.map((r) => ({
+              product_code: r.product_code,
+              description: r.description,
+            })),
           ),
         );
       } catch {
         // Coverage is left alone, so revisiting the tab retries.
       } finally {
         dispatch(setDevSalesCompLoading(false));
+        if (abandoned) retry();
       }
     };
 
     load();
-  }, [ctx.activeTab, missingTyKey]);
+  }, [ctx.activeTab, missingTyKey, retryTick]);
 
-  // Last year is a second hit on upload_upcs_daily_sales — the heaviest
-  // endpoint the page has — so a user who opens to Trend or Price Opt never
-  // pays for it. Deliberately supplementary: a failed or empty response leaves
-  // the tab working off TY alone, and `hasLY` in SalesCompKpis leaves the vs-LY
-  // figures null rather than reporting a comparison against nothing. Coverage
-  // extends either way, so a genuinely empty last year isn't re-requested on
-  // every revisit.
+  // Last year is a second call to the heaviest endpoint, so only this tab pays
+  // for it. Supplementary: a failed or empty answer leaves the tab on TY alone
+  // (`hasLY` blanks the vs-LY figures), and coverage extends either way.
   useEffect(() => {
     if (ctx.activeTab !== "salesComp") return;
     if (ctx.salesCompLYLoading || !ctx.storeids || !missingLyKey) return;
 
     const load = async () => {
       dispatch(setDevSalesCompLYLoading(true));
+      let abandoned = false;
       try {
-        const res = await upcQueue.enqueue(`salesComp:ly:${missingLyKey}`, (signal) =>
-          getSalesComp(
-            ctx.url,
-            ctx.token,
-            ctx.storeids,
-            isoToMdy(sameWeekDayLastYear(ctx.startDate).date),
-            isoToMdy(sameWeekDayLastYear(ctx.endDate).date),
-            missingLyKey,
-            signal,
-          ),
+        const res = await upcQueue.enqueue(
+          `salesComp:ly:${missingLyKey}`,
+          (signal) =>
+            getSalesComp(
+              ctx.url,
+              ctx.token,
+              ctx.storeids,
+              isoToMdy(sameWeekDayLastYear(ctx.startDate).date),
+              isoToMdy(sameWeekDayLastYear(ctx.endDate).date),
+              missingLyKey,
+              signal,
+            ),
         );
-        if (!res) return;
+        if (!res) {
+          abandoned = true;
+          return;
+        }
 
         const j = res.data;
-        // Same guard as this year. Supplementary data, so no toast — a missing
-        // last year is already reported by `hasLY` leaving the vs-LY figures
-        // blank; all this does is let a failed call be retried.
-        if (ctx.fixes && j.error !== 0) return;
+        const answer = answerOf(j);
+        // Same guard as this year, without a toast: `hasLY` already shows a
+        // missing last year. A new item's empty answer covers it.
+        if (ctx.fixes && answer === "failed") return;
         const rows: UpcSalesComp[] =
-          j.error === 0 && j.daily?.length > 0 ? combineSalesCompRows(j.daily) : [];
+          answer === "ok" && j.daily?.length > 0
+            ? combineSalesCompRows(j.daily)
+            : [];
         dispatch(mergeDevSalesCompLY({ rows, codes: missingLy }));
       } catch {
         /* supplementary — the tab is already usable on TY alone */
       } finally {
         dispatch(setDevSalesCompLYLoading(false));
+        if (abandoned) retry();
       }
     };
 
     load();
-  }, [ctx.activeTab, missingLyKey]);
+  }, [ctx.activeTab, missingLyKey, retryTick]);
 
   const filtered = useMemo(() => {
     return ctx.selectedUpcs.length > 0
@@ -155,18 +186,21 @@ const SalesCompTab = () => {
   }, [ctx.salesCompLY, ctx.selectedUpcs]);
 
   const upcCodes = useMemo(
-    () => [...new Set(filtered.map((r) => r.product_code))],
-    [filtered],
+    () => salesCompCodes(filtered, filteredLY),
+    [filtered, filteredLY],
   );
 
+  const range = useMemo(
+    () => salesCompRange(ctx.startDate, ctx.endDate),
+    [ctx.startDate, ctx.endDate],
+  );
   const upcStats = useMemo(
-    () => computeUpcSalesCompStats(upcCodes, filtered, filteredLY, ctx.endDate),
-    [upcCodes, filtered, filteredLY, ctx.endDate],
+    () => computeUpcSalesCompStats(upcCodes, filtered, filteredLY, range),
+    [upcCodes, filtered, filteredLY, range],
   );
 
-  // Keep the detail panel pointed at a valid item — default to the first
-  // one on load, and re-pick whenever the current selection drops out of
-  // the filtered set (e.g. a re-search or UPC deselect).
+  // Keep the detail panel on a valid item: the first by default, re-picked if
+  // the selection drops out of the filtered set.
   useEffect(() => {
     if (!upcStats.length) {
       setSelectedCode(null);
@@ -177,10 +211,12 @@ const SalesCompTab = () => {
     }
   }, [upcStats, selectedCode]);
 
-  if (!filtered.length) {
+  if (!upcCodes.length) {
     return (
-      <div className="flex items-center justify-center h-full text-[11px] text-content/85">
-        {ctx.salesCompLoading ? "Loading sales comparison…" : "No sales comparison data"}
+      <div className="flex items-center justify-center h-full text-[11px] text-content/95">
+        {ctx.salesCompLoading
+          ? "Loading sales comparison…"
+          : "No sales comparison data"}
       </div>
     );
   }

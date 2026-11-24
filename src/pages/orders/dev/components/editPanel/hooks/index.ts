@@ -19,7 +19,12 @@ import {
 import { storeVendors } from "../utils";
 
 // Interfaces
-import type { EditSearch, EditableField, LinePatch, OrderDraft } from "../../../interfaces";
+import type {
+  EditSearch,
+  EditableField,
+  LinePatch,
+  OrderDraft,
+} from "../../../interfaces";
 
 /**
  * The open order and everything the edit panel does to it, read from the
@@ -43,13 +48,15 @@ export const useOpenDraft = () => {
     draft,
     loading: ctx.loadingAllOrders,
     search,
-    onSearch: (next: EditSearch) => ctx.dispatch(patchOrdersEdit({ search: next })),
+    onSearch: (next: EditSearch) =>
+      ctx.dispatch(patchOrdersEdit({ search: next })),
     onField: (lineNumber: number, field: EditableField, value: number) =>
       edit((d) => applyField(d, lineNumber, field, value)),
     /** A typed unit cost, stored as the case cost it implies. */
     onUnitCost: (lineNumber: number, unit: number) =>
       edit((d) => applyUnitCost(d, lineNumber, unit)),
-    onRevertLine: (lineNumber: number) => edit((d) => revertLine(d, lineNumber)),
+    onRevertLine: (lineNumber: number) =>
+      edit((d) => revertLine(d, lineNumber)),
     onRevertAll: () => edit((d) => revertAll(d)),
     onDropLine: (lineNumber: number) => edit((d) => dropLine(d, lineNumber)),
     /** Everything typed or picked on an added line comes through here. */

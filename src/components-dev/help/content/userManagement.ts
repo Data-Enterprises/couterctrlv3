@@ -45,7 +45,7 @@ export const USER_MANAGEMENT_HELP: HelpContent = {
         },
         {
           title: "User info",
-          pre: "Role and level first — the level list stops at your own — then the name, username, email and a password typed twice that meets every rule listed beside it. Username and email are not checked on their own: press",
+          pre: "Role and level first — the level list stops at your own — then username, email, first and last name, and a password typed twice that meets every rule listed beside it. Username and email are not checked on their own: press",
           chip: "Check Availability",
           post: "beside either label, or Enter in the box.",
           see: "Available or Not available next to the label; Continue waits while either is Not available, and until every password rule is ticked. The username can never be changed afterwards.",
@@ -62,7 +62,7 @@ export const USER_MANAGEMENT_HELP: HelpContent = {
         {
           title: "Assignments",
           pre: "Tick a company in its own right if they should hold it with no group, and the base groups they should hold. By store also wants the individual stores inside each group; By group shows a group's stores read only.",
-          see: "The strip under the columns counts what you have picked. Below level 9 only the groups you hold are offered.",
+          see: "The strip under the columns counts what you have picked. Only the groups you hold are offered, plus any they already hold.",
           anchor: "wizard",
         },
         {
@@ -80,7 +80,7 @@ export const USER_MANAGEMENT_HELP: HelpContent = {
         },
         {
           q: "Continue is greyed out on Assignments",
-          a: "A group is held By store with no stores picked, and the notice under the columns names it. Pick at least one store in that group, or untick the group.",
+          a: "Either nothing is picked yet — tick at least one company or base group — or a group is held By store with no stores picked, and the notice under the columns names it. Pick at least one store in that group, or untick the group.",
         },
         {
           q: "Create user is greyed out, or a step can't be clicked",
@@ -92,7 +92,7 @@ export const USER_MANAGEMENT_HELP: HelpContent = {
         },
         {
           q: "It says the user was created but their access didn't finish saving",
-          a: "The account exists and the access does not, so they would sign in to nothing. Press Retry access. If you leave it for now, open them from the users list and save again — do not leave somebody in that state.",
+          a: "The account exists and the access does not, so they would sign in to nothing. Press Retry access. If you leave it for now, open them from the users list, set their access again on Assignments and press Save changes — do not leave somebody in that state.",
         },
       ],
     },
@@ -127,7 +127,7 @@ export const USER_MANAGEMENT_HELP: HelpContent = {
           a: "The line beside it says why: nothing has changed yet, User info isn't finished, Assignments isn't (only when you changed access), or what they hold is still loading.",
         },
         {
-          q: "It says it couldn't read their groups, stores or picks",
+          q: "It says it couldn't read their base groups, stores, store picks or companies",
           a: "What they hold didn't load, so the screen may be missing some of it and Save changes is off. Press Retry.",
         },
         {
@@ -166,7 +166,7 @@ export const USER_MANAGEMENT_HELP: HelpContent = {
           title: "Open Base Groups",
           pre: "The",
           chip: "Base Groups",
-          post: "tab. The list shows your companies, each opening to the groups you hold (every group, at level 9).",
+          post: "tab. The list shows each company where you hold a base group, opening to the groups you hold.",
           anchor: "tabs",
         },
         {
@@ -176,7 +176,7 @@ export const USER_MANAGEMENT_HELP: HelpContent = {
         },
         {
           title: "Give it to yourself",
-          pre: "Below level 9 a note appears once it's created: press",
+          pre: "A note appears once it's created: press",
           chip: "Assign it to me",
           post: ".",
           see: "The group appears in the Base Groups list, held By group. Until you hold it, it is not listed and cannot be filled.",
@@ -194,14 +194,14 @@ export const USER_MANAGEMENT_HELP: HelpContent = {
           title: "Put the people in",
           pre: "The",
           chip: "Users",
-          post: "sub-tab, the same way. Each person gets the group in their own access type, shown beside their name: By group gets the whole group and stores added later; By store gets every store it holds today, picked.",
+          post: "sub-tab, the same way. Each person gets the group in their own access type, shown beside their name: By group gets the whole group and stores added later; By store gets every store it holds today, picked. Mixed or No type on file gets it By group.",
           anchor: "group-tabs",
         },
       ],
       issues: [
         {
           q: "The group I just created is not in the list",
-          a: "You do not hold it yet. Press Assign it to me on the note, or Users → your own row → Edit → Assignments → tick it → save.",
+          a: "You do not hold it yet. Press Assign it to me on the note that appears when it's created. If you closed the note, contact support to grant it to you.",
         },
         {
           q: "A store would not move into the group",
@@ -209,7 +209,7 @@ export const USER_MANAGEMENT_HELP: HelpContent = {
         },
         {
           q: "It says a user has the single-store role",
-          a: "This tab only ever hands over whole groups, and a single-store account cannot hold one. Give them their store through Users → Edit → By store instead.",
+          a: "This tab only ever hands over whole groups, and a single-store account cannot hold one. Give them their one store through Users → Edit → Assignments instead.",
         },
         {
           q: "It says nobody holds this group automatically",
@@ -467,7 +467,7 @@ export const USER_MANAGEMENT_HELP: HelpContent = {
           why: "The list shows the groups you hold, not every group in the company. A group you have just created belongs to nobody, including you.",
           todo: [
             "Press Assign it to me on the note that appears after creating it.",
-            "If you closed it: Users → your own row → Edit → Assignments, tick the new group and save.",
+            "If you closed it, contact support to grant it to you.",
           ],
         },
         {
@@ -505,7 +505,7 @@ export const USER_MANAGEMENT_HELP: HelpContent = {
           why: "Add user writes the account first and the access second. Stopping in between leaves somebody who can sign in and see nothing.",
           todo: [
             "Press Retry access on the banner.",
-            "If you left it, open them from the users list and save again.",
+            "If you left it, open them from the users list, set their access again on Assignments and press Save changes.",
           ],
         },
         {
@@ -551,7 +551,7 @@ export const USER_MANAGEMENT_HELP: HelpContent = {
     },
     {
       term: "Not yours to change",
-      def: "On Assignments, a group the person holds that you don't. It's shown so an edit can't drop it by accident, and it can't be ticked, unticked or cleared. Someone who holds the group (or level 9) can change it.",
+      def: "On Assignments, a group the person holds that you don't. It's shown so an edit can't drop it by accident, and it can't be ticked, unticked or cleared. Someone who holds the group can change it; otherwise contact support.",
       anchor: "wizard",
     },
     {

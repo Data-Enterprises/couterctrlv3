@@ -35,14 +35,22 @@ const CtaInsightStrip = ({ title, insight, tone }: CtaInsightStripProps) => {
         className={`w-full flex items-center gap-1.5 px-4 py-2 ${c.bg} ${c.hoverBg} transition-colors`}
       >
         {tone === "down" && (
-          <ExclamationTriangleIcon className={`w-3.5 h-3.5 ${c.text} flex-shrink-0`} />
+          <ExclamationTriangleIcon
+            className={`w-3.5 h-3.5 ${c.text} flex-shrink-0`}
+          />
         )}
-        {tone === "up" && <CheckCircleIcon className={`w-3.5 h-3.5 ${c.text} flex-shrink-0`} />}
+        {tone === "up" && (
+          <CheckCircleIcon className={`w-3.5 h-3.5 ${c.text} flex-shrink-0`} />
+        )}
         {(tone === "flat" || tone === "muted") && (
           <MinusCircleIcon className={`w-3.5 h-3.5 ${c.text} flex-shrink-0`} />
         )}
-        <span className={`text-[12px] font-semibold truncate ${c.text}`}>{title}</span>
-        <span className={`text-[12px] font-semibold flex-shrink-0 ${c.text}`}>Insight</span>
+        <span className={`text-[12px] font-semibold truncate ${c.text}`}>
+          {title}
+        </span>
+        <span className={`text-[12px] font-semibold flex-shrink-0 ${c.text}`}>
+          Insight
+        </span>
         <span className="flex-1" />
         {open ? (
           <ChevronUpIcon className={`w-3 h-3 flex-shrink-0 ${c.text}`} />
@@ -51,8 +59,12 @@ const CtaInsightStrip = ({ title, insight, tone }: CtaInsightStripProps) => {
         )}
       </button>
       {open && (
-        <div className={`absolute top-full left-0 right-0 z-20 px-4 py-2.5 border-b shadow-lg ${c.bg} ${c.border}`}>
-          <div className={`text-[12px] leading-relaxed ${c.text}`}>{insight}</div>
+        <div
+          className={`absolute top-full left-0 right-0 z-20 px-4 py-2.5 border-b shadow-lg ${c.bg} ${c.border}`}
+        >
+          <div className={`text-[12px] leading-relaxed ${c.text}`}>
+            {insight}
+          </div>
         </div>
       )}
     </div>

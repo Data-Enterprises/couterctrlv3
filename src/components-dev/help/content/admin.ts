@@ -2,7 +2,8 @@
 import type { HelpContent } from "../helpTypes";
 
 /**
- * Help for Admin → Store activity.
+ * Help for Admin: Sub dept exclusions and Stores for owners, then Store
+ * activity, which only support and level 9 see.
  *
  * Written against the screen, not from memory: every chip below is the label
  * as the button carries it, and every anchor is a `data-help` that exists in
@@ -11,28 +12,107 @@ import type { HelpContent } from "../helpTypes";
  * changes.
  */
 export const ADMIN_HELP: HelpContent = {
-  screen: "Store activity",
+  screen: "Admin",
   purpose:
-    "Shows, for one company and a date range, how many days each store actually sent sales — and which days are missing. It is how you tell a store that is closed from a store whose data stopped arriving.",
+    "Choose which sub departments count toward net sales, and rename your company's stores. Support also uses it to see which stores have stopped sending sales.",
 
   guides: [
     {
+      id: "exclude-sub-dept",
+      title: "Stop a sub department counting toward net sales",
+      desc: "For money that goes through the register but isn't sales, like lottery or money orders",
+      steps: [
+        {
+          title: "Open the tab",
+          pre: "Open",
+          chip: "Sub dept exclusions",
+          post: "at the top of Admin.",
+          see: "Every sub department that rang at your stores in the last 60 days.",
+          anchor: "excl-list",
+        },
+        {
+          title: "Pick the stores",
+          pre: "Leave",
+          chip: "Store",
+          post: "on all your stores to change every store at once, or pick one store.",
+          anchor: "excl-filters",
+        },
+        {
+          title: "Find the department",
+          pre: "Type its name in",
+          chip: "Search departments…",
+          post: ", or press Likely hash to show only the usual ones.",
+          anchor: "likely-hash",
+        },
+        {
+          title: "Tick it",
+          pre: "Tick the box at the start of its row. When it is at more than one store you are asked to confirm, then press",
+          chip: "Yes, exclude at",
+          post: "and the number of stores.",
+          see: "Where it stands reads excluded at all of them.",
+          anchor: "excl-list",
+        },
+      ],
+      issues: [
+        {
+          q: "The department isn't in the list",
+          a: "Likely hash or the search may be hiding it — turn Likely hash off and clear the search. Otherwise it hasn't rung at your stores in the last 60 days, so there is nothing to exclude yet.",
+        },
+        {
+          q: "I want it to count again",
+          a: "Untick its box. At more than one store you're asked first: press Yes, count at and the number of stores. It counts toward net sales again at every store it was excluded at.",
+        },
+      ],
+    },
+    {
+      id: "rename-store",
+      title: "Rename a store",
+      desc: "Change the name a store shows everywhere",
+      steps: [
+        {
+          title: "Open the tab",
+          pre: "Open",
+          chip: "Stores",
+          post: "at the top of Admin.",
+          anchor: "store-list",
+        },
+        {
+          title: "Rename it",
+          pre: "Press the pencil at the end of the store's row, type the new name in",
+          chip: "Store name",
+          post: "and press Save name.",
+          see: "The new name in the list.",
+          anchor: "store-list",
+        },
+      ],
+      issues: [
+        {
+          q: "There's no pencil on a store",
+          a: "The store doesn't belong to a company yet. Contact support to change it.",
+        },
+        {
+          q: "I need a new store, or to close one",
+          a: "Adding, closing and reopening stores is done by support. Send them the store and what needs doing.",
+        },
+      ],
+    },
+    {
       id: "find-missing",
-      title: "Find stores that stopped sending sales",
+      title: "Find stores that stopped sending sales (support)",
       desc: "Narrow a company and a range down to the stores with gaps",
       steps: [
         {
           title: "Pick the company",
           pre: "Choose one in",
-          chip: "Company",
-          post: "down the left. The list is the companies on your own account, and only one company is read at a time.",
+          chip: "Companies",
+          post: "down the left. Every company is listed, and only one company is read at a time.",
           anchor: "company",
         },
         {
           title: "Set the range",
-          pre: "Set a start and end in",
-          chip: "Dates",
-          post: ". Every figure on this screen counts whole days inside that range.",
+          pre: "Set",
+          chip: "Start Date",
+          post: "and End Date at the top left. Every figure on this screen counts whole days inside that range.",
           see: "Nothing yet — the range is only read when you search.",
           anchor: "dates",
         },
@@ -66,7 +146,7 @@ export const ADMIN_HELP: HelpContent = {
     },
     {
       id: "export-activity",
-      title: "Export what you are looking at",
+      title: "Export store activity (support)",
       desc: "Take the activity list out as a CSV",
       steps: [
         {
@@ -81,6 +161,12 @@ export const ADMIN_HELP: HelpContent = {
           pre: "Press the download icon in the page header.",
           see: "A dialog naming the company and the stores it will write.",
           anchor: "export",
+        },
+        {
+          title: "Download it",
+          pre: "Tick All stores, Missing only or both, then press",
+          chip: "Download CSV",
+          post: ".",
         },
       ],
     },
@@ -139,9 +225,9 @@ export const ADMIN_HELP: HelpContent = {
           title: "The register stopped sending on those days",
           why: "Scattered gaps with no weekday pattern usually mean the till could not reach us — a network outage, a machine switched off, or a day closed late enough to miss the collection.",
           todo: [
-            "Note the exact dates and the store number.",
+            "Note the exact dates and the store name.",
             "Ask whether anything happened at the store on those days.",
-            "Send the dates and store number to your CounterCtrl rep if nothing explains them.",
+            "Send the dates and the store name to the store's operator if nothing explains them.",
           ],
         },
         {
@@ -153,7 +239,7 @@ export const ADMIN_HELP: HelpContent = {
           todo: [
             "Widen the range and search again — if earlier days are present, the stop has a date.",
             "Check whether the store was open in this period.",
-            "Send the store number and the last date that reported to your rep.",
+            "Send the store name and the last date that reported to the store's operator.",
           ],
         },
       ],
@@ -162,17 +248,32 @@ export const ADMIN_HELP: HelpContent = {
 
   terms: [
     {
-      term: "Dates",
+      term: "Sub dept exclusion",
+      def: "A sub department that no longer counts toward net sales on the Performance pages. It still shows in every list, export and search.",
+      anchor: "excl-list",
+    },
+    {
+      term: "Where it stands",
+      def: "Whether the department counts at your stores, is excluded at all of them, or at some. \"Not present\" counts the stores where it didn't ring.",
+      anchor: "excl-list",
+    },
+    {
+      term: "Likely hash",
+      def: "Shows only the departments that look like pass-through money, such as lottery, money orders and stamps. Press it again to see them all. It doesn't tick anything for you.",
+      anchor: "likely-hash",
+    },
+    {
+      term: "Start Date and End Date",
       def: "The range every figure on the screen is counted inside. Both ends are included.",
       anchor: "dates",
     },
     {
-      term: "Company",
-      def: "Which company's stores are read. One at a time, and the list is the companies on your own account.",
+      term: "Companies",
+      def: "Which company's stores are read. One at a time, from every company.",
       anchor: "company",
     },
     {
-      term: "Total",
+      term: "Total days",
       def: "Days in the range. The same for every store, and the number the other two are read against.",
       anchor: "activity-grid",
     },

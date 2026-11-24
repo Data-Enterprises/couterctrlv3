@@ -131,7 +131,8 @@ export interface RecapItemRow {
   net: number;
 }
 
-export type ItemSortCol = "code" | "name" | "dept" | "vendor" | "units" | "pounds" | "net";
+export type ItemSortCol =
+  "code" | "name" | "dept" | "vendor" | "units" | "pounds" | "net";
 
 export interface ItemSort {
   column: ItemSortCol;

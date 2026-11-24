@@ -4,7 +4,10 @@ import { SEARCHABLE_FROM } from "../../../modals/utils";
 // Interfaces
 import type { Mode } from "../../interfaces";
 import type { SetStateAction } from "react";
-import type { TechWriteResp, TicketTech } from "../../../../../../../api/tickets";
+import type {
+  TechWriteResp,
+  TicketTech,
+} from "../../../../../../../api/tickets";
 
 // Components
 import TextFilter from "../../../../../../../components-dev/filters/TextFilter";

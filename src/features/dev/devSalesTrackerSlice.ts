@@ -51,8 +51,8 @@ interface SalesTrackerState {
    * facts and only one of them is a fallback.
    */
   basis: TrackerBasis;
-  /** Sub-department id, or null while nothing is picked. */
-  selectedSubDept: number | null;
+  /** The picked sub department's `subDeptKey`, or null while nothing is picked. */
+  selectedSubDeptKey: string | null;
   subFilter: string;
   /** Week indexes whose day tiles are open. Weeks start closed — a department
    *  with twelve weeks open at once is eighty-four tiles and nothing to read. */
@@ -71,7 +71,7 @@ const initialState: SalesTrackerState = {
   ty: [],
   ly: [],
   basis: "LY",
-  selectedSubDept: null,
+  selectedSubDeptKey: null,
   subFilter: "",
   expandedWeeks: [],
 };
@@ -118,8 +118,8 @@ const salesTrackerSlice = createSlice({
       state.ly = [...state.ly, ...action.payload.ly];
       state.loadedFrom = action.payload.from;
     },
-    setSelectedSubDept: (state, action: PayloadAction<number | null>) => {
-      state.selectedSubDept = action.payload;
+    setSelectedSubDeptKey: (state, action: PayloadAction<string | null>) => {
+      state.selectedSubDeptKey = action.payload;
       // A different department starts closed, the same way it started closed
       // the first time.
       state.expandedWeeks = [];
@@ -142,7 +142,7 @@ const salesTrackerSlice = createSlice({
       state.ty = [];
       state.ly = [];
       state.basis = "LY";
-      state.selectedSubDept = null;
+      state.selectedSubDeptKey = null;
       state.subFilter = "";
       state.expandedWeeks = [];
     },
@@ -156,7 +156,7 @@ export const {
   appendRows,
   setScopeLabel,
   setRows,
-  setSelectedSubDept,
+  setSelectedSubDeptKey,
   setSubFilter,
   toggleWeek,
   setAllWeeksOpen,

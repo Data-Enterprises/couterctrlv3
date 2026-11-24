@@ -1,5 +1,6 @@
 // Utils
 import { formatCurrency2 } from "../../../../../../utils";
+import { subDeptKey } from "../../../../../../utils/subDeptKey";
 import {
   gradeBasis,
   gradeOnBasis,
@@ -138,7 +139,7 @@ export const buildDeptRows = (
     src.reduce(
       (
         acc: Record<
-          number,
+          string,
           {
             net: number;
             qty: number;
@@ -150,8 +151,9 @@ export const buildDeptRows = (
         >,
         s,
       ) => {
-        if (!acc[s.sub_department])
-          acc[s.sub_department] = {
+        const k = subDeptKey(s);
+        if (!acc[k])
+          acc[k] = {
             net: 0,
             qty: 0,
             digital: 0,
@@ -159,12 +161,12 @@ export const buildDeptRows = (
             elecStore: 0,
             storeCpn: 0,
           };
-        acc[s.sub_department].net += s.total_sales - s.total_tax;
-        acc[s.sub_department].qty += s.qty;
-        acc[s.sub_department].digital += s.digital_coupons;
-        acc[s.sub_department].elecInstore += s.elec_instore_coupons;
-        acc[s.sub_department].elecStore += s.elec_store_coupons;
-        acc[s.sub_department].storeCpn += s.store_coupon;
+        acc[k].net += s.total_sales - s.total_tax;
+        acc[k].qty += s.qty;
+        acc[k].digital += s.digital_coupons;
+        acc[k].elecInstore += s.elec_instore_coupons;
+        acc[k].elecStore += s.elec_store_coupons;
+        acc[k].storeCpn += s.store_coupon;
         return acc;
       },
       {},
@@ -195,8 +197,9 @@ export const buildDeptRows = (
   const twMap = subSales.reduce(
     (
       acc: Record<
-        number,
+        string,
         {
+          id: number;
           desc: string;
           net: number;
           qty: number;
@@ -208,8 +211,10 @@ export const buildDeptRows = (
       >,
       s,
     ) => {
-      if (!acc[s.sub_department]) {
-        acc[s.sub_department] = {
+      const k = subDeptKey(s);
+      if (!acc[k]) {
+        acc[k] = {
+          id: s.sub_department,
           desc: s.sub_department_description,
           net: 0,
           qty: 0,
@@ -219,22 +224,21 @@ export const buildDeptRows = (
           storeCpn: 0,
         };
       }
-      acc[s.sub_department].net += s.total_sales - s.total_tax;
-      acc[s.sub_department].qty += s.qty;
-      acc[s.sub_department].digital += s.digital_coupons;
-      acc[s.sub_department].elecInstore += s.elec_instore_coupons;
-      acc[s.sub_department].elecStore += s.elec_store_coupons;
-      acc[s.sub_department].storeCpn += s.store_coupon;
+      acc[k].net += s.total_sales - s.total_tax;
+      acc[k].qty += s.qty;
+      acc[k].digital += s.digital_coupons;
+      acc[k].elecInstore += s.elec_instore_coupons;
+      acc[k].elecStore += s.elec_store_coupons;
+      acc[k].storeCpn += s.store_coupon;
       return acc;
     },
     {},
   );
 
   const twRows = Object.entries(twMap)
-    .map(([id, r]) => {
-      const numId = Number(id);
-      const lw = lwMap[numId];
-      const ly = lyMap[numId];
+    .map(([key, r]) => {
+      const lw = lwMap[key];
+      const ly = lyMap[key];
       const lwNet = lw?.net ?? 0;
       const lyNet = ly?.net ?? 0;
       const lwQty = lw?.qty ?? 0;
@@ -242,14 +246,15 @@ export const buildDeptRows = (
       // Each percentage divides by the TW subtotal for its OWN comparison.
       // `tw` below stays the whole week — it is the department's actual
       // sales and the column header says so — but it is never the base.
-      const twLW = twForLW[numId];
-      const twLY = twForLY[numId];
+      const twLW = twForLW[key];
+      const twLY = twForLY[key];
       const twNetForLW = twLW?.net ?? 0;
       const twNetForLY = twLY?.net ?? 0;
       const twQtyForLW = twLW?.qty ?? 0;
       const twQtyForLY = twLY?.qty ?? 0;
       return {
-        id: numId,
+        id: r.id,
+        key,
         desc: r.desc,
         tw: r.net,
         lw: lwNet,
@@ -288,25 +293,24 @@ export const buildDeptRows = (
    * and it grades like any other row. The item level keeps its inactive
    * codes apart, but that list is hundreds long where this one is dozens.
    */
-  const inactiveIds = [...new Set([...Object.keys(lwMap), ...Object.keys(lyMap)])]
-    .map(Number)
-    .filter((id) => !twMap[id]);
-  const inactive: DeptRow[] = inactiveIds
-    .map((id) => {
-      const lw = lwMap[id];
-      const ly = lyMap[id];
+  const inactiveKeys = [
+    ...new Set([...Object.keys(lwMap), ...Object.keys(lyMap)]),
+  ].filter((key) => !twMap[key]);
+  const inactive: DeptRow[] = inactiveKeys
+    .map((key) => {
+      const lw = lwMap[key];
+      const ly = lyMap[key];
       const lwNet = lw?.net ?? 0;
       const lyNet = ly?.net ?? 0;
+      // `subs/daily` only names a department on a row it returned, so the
+      // number and name come off whichever comparison week has one.
+      const named =
+        subSalesWk2.find((s) => subDeptKey(s) === key) ??
+        subSalesWk3.find((s) => subDeptKey(s) === key);
       return {
-        id,
-        // `sub_sales` only names a department on a row it returned, so the
-        // name comes off whichever comparison week has one.
-        desc:
-          subSalesWk2.find((s) => s.sub_department === id)
-            ?.sub_department_description ??
-          subSalesWk3.find((s) => s.sub_department === id)
-            ?.sub_department_description ??
-          String(id),
+        id: named?.sub_department ?? 0,
+        key,
+        desc: named?.sub_department_description ?? key,
         tw: 0,
         lw: lwNet,
         ly: lyNet,

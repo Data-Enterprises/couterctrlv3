@@ -1,4 +1,5 @@
 // Hooks
+import { useRef } from "react";
 import { useAppSelector } from "../../../../hooks";
 
 // Redux
@@ -46,7 +47,7 @@ export const useSalesCtx = () =>
       // its items (sold this week, and sold before but not this week).
       subDeptThreshold: s.dev.salesLedger.subDeptThreshold,
       itemThreshold: s.dev.salesLedger.itemThreshold,
-      selectedSubDeptId: s.dev.salesLedger.selectedSubDeptId,
+      selectedSubDeptKey: s.dev.salesLedger.selectedSubDeptKey,
       selectedSubDeptItems: s.dev.salesLedger.selectedSubDeptItems,
       inactiveSubDeptItems: s.dev.salesLedger.inactiveSubDeptItems,
       lastFetchedItemsKey: s.dev.salesLedger.lastFetchedItemsKey,
@@ -59,14 +60,14 @@ export const useSalesCtx = () =>
       counterpart: s.dev.salesLedger.counterpart,
       lastFetchedStoreKey: s.dev.salesLedger.lastFetchedStoreKey,
       storeCache: s.dev.salesLedger.storeCache,
-      // The ledger: the search, the open store, the store-row threshold, an
-      // open investigation and the dept matrix.
+      // The ledger: the search, the open store, the store-row threshold and
+      // an open investigation.
       hasSearched: s.dev.salesLedger.hasSearched,
       selection: s.dev.salesLedger.selection,
       ledgerLoading: s.dev.salesLedger.ledgerLoading,
       threshold: s.dev.salesLedger.threshold,
       investigation: s.dev.salesLedger.investigation,
-      matrixOpen: s.dev.salesLedger.matrixOpen,
+      investigationGrid: s.dev.salesLedger.investigationGrid,
       // Top 200: the open store's items and the caches behind them.
       topItems: s.dev.salesLedger.topItems,
       topItemPoints: s.dev.salesLedger.topItemPoints,
@@ -76,9 +77,11 @@ export const useSalesCtx = () =>
       topItemsLoading: s.dev.salesLedger.topItemsLoading,
       topItemsCache: s.dev.salesLedger.topItemsCache,
       topItemsTyCache: s.dev.salesLedger.topItemsTyCache,
+      top200View: s.dev.salesLedger.top200View,
       // The API connection, the search and the user's stores.
       url: s.app.url,
       token: s.app.token,
+      apiEnv: s.app.apiEnv,
       userid: s.user.userid,
       assignedStores: s.user.assignedStores,
       selectedGroupStores: s.user.selectedGroupStores,
@@ -89,3 +92,20 @@ export const useSalesCtx = () =>
     }),
     shallowEqual,
   );
+
+/**
+ * A grading threshold that holds its last real value.
+ *
+ * Grading should never move rows around on its own when the threshold input
+ * is cleared: with no new number typed, keep grading against the last valid
+ * amount so severity and sort order stay exactly where they were. Returned
+ * as a plain value, since a ref's `.current` is not a sound memo dependency.
+ */
+export const useLastValidThreshold = (
+  amount: number | null | undefined,
+  fallback = 9,
+) => {
+  const last = useRef<number>(amount ?? fallback);
+  if (amount != null) last.current = amount;
+  return last.current;
+};

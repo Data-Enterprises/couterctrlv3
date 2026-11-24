@@ -4,7 +4,6 @@ import { useTriStateSort } from "../../../../../utils/useTriStateSort";
 
 // Utils
 import { formatBigNumber, formatCurrencyCompact } from "../../../../../utils";
-import { applyStoreNumberToName } from "../../utils/ledgerUtils";
 import {
   byStanding,
   shareBalanceOf,
@@ -19,11 +18,9 @@ import {
   BAND_LABEL,
   BAND_WHY,
   BAR_CEILING_PCT,
-  changeText,
   COLS,
   keyOf,
   ORDER,
-  widthOf,
 } from "../utils";
 
 // Interfaces
@@ -35,6 +32,7 @@ import type { LedgerRowData } from "../../interfaces";
 // Components
 import SortHeader from "../../../../../components-dev/SortHeader";
 import GroupShareStoreDetail from "./GroupShareStoreDetail";
+import ShareStoreRow from "./ShareStoreRow";
 
 interface GroupShareBalanceProps {
   /** The comparison the panel is already showing, scoped the same way. */
@@ -186,69 +184,15 @@ const GroupShareBalance = ({
             </div>
 
             <div className="cc-scroll">
-              {visible.map((r) => {
-                const sel = picked !== null && keyOf(picked) === keyOf(r);
-                return (
-                  <button
-                    key={keyOf(r)}
-                    onClick={() => setPickedKey(keyOf(r))}
-                    className={`w-full grid items-center gap-2 px-1 py-2.5 border-l-2 border-b border-b-line_hair text-left transition-colors ${
-                      sel
-                        ? "cc-row-selected"
-                        : "border-transparent hover:bg-fill_soft"
-                    }`}
-                    style={{ gridTemplateColumns: COLS }}
-                  >
-                    {/* Co-located stores share one storeid, so the name
-                        resolves identically for both and only the NUMBER
-                        tells them apart. Without this the falling store wore
-                        its neighbour's name. */}
-                    <span className="min-w-0 text-[12px] font-medium text-content truncate">
-                      {applyStoreNumberToName(
-                        r.storeName,
-                        r.storeNumber,
-                        r.storeNumbersForId,
-                      )}
-                    </span>
-
-                    {/* The tick is the slice it usually takes, on the same
-                        scale. The gap between bar end and tick IS the change,
-                        before anybody reads a number — and the bar's colour
-                        is the band, which is what the section headings used
-                        to say. */}
-                    <span className="relative h-4 rounded bg-bkg block">
-                      <span
-                        className={`absolute left-0 top-0 bottom-0 rounded-l ${BALANCE_TONE[r.standing].bar}`}
-                        style={{ width: widthOf(r.sharePct) }}
-                      />
-                      <span
-                        className="absolute -top-0.5 -bottom-0.5 w-0.5 bg-content"
-                        style={{ left: widthOf(r.usualPct) }}
-                      />
-                    </span>
-
-                    <span className="flex justify-end">
-                      <span className="text-[12.5px] font-semibold px-1.5 py-1 rounded text-center whitespace-nowrap tabular-nums bg-fill_muted text-content">
-                        {r.sharePct.toFixed(1)}%
-                      </span>
-                    </span>
-                    <span className="flex justify-end">
-                      <span
-                        className={`text-[12.5px] font-semibold px-1.5 py-1 rounded text-center whitespace-nowrap tabular-nums ${BALANCE_TONE[r.standing].pill}`}
-                      >
-                        {changeText(r.changePct)}
-                      </span>
-                    </span>
-                    <span className="flex justify-end">
-                      <span
-                        className={`text-[12.5px] font-semibold px-1.5 py-1 rounded text-center whitespace-nowrap tabular-nums ${BALANCE_TONE[r.standing].pill}`}
-                      >
-                        {money(r.money)}
-                      </span>
-                    </span>
-                  </button>
-                );
-              })}
+              {visible.map((r) => (
+                <ShareStoreRow
+                  key={keyOf(r)}
+                  row={r}
+                  selected={picked !== null && keyOf(picked) === keyOf(r)}
+                  worth={money(r.money)}
+                  onPick={() => setPickedKey(keyOf(r))}
+                />
+              ))}
             </div>
 
             <div className="flex items-center gap-3.5 pt-2 flex-shrink-0 text-[11px] text-content/95">

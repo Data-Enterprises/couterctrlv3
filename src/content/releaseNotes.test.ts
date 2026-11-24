@@ -3,11 +3,11 @@ import { categories } from "../components/navigation/utils";
 import {
   NOTE_KINDS,
   RELEASES,
-  SAMPLE_RELEASES,
   dateText,
   lastChangedRelease,
   notesFor,
   parseReleases,
+  releasesForLevel,
   smallerFor,
 } from "./releaseNotes";
 
@@ -17,7 +17,12 @@ describe("parseReleases", () => {
       {
         date: "2026-11-11",
         items: [
-          { kind: "new", page: "Sales", hrefs: ["sales"], text: "Summary tab." },
+          {
+            kind: "new",
+            page: "Sales",
+            hrefs: ["sales"],
+            text: "Summary tab.",
+          },
           { kind: "shiny", page: "Sales", hrefs: ["sales"], text: "x" },
           { kind: "fix", page: "", hrefs: [], text: "x" },
           { kind: "fix", page: "Orders", hrefs: ["orders"], text: " " },
@@ -56,7 +61,12 @@ describe("finding the page you are on", () => {
       date: "2026-11-11",
       items: [
         { kind: "new", page: "Sales", hrefs: ["sales"], text: "a" },
-        { kind: "fix", page: "Performance on a phone", hrefs: ["sales", "vendors"], text: "b" },
+        {
+          kind: "fix",
+          page: "Performance on a phone",
+          hrefs: ["sales", "vendors"],
+          text: "b",
+        },
         { kind: "fix", page: "Vendors", hrefs: ["vendors"], text: "c" },
       ],
       smallerFixes: [{ page: "Sales", hrefs: ["sales"], count: 4 }],
@@ -74,10 +84,15 @@ describe("finding the page you are on", () => {
   });
 
   it("finds the newest release that touched a page, smaller fixes included", () => {
-    const n = (page: string, href: string) => [{ kind: "fix", page, hrefs: [href], text: "x" }];
+    const n = (page: string, href: string) => [
+      { kind: "fix", page, hrefs: [href], text: "x" },
+    ];
     const older = parseReleases([
       { date: "2026-12-01", items: n("Orders", "orders") },
-      { date: "2026-11-20", smallerFixes: [{ page: "Coupons", hrefs: ["coupons"], count: 1 }] },
+      {
+        date: "2026-11-20",
+        smallerFixes: [{ page: "Coupons", hrefs: ["coupons"], count: 1 }],
+      },
       { date: "2026-11-02", items: n("Sales", "sales") },
     ]);
     expect(lastChangedRelease(older, "sales")?.date).toBe("2026-11-02");
@@ -86,16 +101,76 @@ describe("finding the page you are on", () => {
   });
 });
 
-describe("the notes shipped with the app", () => {
-  it("has no real releases yet: those are written at the move to prod", () => {
-    expect(RELEASES).toEqual([]);
+describe("releasesForLevel", () => {
+  const releases = parseReleases([
+    {
+      date: "2026-11-23",
+      items: [
+        { kind: "new", page: "Sales", hrefs: ["sales"], text: "Summary tab." },
+        {
+          kind: "new",
+          page: "User Management",
+          hrefs: ["user-management"],
+          minLevel: 5,
+          text: "Access column.",
+        },
+        {
+          kind: "new",
+          page: "Admin",
+          hrefs: ["admin"],
+          minLevel: 7,
+          text: "Net sales exclusions.",
+        },
+      ],
+    },
+    {
+      date: "2026-12-01",
+      items: [
+        {
+          kind: "new",
+          page: "Admin",
+          hrefs: ["admin"],
+          minLevel: 7,
+          text: "Admin only.",
+        },
+      ],
+    },
+  ]);
+  const texts = (level: number) =>
+    releasesForLevel(releases, level).flatMap((r) =>
+      r.items.map((n) => n.text),
+    );
+
+  it("shows a level only the notes it can use", () => {
+    expect(texts(1)).toEqual(["Summary tab."]);
+    expect(texts(5)).toEqual(["Summary tab.", "Access column."]);
+    expect(texts(7)).toEqual([
+      "Summary tab.",
+      "Access column.",
+      "Net sales exclusions.",
+      "Admin only.",
+    ]);
   });
 
-  it("has a sample that uses every kind and counts smaller fixes", () => {
-    const latest = SAMPLE_RELEASES[0];
-    for (const k of NOTE_KINDS)
-      expect(latest.items.some((n) => n.kind === k)).toBe(true);
-    expect(latest.smallerFixes.length).toBeGreaterThan(0);
+  it("drops a release that has nothing left for the level", () => {
+    expect(releasesForLevel(releases, 5).map((r) => r.date)).toEqual([
+      "2026-11-23",
+    ]);
+  });
+});
+
+describe("the notes shipped with the app", () => {
+  it("ships the first official release, and no sample notes", () => {
+    expect(RELEASES.map((r) => r.date)).toEqual(["2026-11-24"]);
+  });
+
+  it("gives every level something to read", () => {
+    expect(releasesForLevel(RELEASES, 1)[0]?.items.length).toBeGreaterThan(0);
+  });
+
+  it("uses only the kinds the panel draws", () => {
+    for (const n of RELEASES.flatMap((r) => r.items))
+      expect(NOTE_KINDS).toContain(n.kind);
   });
 
   it("points every note at a route the menu really has", () => {
@@ -104,7 +179,7 @@ describe("the notes shipped with the app", () => {
     const routes = new Set(
       categories.flatMap((c) => c.pages.map((p) => p.href)),
     );
-    const unknown = SAMPLE_RELEASES.flatMap((r) => [
+    const unknown = RELEASES.flatMap((r) => [
       ...r.items.flatMap((n) => n.hrefs),
       ...r.smallerFixes.flatMap((s) => s.hrefs),
     ]).filter((h) => !routes.has(h));

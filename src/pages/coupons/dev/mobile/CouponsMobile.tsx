@@ -1,37 +1,32 @@
 // Hooks
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { useAppDispatch, useSearchPick } from "../../../../hooks";
-import { useToast } from "../../../../components/toasts/hooks/useToast";
-import { useCouponContext, useCouponActions } from "../hooks";
+import { useCouponContext, useCouponActions, useCouponSearch } from "../hooks";
 
 // Redux
-import { setSelectedGroupStores } from "../../../../features/userSlice";
 import { isGroupSearch } from "../../../../features/searchSlice";
-
-// API
-import { getCoupons } from "../../../../api/coupons";
-import { getStoresAssignedToUserGroup } from "../../../../api/groups";
+import {
+  resetCouponMobilePlace,
+  setCouponMobilePlace,
+  setCouponSortMetric,
+  type CouponMobilePlace,
+} from "../../../../features/dev/devCouponSlice";
 
 // Utils
-import { formatGoliathDate, resolveStoreName } from "../../../../utils";
+import { resolveStoreName } from "../../../../utils";
 import { applyStoreNumberToName } from "../../../../utils/storeIdentity";
 import { fmtSearchDate } from "./utils";
 
 // Interfaces
 import type { GroupTab } from "../interfaces";
 import type { Screen } from "./interfaces";
-import type {
-  CouponsResponse,
-  CouponItem,
-  JsonError,
-} from "../../../../interfaces";
+import type { CouponItem } from "../../../../interfaces";
 
 // Components
-import StorePicker from "../../../../components-dev/storePicker/StorePicker";
-import DatePickers from "../../../../components-dev/datePickers/DatePickers";
 import CpnStoreList from "./CpnStoreList";
 import CpnOverview from "./CpnOverview";
 import CpnSectionDetail from "./CpnSectionDetail";
+import CpnEntryCard from "./components/CpnEntryCard";
 
 /** The phone Coupons page. It holds the search card, then moves through the store list (group searches only),
  *  the overview with its Sub dept/Date/Cashier tabs, and a section's product detail. */
@@ -40,22 +35,29 @@ const CouponsMobile = () => {
   const { nothingPicked, pickLabel } = useSearchPick();
   const dispatch = useAppDispatch();
   const actions = useCouponActions();
-  const toast = useToast();
-  const { selectedGroup, userid, assignedStores, selectedGroupStores: groupStores } = ctx;
+  const {
+    selectedGroup,
+    assignedStores,
+    selectedGroupStores: groupStores,
+  } = ctx;
 
-  const [screen, setScreen] = useState<Screen>("entry");
-  // null in group mode means "All stores" — the whole group, unscoped.
-  const [selectedStoreId, setSelectedStoreId] = useState<number | null>(null);
-  // Co-located stores share a storeid — the number is what picks the location.
-  const [selectedStoreNumber, setSelectedStoreNumber] = useState<string | null>(
-    null,
-  );
-  const [selectedTab, setSelectedTab] = useState<GroupTab>("subdept");
-  const [selectedSection, setSelectedSection] = useState<{
-    key: string;
-    label: string;
-  } | null>(null);
-  const [sortMetric, setSortMetric] = useState<"amount" | "qty">("amount");
+  // Where the phone is lives in the slice, so leaving the page and coming back
+  // lands on the same screen. With nothing loaded it is always the search card.
+  const {
+    storeId: selectedStoreId,
+    storeNumber: selectedStoreNumber,
+    tab: selectedTab,
+    section: selectedSection,
+  } = ctx.mobile;
+  const screen: Screen = ctx.coupons.length === 0 ? "entry" : ctx.mobile.screen;
+  const place = (p: Partial<CouponMobilePlace>) =>
+    dispatch(setCouponMobilePlace(p));
+  const setScreen = (next: Screen) => place({ screen: next });
+  const setSelectedTab = (tab: GroupTab) => place({ tab });
+  const sortMetric = ctx.sortMetric;
+  const setSortMetric = (m: "amount" | "qty") =>
+    dispatch(setCouponSortMetric(m));
+  const { runSearch } = useCouponSearch(ctx);
 
   useEffect(() => {
     document.body.style.overflow = "hidden";
@@ -71,64 +73,12 @@ const CouponsMobile = () => {
       ? `${fmtSearchDate(ctx.startDate)} – ${fmtSearchDate(ctx.endDate)}, ${ctx.endDate.split("/")[2]}`
       : "";
 
-  const getData = () => {
-    dispatch(actions.setCoupons([]));
-    dispatch(actions.setIsFetching(true));
-    dispatch(actions.setNoCouponsFound(false));
-    // A group search can return stores this user isn't assigned to; loading
-    // them here lets those rows' store names resolve.
-    if (isGroupSearch(ctx.type)) {
-      getStoresAssignedToUserGroup(ctx.url, ctx.token, userid, ctx.lastGroup)
-        .then((resp) => {
-          if (resp.data.error === 0) {
-            dispatch(
-              setSelectedGroupStores(
-                resp.data.stores.filter((s: { active: boolean }) => s.active),
-              ),
-            );
-          } else {
-            toast.warn(resp.data.msg);
-          }
-        })
-        .catch(() => {});
-    }
-    const useGroups = isGroupSearch(ctx.type) ? 1 : 0;
-    const singleStore = ctx.type === "Store" ? 1 : 0;
-    const searchValue = isGroupSearch(ctx.type) ? ctx.lastGroup : ctx.lastStore;
-    const start = formatGoliathDate(ctx.startDate);
-    const end = formatGoliathDate(ctx.endDate);
-
-    getCoupons(
-      ctx.url,
-      ctx.token,
-      start,
-      end,
-      useGroups,
-      singleStore,
-      searchValue,
-    )
-      .then((resp) => {
-        const j: CouponsResponse = resp.data;
-        if (j.error !== 0) {
-          toast.warn(j.msg ?? "Failed to load coupons");
-        } else if (j.records.length > 0) {
-          dispatch(actions.setCoupons(j.records));
-          setScreen(isGroup ? "stores" : "overview");
-        } else {
-          dispatch(actions.setNoCouponsFound(true));
-        }
-      })
-      .catch((err: JsonError) => toast.error(err.message))
-      .finally(() => dispatch(actions.setIsFetching(false)));
-  };
+  const getData = () =>
+    runSearch(() => setScreen(isGroup ? "stores" : "overview"));
 
   const handleReset = () => {
     dispatch(actions.resetCoupons());
-    setScreen("entry");
-    setSelectedStoreId(null);
-    setSelectedStoreNumber(null);
-    setSelectedSection(null);
-    setSelectedTab("subdept");
+    dispatch(resetCouponMobilePlace());
   };
 
   const filteredCoupons = useMemo<CouponItem[]>(() => {
@@ -205,11 +155,9 @@ const CouponsMobile = () => {
         dateRangeLabel={dateRangeLabel}
         sortMetric={sortMetric}
         onSortMetric={setSortMetric}
-        onSelect={(storeId, storeNumber) => {
-          setSelectedStoreId(storeId);
-          setSelectedStoreNumber(storeNumber);
-          setScreen("overview");
-        }}
+        onSelect={(storeId, storeNumber) =>
+          place({ storeId, storeNumber, screen: "overview" })
+        }
         onSearch={handleReset}
       />
     );
@@ -226,16 +174,12 @@ const CouponsMobile = () => {
         onSortMetric={setSortMetric}
         selectedTab={selectedTab}
         onTabChange={setSelectedTab}
-        onSectionSelect={(key, label) => {
-          setSelectedSection({ key, label });
-          setScreen("detail");
-        }}
+        onSectionSelect={(key, label) =>
+          place({ section: { key, label }, screen: "detail" })
+        }
         onBack={
           isGroup
-            ? () => {
-                setSelectedStoreId(null);
-                setScreen("stores");
-              }
+            ? () => place({ storeId: null, screen: "stores" })
             : handleReset
         }
       />
@@ -257,32 +201,13 @@ const CouponsMobile = () => {
 
   // Entry screen
   return (
-    <div className="h-[calc(100dvh-3rem)] overflow-y-auto bg-bkg">
-      <div className="mx-4 pt-4 pb-2">
-        <div className="bg-custom-white rounded-2xl shadow-lg p-4 flex flex-col gap-3">
-          <div>
-            <div className="text-[15px] font-bold text-content">Coupons</div>
-            <div className="text-[10px] text-content/95 mt-1">
-              Select a store or group and date range to load coupon activity.
-            </div>
-          </div>
-          {ctx.noCouponsFound && (
-            <div className="cc-notice text-[11.5px] leading-snug">
-              No coupons came back for this search.
-            </div>
-          )}
-          <StorePicker />
-          <DatePickers showBtn={false} handleQuery={getData} />
-          <button
-            onClick={getData}
-            disabled={ctx.isFetching || nothingPicked}
-            className="w-full py-2.5 text-[12px] font-semibold text-custom-white rounded-xl bg-brand_navy hover:bg-brand_navy_hover disabled:opacity-60 transition-colors"
-          >
-            {ctx.isFetching ? "Loading…" : nothingPicked ? pickLabel : "Load Coupons"}
-          </button>
-        </div>
-      </div>
-    </div>
+    <CpnEntryCard
+      noCouponsFound={ctx.noCouponsFound}
+      loading={ctx.isFetching}
+      nothingPicked={nothingPicked}
+      pickLabel={pickLabel}
+      onSearch={getData}
+    />
   );
 };
 

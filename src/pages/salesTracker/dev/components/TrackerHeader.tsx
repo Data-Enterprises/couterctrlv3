@@ -7,10 +7,7 @@ import type { TrackerBasis } from "../interfaces";
 
 // Components
 import BackButton from "../../../../components-dev/BackButton";
-import {
-  MinusIcon,
-  PlusIcon,
-} from "@heroicons/react/20/solid";
+import { MinusIcon, PlusIcon } from "@heroicons/react/20/solid";
 import PageInfoButton from "../../../../components-dev/PageInfoButton";
 import ComingSoonHelp from "../../../../components-dev/ComingSoonHelp";
 
@@ -48,7 +45,6 @@ const TrackerHeader = ({
   pctChange,
   onOpenSearch,
 }: TrackerHeaderProps) => {
-
   return (
     <div className="cc-navy-panel-header flex flex-col gap-0">
       <div className="flex items-center gap-2 min-h-[26px]">
@@ -91,7 +87,10 @@ const TrackerHeader = ({
 
         {/* The window and its two controls: minus narrows it (rows are kept),
             plus fetches only the week added. */}
-        <div data-help="window" className="flex items-center gap-1 flex-shrink-0">
+        <div
+          data-help="window"
+          className="flex items-center gap-1 flex-shrink-0"
+        >
           <button
             type="button"
             onClick={onDropWeek}

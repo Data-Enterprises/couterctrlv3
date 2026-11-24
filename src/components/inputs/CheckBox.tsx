@@ -1,6 +1,7 @@
+// Components
 import CheckboxIcon from "../../svgs/CheckBoxIcon";
 
-interface Props {
+interface CheckBoxProps {
   label?: string;
   value: boolean;
   onChange?: (value: boolean | number) => void;
@@ -11,6 +12,8 @@ interface Props {
   isBool?: boolean;
 }
 
+/** A clickable checkbox icon with a label. It reports the toggled value, or its
+ *  own id when `isBool` is off. */
 const CheckBox = ({
   label = "",
   value,
@@ -20,7 +23,7 @@ const CheckBox = ({
   className = "",
   idExtension = "",
   isBool = true,
-}: Props) => {
+}: CheckBoxProps) => {
   const handleClick = () => {
     if (onChange && isBool) onChange(!value);
     if (onChange && !isBool) onChange(id);

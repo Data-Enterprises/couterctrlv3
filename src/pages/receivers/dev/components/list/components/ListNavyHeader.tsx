@@ -19,7 +19,7 @@ const ListNavyHeader = ({ onOpenSearch, storeName }: ListNavyHeaderProps) => {
   const state = useReceiversState();
   const { search } = useReceiversCtx();
   const dateLabel = fmtDateLabel(search.startDate, search.endDate);
-  
+
   return (
     <div
       className="flex-shrink-0 px-3 pt-1 pb-2.5 flex flex-col gap-0"

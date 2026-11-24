@@ -6,7 +6,10 @@ import { useSearchScopeLabel } from "../../../../hooks/useSearchScopeLabel";
 import { fmtDate } from "./utils";
 
 // Interfaces
-import type { GroupedOrderCard, SelectedOrderKey } from "../../../../features/dev/devOrdersSlice";
+import type {
+  GroupedOrderCard,
+  SelectedOrderKey,
+} from "../../../../features/dev/devOrdersSlice";
 import type { SelectFilterOption } from "../../../../components-dev/filters/interfaces";
 
 // Components
@@ -21,8 +24,17 @@ interface OrdersAvailableScreenProps {
   loading: boolean;
   startDate: string;
   endDate: string;
-  onSelectStore: (order_date: string, order_type: string, storeid: number, storenumber: string) => void;
-  onSelectAllStores: (order_date: string, order_type: string, storeids: number[]) => void;
+  onSelectStore: (
+    order_date: string,
+    order_type: string,
+    storeid: number,
+    storenumber: string,
+  ) => void;
+  onSelectAllStores: (
+    order_date: string,
+    order_type: string,
+    storeids: number[],
+  ) => void;
   onOpenSearch: () => void;
 }
 
@@ -48,18 +60,31 @@ const OrdersAvailableScreen = ({
   const scopeLabel = useSearchScopeLabel();
 
   const toggleType = (type: string) =>
-    setOpenTypes((prev) => { const s = new Set(prev); s.has(type) ? s.delete(type) : s.add(type); return s; });
+    setOpenTypes((prev) => {
+      const s = new Set(prev);
+      s.has(type) ? s.delete(type) : s.add(type);
+      return s;
+    });
 
-  const isSelected = (order_date: string, order_type: string, storeid: number) =>
+  const isSelected = (
+    order_date: string,
+    order_type: string,
+    storeid: number,
+  ) =>
     selectedKey?.order_date === order_date &&
     selectedKey?.order_type === order_type &&
     !!selectedKey?.storeids.includes(storeid);
 
-  const typeFiltered = activeType === "all" ? cards : cards.filter((c) => c.order_type === activeType);
+  const typeFiltered =
+    activeType === "all"
+      ? cards
+      : cards.filter((c) => c.order_type === activeType);
 
   const dateOptions = useMemo<SelectFilterOption[]>(() => {
     const dates = new Set<string>();
-    typeFiltered.forEach((c) => c.dates.forEach((d) => dates.add(d.order_date)));
+    typeFiltered.forEach((c) =>
+      c.dates.forEach((d) => dates.add(d.order_date)),
+    );
     return Array.from(dates)
       .sort((a, b) => b.localeCompare(a))
       .map((d) => ({ value: d, label: fmtDate(d) }));
@@ -73,8 +98,10 @@ const OrdersAvailableScreen = ({
           .filter((dg) => !dateFilter || dg.order_date === dateFilter)
           .map((dg) => ({
             ...dg,
-            stores: dg.stores.filter((s) =>
-              !storeFilter || s.store_name.toLowerCase().includes(storeFilter.toLowerCase())
+            stores: dg.stores.filter(
+              (s) =>
+                !storeFilter ||
+                s.store_name.toLowerCase().includes(storeFilter.toLowerCase()),
             ),
           }))
           .filter((dg) => dg.stores.length > 0),
@@ -95,7 +122,9 @@ const OrdersAvailableScreen = ({
   const allVisibleStoreIds = useMemo(() => {
     if (activeType === "all") return [];
     const ids = new Set<number>();
-    visibleCards[0]?.dates.forEach((d) => d.stores.forEach((s) => ids.add(s.storeid)));
+    visibleCards[0]?.dates.forEach((d) =>
+      d.stores.forEach((s) => ids.add(s.storeid)),
+    );
     return Array.from(ids);
   }, [visibleCards, activeType]);
 
@@ -113,9 +142,15 @@ const OrdersAvailableScreen = ({
       {cards.length > 0 && (
         <div className="flex border-b border-line_hair flex-shrink-0 bg-custom-white">
           <button
-            onClick={() => { setActiveType("all"); setDateFilter(""); setOpenTypes(new Set()); }}
+            onClick={() => {
+              setActiveType("all");
+              setDateFilter("");
+              setOpenTypes(new Set());
+            }}
             className={`text-[10px] font-semibold py-2 whitespace-nowrap border-b-2 transition-colors flex-1 text-center ${
-              activeType === "all" ? "border-brand_navy text-brand_navy" : "border-transparent text-content"
+              activeType === "all"
+                ? "border-brand_navy text-brand_navy"
+                : "border-transparent text-content"
             }`}
           >
             All
@@ -123,9 +158,15 @@ const OrdersAvailableScreen = ({
           {cards.map((card) => (
             <button
               key={card.order_type}
-              onClick={() => { setActiveType(card.order_type); setDateFilter(""); setOpenTypes(new Set()); }}
+              onClick={() => {
+                setActiveType(card.order_type);
+                setDateFilter("");
+                setOpenTypes(new Set());
+              }}
               className={`text-[10px] font-semibold py-2 whitespace-nowrap border-b-2 transition-colors flex-1 text-center ${
-                activeType === card.order_type ? "border-brand_navy text-brand_navy" : "border-transparent text-content"
+                activeType === card.order_type
+                  ? "border-brand_navy text-brand_navy"
+                  : "border-transparent text-content"
               }`}
             >
               {card.order_type}
@@ -137,7 +178,11 @@ const OrdersAvailableScreen = ({
       {/* Filter bar */}
       {cards.length > 0 && (
         <div className="flex items-center gap-2 px-3 py-2 border-b border-line_hair bg-custom-white flex-shrink-0">
-          <TextFilter value={storeFilter} onChange={setStoreFilter} placeholder="Filter by store…" />
+          <TextFilter
+            value={storeFilter}
+            onChange={setStoreFilter}
+            placeholder="Filter by store…"
+          />
           <SelectFilter
             options={dateOptions}
             value={dateFilter}
@@ -151,7 +196,9 @@ const OrdersAvailableScreen = ({
       {allVisibleStoreIds.length > 1 && (
         <div className="px-3 py-2 border-b border-line_hair bg-custom-white flex-shrink-0">
           <button
-            onClick={() => onSelectAllStores(dateFilter, activeType, allVisibleStoreIds)}
+            onClick={() =>
+              onSelectAllStores(dateFilter, activeType, allVisibleStoreIds)
+            }
             className="w-full text-[11px] font-medium py-2 rounded-md border border-brand_navy/20 text-brand_navy transition-colors"
           >
             Select all {allVisibleStoreIds.length} stores
@@ -162,7 +209,9 @@ const OrdersAvailableScreen = ({
       {/* List — pb-14 clears the fixed bottom tab bar. */}
       <div className="flex-1 overflow-y-auto thin-scrollbar pb-14">
         {loading && (
-          <div className="flex items-center justify-center py-16 text-[12px] text-content">Loading…</div>
+          <div className="flex items-center justify-center py-16 text-[12px] text-content">
+            Loading…
+          </div>
         )}
         {!loading && cards.length === 0 && (
           <div className="flex items-center justify-center py-16 text-[12px] text-content">
@@ -171,7 +220,11 @@ const OrdersAvailableScreen = ({
         )}
 
         {visibleCards.map((card) => {
-          const typeOpen = activeType !== "all" || openTypes.has(card.order_type) || !!dateFilter || !!storeFilter;
+          const typeOpen =
+            activeType !== "all" ||
+            openTypes.has(card.order_type) ||
+            !!dateFilter ||
+            !!storeFilter;
           return (
             <div key={card.order_type} className="border-b border-line_hair">
               {/* Order type header — collapsible in All tab */}
@@ -182,7 +235,9 @@ const OrdersAvailableScreen = ({
                 >
                   <ChevronRightIcon
                     className="w-3 h-3 text-brand_navy/95 flex-shrink-0 transition-transform"
-                    style={{ transform: typeOpen ? "rotate(90deg)" : "rotate(0deg)" }}
+                    style={{
+                      transform: typeOpen ? "rotate(90deg)" : "rotate(0deg)",
+                    }}
                   />
                   <span className="text-[11px] font-semibold text-brand_navy uppercase tracking-wide flex-1 text-left">
                     {card.order_type}
@@ -198,26 +253,49 @@ const OrdersAvailableScreen = ({
                 <div className="divide-y divide-line_hair">
                   {card.dates.flatMap((dateGroup) =>
                     dateGroup.stores.map((store) => {
-                      const sel = isSelected(dateGroup.order_date, card.order_type, store.storeid);
+                      const sel = isSelected(
+                        dateGroup.order_date,
+                        card.order_type,
+                        store.storeid,
+                      );
                       return (
                         <button
                           key={`${dateGroup.order_date}-${store.storeid}__${store.storenumber}`}
-                          onClick={() => onSelectStore(dateGroup.order_date, card.order_type, store.storeid, store.storenumber)}
-                          style={sel ? { boxShadow: "inset 0 0 8px rgba(37,99,235,0.22)" } : undefined}
+                          onClick={() =>
+                            onSelectStore(
+                              dateGroup.order_date,
+                              card.order_type,
+                              store.storeid,
+                              store.storenumber,
+                            )
+                          }
+                          style={
+                            sel
+                              ? {
+                                  boxShadow:
+                                    "inset 0 0 8px rgba(37,99,235,0.22)",
+                                }
+                              : undefined
+                          }
                           className={`w-full flex items-center justify-between pl-6 pr-4 py-2.5 text-left transition-colors ${
                             sel ? "bg-custom-white" : "hover:bg-fill_soft"
                           }`}
                         >
                           <div className="flex flex-col min-w-0">
-                            <span className="text-[12px] font-medium text-content truncate">{store.store_name}</span>
-                            <span className="text-[10px] text-content mt-px">{fmtDate(dateGroup.order_date)}</span>
+                            <span className="text-[12px] font-medium text-content truncate">
+                              {store.store_name}
+                            </span>
+                            <span className="text-[10px] text-content mt-px">
+                              {fmtDate(dateGroup.order_date)}
+                            </span>
                           </div>
                           <span className="text-[10px] text-content bg-fill_muted rounded-full px-2 py-0.5 flex-shrink-0 ml-2">
-                            {store.frequency} {store.frequency === 1 ? "order" : "orders"}
+                            {store.frequency}{" "}
+                            {store.frequency === 1 ? "order" : "orders"}
                           </span>
                         </button>
                       );
-                    })
+                    }),
                   )}
                 </div>
               )}

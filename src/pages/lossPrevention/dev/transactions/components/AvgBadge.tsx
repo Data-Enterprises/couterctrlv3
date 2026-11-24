@@ -1,5 +1,3 @@
-
-
 interface AvgBadgeProps {
   pct: number;
   avg: number;

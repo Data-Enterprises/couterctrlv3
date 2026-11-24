@@ -21,7 +21,7 @@ import {
 // Utils
 import { peopleConfirm } from "../../utils/bulkConfirm";
 import { accessTypeLabel, grantFor } from "../utils/grantFor";
-import { callReason } from "../utils";
+import { reasonOf } from "../../../../../utils/serverError";
 import { withinReachOf } from "../utils/userReach";
 
 // Interfaces
@@ -102,11 +102,13 @@ const BaseGroupUsersTab = ({ group, users }: BaseGroupUsersTabProps) => {
   /**
    * One call per user, `allSettled`: the server refuses some with a 400 (a
    * single-store user can't take a whole group), and one refusal must not sink
-   * the batch. The reason comes from FastAPI's `detail`; see `callReason`.
+   * the batch. The reason comes from FastAPI's `detail`; see `reasonOf`.
    */
   const run = async (
     ids: number[],
-    call: (userid: number) => Promise<{ data: { error: number; msg?: string } }>,
+    call: (
+      userid: number,
+    ) => Promise<{ data: { error: number; msg?: string } }>,
     verb: string,
   ) => {
     setMoving(true);
@@ -116,7 +118,7 @@ const BaseGroupUsersTab = ({ group, users }: BaseGroupUsersTabProps) => {
     const failures = settled
       .map((res, i) => {
         if (res.status === "rejected") {
-          return { userid: ids[i], reason: callReason(res.reason) };
+          return { userid: ids[i], reason: reasonOf(res.reason) };
         }
         return res.value.data.error === 0
           ? null
@@ -156,7 +158,11 @@ const BaseGroupUsersTab = ({ group, users }: BaseGroupUsersTabProps) => {
     let groupStoreIds: number[] = [];
     if (anyByStore) {
       try {
-        const resp = await getAllStoresInBaseGroup(ctx.url, ctx.token, group.id);
+        const resp = await getAllStoresInBaseGroup(
+          ctx.url,
+          ctx.token,
+          group.id,
+        );
         const j = resp.data;
         if (j.error !== 0) {
           toast.error(j.msg || "Could not read this group's stores");
@@ -193,7 +199,8 @@ const BaseGroupUsersTab = ({ group, users }: BaseGroupUsersTabProps) => {
   const handleUnassign = (ids: number[]) =>
     void run(
       ids,
-      (userid) => deleteUserBaseGroupLink(ctx.url, ctx.token, userid, [group.id]),
+      (userid) =>
+        deleteUserBaseGroupLink(ctx.url, ctx.token, userid, [group.id]),
       "unassigned",
     );
 
@@ -218,7 +225,7 @@ const BaseGroupUsersTab = ({ group, users }: BaseGroupUsersTabProps) => {
   const heldPredicate = useCompanyFilterPredicate(users, heldFilter);
 
   return (
-    <div className="w-full">
+    <div className="w-full flex-1 min-h-0 flex flex-col">
       {((loading && assigned.length + unassigned.length === 0) ||
         !levelsKnown) && (
         <div className="text-[11px] text-content/95 mb-2">Loading users…</div>
@@ -234,6 +241,7 @@ const BaseGroupUsersTab = ({ group, users }: BaseGroupUsersTabProps) => {
           peopleConfirm({ direction, ids, me: ctx.userid, what: group.name })
         }
         onUnassign={handleUnassign}
+        fill
         leftPredicate={heldPredicate}
         leftFilters={
           <CompanyFilterSelect

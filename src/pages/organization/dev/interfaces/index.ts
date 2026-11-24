@@ -30,7 +30,8 @@ export interface PanelFit {
 }
 
 /** The users grid's sortable columns. */
-export type UserSortKey = "first" | "last" | "role" | "level" | "access" | "visited";
+export type UserSortKey =
+  "first" | "last" | "role" | "level" | "access" | "visited";
 
 export interface UserSort {
   key: UserSortKey;

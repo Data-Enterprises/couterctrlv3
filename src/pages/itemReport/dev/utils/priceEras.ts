@@ -1,12 +1,20 @@
 // Utils
 import { shiftIso } from "../../../../utils/grading";
-import { pricedUnits as unitsOrWeight, isWeighted } from "../../../../utils/pricedUnits";
+import {
+  pricedUnits as unitsOrWeight,
+  isWeighted,
+} from "../../../../utils/pricedUnits";
 import { MIN_ERA_DAYS, round2, round1 } from "./metrics";
 
 // Interfaces
 import type { ServerPricePoint } from "../../../../api/pricePoints";
 import type { SubsPricePoint } from "../../../../interfaces";
-import type { ReportItem, PriceEra, MergedPrice, ReceiptLine } from "../interfaces";
+import type {
+  ReportItem,
+  PriceEra,
+  MergedPrice,
+  ReceiptLine,
+} from "../interfaces";
 
 const costOn = (date: string, receipts: ReceiptLine[]): number | null => {
   for (const r of receipts) {

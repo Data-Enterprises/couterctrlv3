@@ -19,14 +19,11 @@ import {
 
 // Utils
 import { peopleConfirm } from "../../utils/bulkConfirm";
-import {
-  summarizeAssign,
-  summarizeUnassign,
-  viaLabel,
-} from "../utils";
+import { summarizeAssign, summarizeUnassign, viaLabel } from "../utils";
+import { reasonOf } from "../../../../../utils/serverError";
 
 // Interfaces
-import type { JsonError, Store, User } from "../../../../../interfaces";
+import type { Store, User } from "../../../../../interfaces";
 
 // Components
 import AssignPanel from "../../../../../components-dev/AssignPanel";
@@ -54,13 +51,20 @@ const StoreUsersPanel = ({ store, users }: StoreUsersPanelProps) => {
 
   const [assigned, setAssigned] = useState<StoreUserRow[]>([]);
   const [unassigned, setUnassigned] = useState<StoreCandidateRow[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [moving, setMoving] = useState(false);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [moving, setMoving] = useState<boolean>(false);
 
   /** A response for a store the reader has already left must not land here. */
   const activeStoreId = useRef(store.storeid);
 
+  /** Below level 9 or support the backend refuses a store with no company. */
+  const noCompanyLocked = !store.company && !ctx.canSeeAllCompanies;
+
   const load = () => {
+    if (noCompanyLocked) {
+      setLoading(false);
+      return;
+    }
     const forStore = store.storeid;
     activeStoreId.current = forStore;
     setLoading(true);
@@ -75,7 +79,7 @@ const StoreUsersPanel = ({ store, users }: StoreUsersPanelProps) => {
           toast.error(j.msg || "Could not load this store's users");
         }
       })
-      .catch((err: JsonError) => toast.error(err.message))
+      .catch((err) => toast.error(reasonOf(err)))
       .finally(() => {
         if (activeStoreId.current === forStore) setLoading(false);
       });
@@ -121,12 +125,12 @@ const StoreUsersPanel = ({ store, users }: StoreUsersPanelProps) => {
       const result = { changed: j.changed ?? [], skipped: j.skipped ?? [] };
       const summary =
         direction === "in"
-          ? summarizeAssign(result, store.store_number)
-          : summarizeUnassign(result, store.store_number);
+          ? summarizeAssign(result, store.store_name)
+          : summarizeUnassign(result, store.store_name);
       if (summary.tone === "success") toast.success(summary.text);
       else toast.error(summary.text);
     } catch (err) {
-      toast.error((err as JsonError).message);
+      toast.error(reasonOf(err));
     } finally {
       setMoving(false);
       load();
@@ -158,16 +162,30 @@ const StoreUsersPanel = ({ store, users }: StoreUsersPanelProps) => {
     sublabel: r.email ?? undefined,
   }));
 
-  const viaGroup = assigned.filter((r) => r.via !== null && r.via !== "").length;
+  const viaGroup = assigned.filter(
+    (r) => r.via !== null && r.via !== "",
+  ).length;
+
+  if (noCompanyLocked) {
+    return (
+      <div className="w-full" data-help="stores">
+        <div className="mb-2">
+          <span className="text-[15px] font-semibold text-content truncate">
+            {store.store_name}
+          </span>
+        </div>
+        <p className="text-[11.5px] text-content/95 leading-snug max-w-[680px]">
+          This store has no company, so contact support to manage its users.
+        </p>
+      </div>
+    );
+  }
 
   return (
-    <div className="w-full" data-help="stores">
+    <div className="w-full flex-1 min-h-0 flex flex-col" data-help="stores">
       <div className="flex items-baseline justify-between gap-2 mb-2">
         <div className="min-w-0">
-          <span className="text-[15px] font-semibold text-content">
-            {store.store_number}
-          </span>
-          <span className="text-[12.5px] text-content/95 ml-2 truncate">
+          <span className="text-[15px] font-semibold text-content truncate">
             {store.store_name}
           </span>
         </div>
@@ -177,26 +195,25 @@ const StoreUsersPanel = ({ store, users }: StoreUsersPanelProps) => {
       </div>
 
       <p className="text-[11.5px] text-content/95 leading-snug mb-2 max-w-[680px]">
-        Assigning here is <span className="font-semibold text-content">fixed</span>{" "}
-        access: it belongs to the person, not to a group, so no group change
-        can take it away.
+        Assigning here is{" "}
+        <span className="font-semibold text-content">fixed</span> access: it
+        belongs to the person, not to a group, so no group change can take it
+        away.
         {viaGroup > 0 && (
           <>
             {" "}
             {viaGroup === 1 ? "One user holds" : `${viaGroup} users hold`} this
-            store through a base group — those can only be changed on the
-            group.
+            store through a base group — those can only be changed on the group.
           </>
         )}
       </p>
 
       {!levelsKnown && (
-        <div className="text-[11.5px] text-content/95 mb-2">
-          Loading users…
-        </div>
+        <div className="text-[11.5px] text-content/95 mb-2">Loading users…</div>
       )}
 
       <AssignPanel
+        fill
         leftTitle="Not assigned"
         rightTitle="Assigned"
         leftItems={unassignedItems}
@@ -211,7 +228,7 @@ const StoreUsersPanel = ({ store, users }: StoreUsersPanelProps) => {
             direction,
             ids,
             me: ctx.userid,
-            what: `store ${store.store_number}`,
+            what: store.store_name,
           })
         }
         leftPredicate={heldPredicate}

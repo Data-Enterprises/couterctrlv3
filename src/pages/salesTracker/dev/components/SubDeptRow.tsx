@@ -15,7 +15,7 @@ import VsLy from "./VsLy";
 interface SubDeptRowProps {
   row: SubDeptTotal;
   isSelected: boolean;
-  onClick: (id: number) => void;
+  onClick: (key: string) => void;
 }
 
 /**
@@ -25,7 +25,7 @@ interface SubDeptRowProps {
  */
 const SubDeptRow = ({ row, isSelected, onClick }: SubDeptRowProps) => (
   <button
-    onClick={() => onClick(row.id)}
+    onClick={() => onClick(row.key)}
     // The left accent is drawn inset, not as a border, so cells stay in line
     // with the header.
     className={`w-full grid items-center gap-3.5 px-4 py-3 text-left transition-colors border-b border-b-brand_navy/15 ${

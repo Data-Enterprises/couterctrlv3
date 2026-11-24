@@ -1,27 +1,38 @@
 // API
-import { getSubDepts } from "../../../../api/subMargins";
+import { getSubsDaily } from "../../../../api/sales";
 import { getRollup } from "../../../../api/rollup";
 
 // Utils
 import { fetchAllPages } from "../../../../utils/paging";
-import { fetchSubDeptRows, fetchSubDeptRowsSafe } from "../../../../utils/marginRows";
+import {
+  fetchSubDeptRows,
+  fetchSubDeptRowsSafe,
+} from "../../../../utils/marginRows";
+import { subDeptKey, subDeptNumber } from "../../../../utils/subDeptKey";
 import { calculateCogs } from "../../../../utils/cogs";
 // Net of tax, the basis every other Sales surface reconciles on.
 import { netOf } from "../../../../utils/perfPairs";
 import { formatCurrencyCompact } from "../../../../utils";
 
 // Interfaces
-import type { InventoryScope, ItemCostStats, ProductSummary, SubDeptSummary, VendorSummary } from "../interfaces";
+import type {
+  InventoryScope,
+  ItemCostStats,
+  ProductSummary,
+  SubDeptSummary,
+  VendorSummary,
+} from "../interfaces";
 import type {
   SubDeptMargin,
   SubSale,
   SubSalesJsonResp,
 } from "../../../../interfaces";
 import type { PricePointsState } from "../../../../hooks/usePricePoints";
+import type { ActualFetchState } from "../../../../hooks/useActualPricePoints";
 
 /**
  * Fetching for Price Opt: Sub Department, lazy between two levels:
- * `subs/sub_sales` names the departments that sold; `subs/subs` returns one
+ * `subs/daily` names the departments that sold; `subs/subs` returns one
  * department's item rows when it is opened. One store at a time, like the
  * pages this drills beneath.
  */
@@ -37,16 +48,14 @@ export const fetchSubDepts = async (
   scope: InventoryScope,
 ): Promise<SubDeptSummary[]> => {
   const call = (page: number) =>
-    getSubDepts(
+    getSubsDaily(
       scope.url,
       scope.token,
       scope.start,
       scope.end,
       USE_GROUPS,
       scope.storeid,
-      SINGLE_STORE,
-      0, // consolidated — 0 keeps sale_date
-      0, // displayHourly
+      null,
       page,
     );
 
@@ -67,14 +76,17 @@ export const fetchSubDepts = async (
 
   // Rows are per department per day, so a week arrives as seven rows per
   // department and the sales have to be summed before anything is comparable.
-  const byId = new Map<number, SubDeptSummary>();
+  // A department is its number AND name: ACE stores file several under one.
+  const byKey = new Map<string, SubDeptSummary>();
   all.forEach((s: SubSale) => {
-    const found = byId.get(s.sub_department);
+    const key = subDeptKey(s);
+    const found = byKey.get(key);
     if (found) {
       found.sales += netOf(s);
     } else {
-      byId.set(s.sub_department, {
+      byKey.set(key, {
         id: s.sub_department,
+        key,
         description: s.sub_department_description,
         sales: netOf(s),
         itemCount: null,
@@ -82,7 +94,7 @@ export const fetchSubDepts = async (
     }
   });
 
-  return [...byId.values()].sort((a, b) => b.sales - a.sales);
+  return [...byKey.values()].sort((a, b) => b.sales - a.sales);
 };
 
 /** Priced units for an item row: `weight` when non-zero, else `qty`, the same
@@ -152,23 +164,24 @@ export const itemCostStats = (
 };
 
 /** Every UPC in one department. Fetched on demand, one call per department the
- *  user actually opens. */
+ *  user actually opens: asked for by number, kept by number and name (for
+ *  department 0, asking by number returns the whole store). */
 export const fetchProducts = async (
   scope: InventoryScope,
-  subDeptId: number,
-): Promise<ProductSummary[]> =>
-  groupProducts(
-    await fetchSubDeptRows(
-      scope.url,
-      scope.token,
-      subDeptId,
-      scope.start,
-      scope.end,
-      USE_GROUPS,
-      scope.storeid,
-      SINGLE_STORE,
-    ),
+  key: string,
+): Promise<ProductSummary[]> => {
+  const rows = await fetchSubDeptRows(
+    scope.url,
+    scope.token,
+    subDeptNumber(key),
+    scope.start,
+    scope.end,
+    USE_GROUPS,
+    scope.storeid,
+    SINGLE_STORE,
   );
+  return groupProducts(rows.filter((r) => subDeptKey(r) === key));
+};
 
 /* ------------------------------------------------------------------ vendors */
 
@@ -257,8 +270,7 @@ export const fetchVendors = async (
     } else {
       byVendor.set(id, {
         vendorId: id,
-        vendorName:
-          id === NO_VENDOR ? "No vendor" : r.vendor_name || id,
+        vendorName: id === NO_VENDOR ? "No vendor" : r.vendor_name || id,
         sales: netOf(r),
         itemCount: 0,
         rows: [r],
@@ -281,11 +293,13 @@ export const TXN_COLS = "90px 1fr 92px 48px 64px";
 
 /** Receipts read "STORE-123456"; the half before the dash is the store, which
  *  is the same for every row on a single-store page. */
-export const transactionLabel = (saleId: string) => saleId.split("-")[1] ?? saleId;
+export const transactionLabel = (saleId: string) =>
+  saleId.split("-")[1] ?? saleId;
 
 /** Scale items ring a fractional quantity, so decimals only when there are
  *  any — "1" reads better than "1.00" nineteen times over. */
-export const fmtQty = (q: number) => (Number.isInteger(q) ? String(q) : q.toFixed(2));
+export const fmtQty = (q: number) =>
+  Number.isInteger(q) ? String(q) : q.toFixed(2);
 
 /**
  * Money down the tree: whole dollars under a thousand, one decimal of a
@@ -301,3 +315,16 @@ export const treeMoney = (n: number) =>
 export const EST_COLS = "1fr 50px 46px 56px 38px";
 export const NO_ROWS: PricePointsState["rows"] = [];
 export const dash = "—";
+
+/** The selected item's price rows and receipt lines for the export. Empty when
+ *  a read belongs to a previously-clicked UPC, the same guard the panel uses,
+ *  so nothing is exported under the wrong item's name. */
+export const currentItemReads = (
+  selected: ProductSummary | null,
+  prices: PricePointsState,
+  receipts: ActualFetchState,
+) => ({
+  prices: selected && prices.upc === selected.productCode ? prices.rows : [],
+  lines:
+    selected && receipts.upc === selected.productCode ? receipts.lines : [],
+});

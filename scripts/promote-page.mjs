@@ -17,7 +17,13 @@
  *
  *   SLICES   a forked slice the dev tree uses is written over its prod slice
  *            (header and slice name put back). The dev slice stays — dev
- *            keeps its own state — and now matches prod.
+ *            keeps its own state — and now matches prod. A dev slice with no
+ *            prod twin yet gets one: written under its prod name, registered
+ *            in store/pageReducers.ts (so sign-out clears it), and taken off
+ *            sliceIsolation.test.ts's dev-only list.
+ *   TESTS    tests/dev/pages/<page> is copied to tests/prod/pages/<page> with
+ *            the same swaps on its @/ imports; prod tests with no dev twin, and
+ *            tests left inside the prod tree, go to trash/.
  *   LIBRARY  a dev-library file the prod library doesn't have yet is copied
  *            in; nothing in prod uses it, so that is safe. A dev-library file
  *            that DIFFERS from its prod twin is a change to a component other
@@ -32,7 +38,8 @@
 import { readFileSync, writeFileSync, existsSync, statSync, mkdirSync, renameSync } from "node:fs";
 import { execSync } from "node:child_process";
 import path from "node:path";
-import { makeResolver, specFor, SPEC_RE, trashPath } from "./relocate.mjs";
+import { makeResolver, trashPath } from "./relocate.mjs";
+import { makePromoter, prodNameFromFile, promoteTestImports, LIB, DEVLIB } from "./promote-common.mjs";
 
 const P = path.posix;
 const args = process.argv.slice(2);
@@ -54,7 +61,6 @@ const DEV = `${PAGE}dev/`;
 for (const d of [PROD, DEV])
   if (!existsSync(d)) { console.error(`missing ${d} — has ${page} been split?`); process.exit(2); }
 
-const LIB = "src/components/", DEVLIB = "src/components-dev/";
 const files = execSync("git ls-files -co --exclude-standard src", { encoding: "utf8" })
   .trim().split("\n").filter((f) => existsSync(f) && statSync(f).isFile());
 const has = new Set(files);
@@ -62,60 +68,12 @@ const resolve = makeResolver(has);
 const isTest = (f) => /\.test\.tsx?$/.test(f);
 const lf = (s) => s.replace(/\r\n/g, "\n");
 
-// dev path -> prod path, for every kind of dev-only file.
-const toProd = (f) => {
-  if (f.startsWith(DEV)) return PROD + f.slice(DEV.length);
-  if (f.startsWith(DEVLIB)) return LIB + f.slice(DEVLIB.length);
-  const slice = f.match(/^src\/features\/dev\/dev(\w)(\w*Slice\.tsx?)$/);
-  if (slice) return `src/features/${slice[1].toLowerCase()}${slice[2]}`;
-  const unit = f.match(/^(src\/pages\/.+?)\/dev\/(.+)$/);
-  if (unit && existsSync(`${unit[1]}/prod`)) return `${unit[1]}/prod/${unit[2]}`;
-  return f;
-};
-
-// Rewrite a dev file's text for its prod location.
-const selectorParams = (src) => {
-  const ps = new Set();
-  for (const m of src.matchAll(/useAppSelector\(\s*\(?\s*(\w+)/g)) ps.add(m[1]);
-  for (const m of src.matchAll(/\b(\w+)\s*:\s*RootState\b/g)) ps.add(m[1]);
-  return ps;
-};
-const promoteText = (from, src) => {
-  const to = toProd(from);
-  let out = src.replace(SPEC_RE, (m, head, q, spec) => {
-    const r = resolve(from, spec);
-    if (!r) return m;
-    const next = specFor(to, toProd(r.target), r.suffix);
-    return next === spec ? m : `${head}${q}${next}${q}`;
-  });
-  for (const p of selectorParams(out)) out = out.replace(new RegExp(`(?<![.\\w])${p}\\.dev\\.`, "g"), `${p}.prod.`);
-  out = out.replace(/getState\(\)\.dev\./g, "getState().prod.");
-  return out.replace(/\bThe dev tree\b/g, "The prod tree").replace(/\bdev tree\b/g, "prod tree");
-};
-// A dev slice back to its prod form: no "Dev copy" header, the prod name.
-const promoteSlice = (from, src, prodName) => {
-  let out = promoteText(from, src);
-  out = out.replace(/^\/\*\*\r?\n \* Dev copy of [\s\S]*?\*\/\r?\n/, "");
-  out = out.replace(
-    /^([ \t]*)\/\/ Distinct from the prod slice's "\w+"[^\n]*\n[ \t]*\/\/ string alone[^\n]*\n[ \t]*name:\s*"\w+"/m,
-    (m, ind) => `${ind}name: "${prodName}"`,
-  );
-  return out;
-};
+const { toProd, promoteText, promoteSlice, edgesOf } = makePromoter(resolve);
 
 // ── the page trees ────────────────────────────────────────────────────────
 const devFiles = files.filter((f) => f.startsWith(DEV) && !isTest(f));
 const prodFiles = files.filter((f) => f.startsWith(PROD) && !isTest(f));
 const writes = new Map(); // prod path -> text
-const edgesOf = (f) => {
-  if (!/\.tsx?$/.test(f)) return [];
-  const out = [];
-  for (const m of readFileSync(f, "utf8").matchAll(SPEC_RE)) {
-    const r = resolve(f, m[3]);
-    if (r) out.push(r.target);
-  }
-  return out;
-};
 for (const f of devFiles) {
   const to = toProd(f);
   const text = /\.tsx?$/.test(f) ? promoteText(f, readFileSync(f, "utf8")) : readFileSync(f, "utf8");
@@ -125,6 +83,7 @@ const drops = prodFiles.filter((f) => !devFiles.includes(DEV + f.slice(PROD.leng
 
 // ── slices and library the dev tree reaches ───────────────────────────────
 const sliceWrites = [];
+const slicesReached = []; // every forked slice the page uses, changed or not
 const libNew = [], libChanged = [];
 {
   const seen = new Set();
@@ -141,13 +100,50 @@ const libNew = [], libChanged = [];
       else if (lf(readFileSync(twin, "utf8")) !== lf(text)) libChanged.push({ f, twin, text });
     } else if (/^src\/features\/dev\/dev\w+Slice\.tsx?$/.test(f)) {
       const twin = toProd(f);
-      const prodName = readFileSync(twin, "utf8").match(/\bname:\s*"(\w+)"/)?.[1];
+      const isNew = !existsSync(twin);
+      const prodName = isNew
+        ? prodNameFromFile(twin)
+        : readFileSync(twin, "utf8").match(/\bname:\s*"(\w+)"/)?.[1];
       const text = promoteSlice(f, readFileSync(f, "utf8"), prodName);
-      if (lf(readFileSync(twin, "utf8")) !== lf(text)) sliceWrites.push({ f, twin, text });
+      slicesReached.push({ f, twin });
+      if (isNew || lf(readFileSync(twin, "utf8")) !== lf(text)) sliceWrites.push({ f, twin, text, isNew });
     }
     // Walk the dev tree, the dev library and dev slices; stop anywhere else.
     if (inDevTree || f.startsWith(DEVLIB)) for (const t of edgesOf(f)) stack.push(t);
   }
+}
+
+// ── the page's tests ──────────────────────────────────────────────────────
+const TDEV = `tests/dev/pages/${page}/`, TPROD = `tests/prod/pages/${page}/`;
+const testFiles = (dir) =>
+  existsSync(dir)
+    ? execSync(`git ls-files -co --exclude-standard ${dir}`, { encoding: "utf8" }).trim().split("\n").filter((f) => f && existsSync(f))
+    : [];
+const promoteTest = (src) => promoteTestImports(src, page);
+const testWrites = new Map();
+for (const f of testFiles(TDEV)) {
+  const to = TPROD + f.slice(TDEV.length);
+  const text = promoteTest(readFileSync(f, "utf8"));
+  if (!existsSync(to) || lf(readFileSync(to, "utf8")) !== lf(text)) testWrites.set(to, text);
+}
+// Tests still inside the prod tree belong to the old prod tree: the promoted
+// tree's tests are the dev ones above, in tests/prod.
+const testDrops = [
+  ...testFiles(TPROD).filter((f) => !existsSync(TDEV + f.slice(TPROD.length))),
+  ...files.filter((f) => f.startsWith(PROD) && isTest(f)),
+];
+// A written-back slice brings its tests the same way: tests/dev/features/devX*
+// -> tests/prod/features/x*, and a test still beside the prod slice goes to trash.
+for (const s of slicesReached) {
+  const devBase = P.basename(s.f).replace(/\.tsx?$/, "");
+  const prodBase = P.basename(s.twin).replace(/\.tsx?$/, "");
+  for (const f of testFiles("tests/dev/features/").filter((f) => P.basename(f).startsWith(`${devBase}.`))) {
+    const to = `tests/prod/features/${prodBase}${P.basename(f).slice(devBase.length)}`;
+    const text = promoteTest(readFileSync(f, "utf8"));
+    if (!existsSync(to) || lf(readFileSync(to, "utf8")) !== lf(text)) testWrites.set(to, text);
+  }
+  for (const f of files.filter((f) => isTest(f) && P.dirname(f) === "src/features" && P.basename(f).startsWith(`${prodBase}.`)))
+    testDrops.push(f);
 }
 
 // Who in prod uses a changed library file — the blast radius of --lib.
@@ -166,7 +162,10 @@ console.log(`  tree: ${writes.size} file(s) to write, ${drops.length} prod-only 
 for (const f of writes.keys()) console.log(`      ${existsSync(f) ? "update" : "add   "} ${f}`);
 for (const f of drops) console.log(`      trash  ${f}`);
 console.log(`  slices: ${sliceWrites.length ? "" : "(no changes)"}`);
-for (const s of sliceWrites) console.log(`      ${s.f} -> ${s.twin}`);
+for (const s of sliceWrites) console.log(`      ${s.f} -> ${s.twin}${s.isNew ? "   (new: registered in pageReducers)" : ""}`);
+console.log(`  tests: ${testWrites.size} to write, ${testDrops.length} prod-only to trash`);
+for (const f of testWrites.keys()) console.log(`      ${existsSync(f) ? "update" : "add   "} ${f}`);
+for (const f of testDrops) console.log(`      trash  ${f}`);
 console.log(`  library: ${libNew.length} new, ${libChanged.length} changed`);
 for (const l of libNew) console.log(`      add    ${l.twin}`);
 const libPicked = (l) => LIB_ALL || LIB_SOME.has(l.twin.slice(LIB.length));
@@ -189,7 +188,7 @@ if (libChanged.length && !LIB_ALL && !LIB_SOME.size && !KEEP_LIB) {
   process.exit(1);
 }
 const libApply = libChanged.filter(libPicked);
-if (!writes.size && !drops.length && !sliceWrites.length && !libNew.length && !libApply.length) {
+if (!writes.size && !drops.length && !sliceWrites.length && !libNew.length && !libApply.length && !testWrites.size && !testDrops.length) {
   console.log("\nNothing to promote: prod already matches dev.");
   process.exit(0);
 }
@@ -200,9 +199,36 @@ const put = (f, text) => { mkdirSync(P.dirname(f), { recursive: true }); writeFi
 for (const [f, text] of writes) put(f, text);
 for (const s of sliceWrites) put(s.twin, s.text);
 for (const l of [...libNew, ...libApply]) put(l.twin, l.text);
-for (const f of drops) {
+for (const [f, text] of testWrites) put(f, text);
+for (const f of [...drops, ...testDrops]) {
   const dest = trashPath(f);
   mkdirSync(P.dirname(dest), { recursive: true });
   renameSync(f, dest);
+}
+// A new prod slice: mounted in pageReducers under its dev twin's key, and off
+// the dev-only list in sliceIsolation.test.ts.
+for (const s of sliceWrites.filter((w) => w.isNew)) {
+  const devReducers = readFileSync("src/store/devReducers.ts", "utf8");
+  const devFile = P.basename(s.f).replace(/\.tsx?$/, "");
+  const devImport = devReducers.match(new RegExp(`import (\\w+) from "\\.\\./features/dev/${devFile}"`))?.[1];
+  const key = devImport && devReducers.match(new RegExp(`^\\s+(\\w+): ${devImport},`, "m"))?.[1];
+  if (!key) {
+    console.error(`${s.f}: no key for it in store/devReducers.ts; register it by hand`);
+    process.exit(1);
+  }
+  const prodImport = `${key}Reducer`;
+  const PR = "src/store/pageReducers.ts";
+  let pr = readFileSync(PR, "utf8");
+  const nl = pr.includes("\r\n") ? "\r\n" : "\n";
+  const lastImport = [...pr.matchAll(/^import \w+ from "\.\.\/features\/\w+";/gm)].at(-1);
+  const at = lastImport.index + lastImport[0].length;
+  pr = pr.slice(0, at) + `${nl}import ${prodImport} from "../features/${P.basename(s.twin).replace(/\.tsx?$/, "")}";` + pr.slice(at);
+  pr = pr.replace(/(\r?\n)\} satisfies Record<string, Reducer>;/, `$1  ${key}: ${prodImport},$1} satisfies Record<string, Reducer>;`);
+  writeFileSync(PR, pr);
+  const SI = "src/store/sliceIsolation.test.ts";
+  const si = readFileSync(SI, "utf8");
+  const next = si.replace(new RegExp(`(?:^[ \\t]*//[^\\n]*\\n)*^[ \\t]*"${key}",\\r?\\n`, "m"), "");
+  if (next !== si) writeFileSync(SI, next);
+  console.log(`  registered ${key} in ${PR}${next !== si ? `; off the dev-only list in ${SI}` : ""}`);
 }
 console.log(`\nDone. Next:\n  npx tsc -b\n  node scripts/check-split.mjs ${page}`);

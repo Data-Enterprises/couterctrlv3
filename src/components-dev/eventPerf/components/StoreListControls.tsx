@@ -20,7 +20,11 @@ interface StoreListControlsProps {
 }
 
 /** How the store list is ordered and narrowed. */
-const StoreListControls = ({ measure, storeFilter, setStoreFilter }: StoreListControlsProps) => {
+const StoreListControls = ({
+  measure,
+  storeFilter,
+  setStoreFilter,
+}: StoreListControlsProps) => {
   const dispatch = useAppDispatch();
   const { perf } = useEventPerfCtx();
   return (

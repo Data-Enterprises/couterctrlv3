@@ -221,7 +221,11 @@ export const eventDirOf = (
   sort: EventSort,
   reversed: boolean,
 ): "asc" | "desc" =>
-  reversed ? (EVENT_SORT_DIR[sort] === "asc" ? "desc" : "asc") : EVENT_SORT_DIR[sort];
+  reversed
+    ? EVENT_SORT_DIR[sort] === "asc"
+      ? "desc"
+      : "asc"
+    : EVENT_SORT_DIR[sort];
 
 export const defaultEventSort = (
   measure: "transactions" | "amount",
@@ -333,34 +337,33 @@ export const buildGroupRows = (
         : transactionsIn(list),
     );
 
-  const built: EventGroupRow[] = [...groups.entries()]
-    .map(([key, list]) => {
-      const first = list[0];
-      const transactions = transactionsIn(list);
-      const amount = list.reduce((a, r) => a + r.amount, 0);
-      const lanes = [
-        ...new Set(list.filter((r) => r.terminal).map((r) => r.terminal)),
-      ].sort();
+  const built: EventGroupRow[] = [...groups.entries()].map(([key, list]) => {
+    const first = list[0];
+    const transactions = transactionsIn(list);
+    const amount = list.reduce((a, r) => a + r.amount, 0);
+    const lanes = [
+      ...new Set(list.filter((r) => r.terminal).map((r) => r.terminal)),
+    ].sort();
 
-      return {
-        key,
-        label:
-          by === "store"
-            ? first.store_name
-            : // The number is how a manager refers to a cashier, and two
-              // people can share a first name on one shift.
-              `${first.cashier_name} · ${first.cashier_number}`,
-        sub:
-          by === "store"
-            ? `${new Set(list.filter((r) => r.cashier_number !== null).map(cashierKeyOf)).size} cashiers`
-            : lanes.length
-              ? `${lanes.length === 1 ? "lane" : "lanes"} ${lanes.join(", ")}`
-              : "",
-        transactions,
-        amount,
-        baseline: baseAcc.get(key) ?? null,
-      };
-    });
+    return {
+      key,
+      label:
+        by === "store"
+          ? first.store_name
+          : // The number is how a manager refers to a cashier, and two
+            // people can share a first name on one shift.
+            `${first.cashier_name} · ${first.cashier_number}`,
+      sub:
+        by === "store"
+          ? `${new Set(list.filter((r) => r.cashier_number !== null).map(cashierKeyOf)).size} cashiers`
+          : lanes.length
+            ? `${lanes.length === 1 ? "lane" : "lanes"} ${lanes.join(", ")}`
+            : "",
+      transactions,
+      amount,
+      baseline: baseAcc.get(key) ?? null,
+    };
+  });
 
   return sortGroupRows(built, sort, by, measure, reversed);
 };

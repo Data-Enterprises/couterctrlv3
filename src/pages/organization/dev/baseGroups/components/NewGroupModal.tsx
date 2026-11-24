@@ -13,7 +13,12 @@ interface NewGroupModalProps {
 }
 
 /** The new base group form: a name and, where there is a choice, its company. */
-const NewGroupModal = ({ companies, onCreate, onClose, busy = false }: NewGroupModalProps) => {
+const NewGroupModal = ({
+  companies,
+  onCreate,
+  onClose,
+  busy = false,
+}: NewGroupModalProps) => {
   const [name, setName] = useState("");
   const [companyId, setCompanyId] = useState("");
 

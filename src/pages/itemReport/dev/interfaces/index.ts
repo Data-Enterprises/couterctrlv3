@@ -287,3 +287,11 @@ export interface ParsedUpload {
    *  named so the card can say so. */
   tooShort: string[];
 }
+
+/** A register read for one item over the report window. */
+export type LoadForItem = (
+  upc: string,
+  storeid: number,
+  start: string,
+  end: string,
+) => void;

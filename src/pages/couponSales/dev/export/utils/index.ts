@@ -14,26 +14,41 @@ import {
 
 // Interfaces
 import type { CouponItem, Store } from "../../../../../interfaces";
+import type { Scope } from "../interfaces";
 
+/** How many rows the Custom preview shows. */
+export const PREVIEW_ROWS = 12;
+
+/** The export's two scopes. */
+export const SCOPE_OPTIONS: { key: Scope; label: string }[] = [
+  { key: "store", label: "Selected store" },
+  { key: "all", label: "All stores in search" },
+];
 
 /** What the export is grouped by. Mirrors the page's own breakdowns, so an
  *  exported file matches what was on screen when it was pulled. */
 export type CouponPreset =
-  | "stores"
-  | "subdept"
-  | "date"
-  | "cashier"
-  | "item"
-  | "transactions"
-  | "lines";
+  "stores" | "subdept" | "date" | "cashier" | "item" | "transactions" | "lines";
 
-export const PRESET_OPTIONS: { key: CouponPreset; label: string; desc: string }[] = [
+export const PRESET_OPTIONS: {
+  key: CouponPreset;
+  label: string;
+  desc: string;
+}[] = [
   { key: "stores", label: "Store grades", desc: "One row per store, graded" },
-  { key: "subdept", label: "Sub dept grades", desc: "One row per sub department" },
+  {
+    key: "subdept",
+    label: "Sub dept grades",
+    desc: "One row per sub department",
+  },
   { key: "date", label: "Date grades", desc: "One row per day" },
   { key: "cashier", label: "Cashier grades", desc: "One row per cashier" },
   { key: "item", label: "Item grades", desc: "One row per item" },
-  { key: "transactions", label: "Transactions", desc: "One row per transaction" },
+  {
+    key: "transactions",
+    label: "Transactions",
+    desc: "One row per transaction",
+  },
   { key: "lines", label: "Coupon lines", desc: "Every raw coupon line" },
 ];
 

@@ -1,20 +1,27 @@
+// Hooks
 import { useMemo, useState } from "react";
+import { useCouponContext } from "../hooks";
+
+// Utils
 import {
   applyStoreNumberToName,
   numbersByStoreId,
 } from "../../../../utils/storeIdentity";
-import { ArrowDownTrayIcon } from "@heroicons/react/20/solid";
-import { formatCurrency2, resolveStoreName } from "../../../../utils";
-import { useAppSelector } from "../../../../hooks";
-import type { CouponItem } from "../../../../interfaces";
-import MobilePerfHeader from "../../../../components/mobile/MobilePerfHeader";
-import HeaderIconButton from "../../../../components/HeaderIconButton";
-import { COUPONS_INFO } from "../couponsInfo";
-import CpnExportSheet from "./CpnExportSheet";
-import CpnSortToggle from "./CpnSortToggle";
+import { resolveStoreName } from "../../../../utils";
 import { sumCouponAmount } from "../../../../utils/couponValue";
 
-interface Props {
+// Interfaces
+import type { CouponItem } from "../../../../interfaces";
+
+// Components
+import PerfCardHeader from "../../../../components/mobile/perf/PerfCardHeader";
+import InfoModal from "../../../../components/InfoModal";
+import CpnExportSheet from "./CpnExportSheet";
+import CpnListControls from "./components/CpnListControls";
+import CpnSectionRow from "./components/CpnSectionRow";
+import CpnTotalsCard from "./components/CpnTotalsCard";
+
+interface CpnStoreListProps {
   coupons: CouponItem[];
   groupName: string;
   dateRangeLabel: string;
@@ -25,6 +32,8 @@ interface Props {
   onSearch: () => void;
 }
 
+/** The phone Coupons store list for a group search: a header card, group totals, and an "All stores" row plus one
+ *  row per store with its coupon count and value. Also opens the info modal and the export sheet. */
 const CpnStoreList = ({
   coupons,
   groupName,
@@ -33,16 +42,15 @@ const CpnStoreList = ({
   onSortMetric,
   onSelect,
   onSearch,
-}: Props) => {
+}: CpnStoreListProps) => {
   const [exportOpen, setExportOpen] = useState(false);
-  // Store names come from assignedStores, never the coupon payload — see
-  // utils/getStoreName. groupStores covers stores in the searched group that
-  // aren't personally assigned to this user, matching CouponListPanel.
-  const assignedStores = useAppSelector((s) => s.user.assignedStores);
-  const groupStores = useAppSelector((s) => s.user.selectedGroupStores);
+  // Store names come from assignedStores, never the coupon payload; groupStores
+  // covers searched-group stores this user isn't assigned to.
+  const { assignedStores, selectedGroupStores: groupStores } =
+    useCouponContext();
+  const [infoOpen, setInfoOpen] = useState(false);
+  // Still needed for the All-stores row; the card derives its own.
   const totalAmount = sumCouponAmount(coupons);
-  const avgPerCoupon = coupons.length > 0 ? totalAmount / coupons.length : 0;
-  const uniqueProducts = new Set(coupons.map((c) => c.product_code)).size;
 
   const stores = useMemo(() => {
     // Keyed on storeid + store_number — see utils/storeIdentity.
@@ -88,104 +96,57 @@ const CpnStoreList = ({
   }, [coupons, sortMetric, assignedStores, groupStores]);
 
   return (
-    <div className="flex flex-col h-[calc(100dvh-3rem)] overflow-hidden">
-      <MobilePerfHeader
-        pageName="Coupons"
-        storeName={groupName}
-        dateRange={dateRangeLabel}
-        onSearch={onSearch}
-        info={COUPONS_INFO}
-        actions={
-          <>
-            <CpnSortToggle value={sortMetric} onChange={onSortMetric} />
-            <HeaderIconButton
-              onClick={() => setExportOpen(true)}
-              title="Export CSV"
-            >
-              <ArrowDownTrayIcon className="w-3.5 h-3.5" />
-            </HeaderIconButton>
-          </>
-        }
-      />
-
-      {/* KPI strip */}
-      <div className="flex-shrink-0 grid grid-cols-4 bg-custom-white border-b border-gray-100">
-        {[
-          { label: "Coupons", value: String(coupons.length) },
-          { label: "Total", value: formatCurrency2(totalAmount) },
-          { label: "Avg", value: formatCurrency2(avgPerCoupon) },
-          { label: "Products", value: String(uniqueProducts) },
-        ].map(({ label, value }) => (
-          <div
-            key={label}
-            className="px-2.5 py-1.5 border-r border-gray-100 last:border-r-0"
-          >
-            <div className="text-[10px] font-semibold uppercase tracking-wide text-content/85">
-              {label}
-            </div>
-            <div className="text-[12px] font-bold text-content mt-0.5 tabular-nums">
-              {value}
-            </div>
-          </div>
-        ))}
-      </div>
-
+    <div className="flex h-[calc(100dvh-3rem)] flex-col overflow-hidden bg-bkg">
       {/* pb-14 clears the fixed bottom tab bar. */}
-      <div className="flex-1 overflow-y-auto bg-gray-50 pb-14">
-        {/* Group-wide row, matching desktop's "All stores". Without it the
-            group total is visible in the KPI strip but not explorable — you
-            could only ever drill into one store at a time. */}
-        <button
-          onClick={() => onSelect(null, null)}
-          className="w-full flex items-center px-3 py-2.5 bg-custom-white border-b border-gray-100 text-left active:bg-gray-50 gap-3"
-        >
-          <span className="text-[12px] font-semibold text-content flex-1 truncate">
-            All stores
-          </span>
-          <span className="text-[10px] text-content/85 flex-shrink-0">
-            {coupons.length}
-          </span>
-          <span className="text-[11px] font-semibold text-content flex-shrink-0 tabular-nums">
-            {formatCurrency2(totalAmount)}
-          </span>
-          <svg
-            className="w-4 h-4 text-content/85 flex-shrink-0"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2.5"
-          >
-            <path d="M9 18l6-6-6-6" />
-          </svg>
-        </button>
+      <div className="flex-1 overflow-y-auto pb-14">
+        <div className="flex flex-col gap-3 p-3">
+          <section className="cc-card-phone">
+            <PerfCardHeader
+              title="Coupons"
+              label={groupName}
+              when={dateRangeLabel}
+              onSearch={onSearch}
+              onInfo={() => setInfoOpen(true)}
+            />
+            <div className="h-2.5" />
+          </section>
 
-        {stores.map(({ storeId, storeNumber, name, count, total }) => (
-          <button
-            key={`${storeId}__${storeNumber}`}
-            onClick={() => onSelect(storeId, storeNumber)}
-            className="w-full flex items-center px-3 py-2.5 bg-custom-white border-b border-gray-100 text-left active:bg-gray-50 gap-3"
-          >
-            <span className="text-[12px] font-medium text-content flex-1 truncate">
-              {name}
-            </span>
-            <span className="text-[10px] text-content/85 flex-shrink-0">
-              {count}
-            </span>
-            <span className="text-[11px] font-semibold text-content flex-shrink-0 tabular-nums">
-              {formatCurrency2(total)}
-            </span>
-            <svg
-              className="w-4 h-4 text-content/85 flex-shrink-0"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.5"
-            >
-              <path d="M9 18l6-6-6-6" />
-            </svg>
-          </button>
-        ))}
+          <CpnTotalsCard coupons={coupons} caption="Coupon value this week" />
+
+          <section className="cc-card-phone">
+            <CpnListControls
+              value={sortMetric}
+              onChange={onSortMetric}
+              onExport={() => setExportOpen(true)}
+            />
+
+            {/* Group-wide row, matching desktop's "All stores", so the group
+                total can be drilled into. */}
+            <CpnSectionRow
+              label="All stores"
+              count={coupons.length}
+              total={totalAmount}
+              onClick={() => onSelect(null, null)}
+            />
+
+            {stores.map(({ storeId, storeNumber, name, count, total }) => (
+              <CpnSectionRow
+                key={`${storeId}__${storeNumber}`}
+                label={name}
+                count={count}
+                total={total}
+                onClick={() => onSelect(storeId, storeNumber)}
+              />
+            ))}
+          </section>
+        </div>
       </div>
+
+      <InfoModal
+        page="coupons"
+        isOpen={infoOpen}
+        onClose={() => setInfoOpen(false)}
+      />
 
       {exportOpen && (
         <CpnExportSheet

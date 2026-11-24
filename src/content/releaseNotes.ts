@@ -1,5 +1,4 @@
 import raw from "./releaseNotes.json";
-import sampleRaw from "./releaseNotes.sample.json";
 
 /**
  * What changed on the production screens, and when.
@@ -22,8 +21,10 @@ import sampleRaw from "./releaseNotes.sample.json";
  *
  * HOW A NOTE READS
  * One plain sentence a client understands at a glance: the main point of the
- * change, never the mechanism and never steps. Owner-only and level 9 changes
- * stay out. A page's smaller fixes are counted, not written out.
+ * change, never the mechanism and never steps. A note about a page or tab not
+ * every level can open carries `minLevel`, so nobody reads about something they
+ * can't use; level 9 and support-only changes stay out. A page's smaller fixes
+ * are counted, not written out.
  */
 
 /** New to production, an improvement to something clients know, or a fix. */
@@ -42,6 +43,8 @@ export interface ReleaseNote {
   hrefs: string[];
   /** The page itself is new to production. */
   newPage: boolean;
+  /** The lowest user level the note is for. Absent: every level. */
+  minLevel?: number;
   text: string;
 }
 
@@ -81,8 +84,18 @@ export const dateText = (date: string): string => {
   const [y, m, d] = date.split("-");
   if (!y || !m || !d) return date;
   const MONTHS = [
-    "January", "February", "March", "April", "May", "June",
-    "July", "August", "September", "October", "November", "December",
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
   ];
   const name = MONTHS[Number(m) - 1];
   return name ? `${name} ${Number(d)}, ${y}` : date;
@@ -107,10 +120,13 @@ const notes = (v: unknown): ReleaseNote[] =>
         page: text(o.page),
         hrefs: strings(o.hrefs),
         newPage: o.newPage === true,
+        ...(typeof o.minLevel === "number" ? { minLevel: o.minLevel } : {}),
         text: text(o.text),
       };
     })
-    .filter((n): n is ReleaseNote => !!n.kind && n.page !== "" && n.text !== "");
+    .filter(
+      (n): n is ReleaseNote => !!n.kind && n.page !== "" && n.text !== "",
+    );
 
 const smaller = (v: unknown): SmallerFixes[] =>
   (Array.isArray(v) ? v : [])
@@ -148,14 +164,23 @@ export const parseReleases = (input: unknown): Release[] =>
     })
     .filter((r) => r.items.length > 0 || r.smallerFixes.length > 0);
 
-/** The real ones. Empty until the first production release is written up. */
+/** The releases, newest first. */
 export const RELEASES: Release[] = parseReleases(raw);
 
 /**
- * Notes in the real format, for trying the panel in dev before the first real
- * release. Never shown on prod, and the panel says it is a sample.
+ * The releases as one user level reads them: notes above that level left out,
+ * and a release left with nothing in it dropped.
  */
-export const SAMPLE_RELEASES: Release[] = parseReleases(sampleRaw);
+export const releasesForLevel = (
+  releases: Release[],
+  level: number,
+): Release[] =>
+  releases
+    .map((r) => ({
+      ...r,
+      items: r.items.filter((n) => (n.minLevel ?? 0) <= level),
+    }))
+    .filter((r) => r.items.length > 0 || r.smallerFixes.length > 0);
 
 /** A release's notes about one route, in the order written. */
 export const notesFor = (release: Release, href: string): ReleaseNote[] =>
@@ -172,6 +197,4 @@ export const lastChangedRelease = (
   releases: Release[],
   href: string,
 ): Release | undefined =>
-  releases.find(
-    (r) => notesFor(r, href).length > 0 || smallerFor(r, href) > 0,
-  );
+  releases.find((r) => notesFor(r, href).length > 0 || smallerFor(r, href) > 0);

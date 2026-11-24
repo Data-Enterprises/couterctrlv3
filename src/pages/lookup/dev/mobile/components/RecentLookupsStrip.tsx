@@ -29,21 +29,11 @@ const RecentLookupsStrip = ({
           className="grid gap-2 items-baseline pb-1.5 border-b border-brand_navy/15"
           style={{ gridTemplateColumns: COLS }}
         >
-          <span className="text-[10px] cc-caps">
-            Item
-          </span>
-          <span className="text-[10px] cc-caps text-right">
-            Qty
-          </span>
-          <span className="text-[10px] cc-caps text-right">
-            Amount
-          </span>
-          <span className="text-[10px] cc-caps text-right">
-            U cost
-          </span>
-          <span className="text-[10px] cc-caps text-right">
-            Margin
-          </span>
+          <span className="text-[10px] cc-caps">Item</span>
+          <span className="text-[10px] cc-caps text-right">Qty</span>
+          <span className="text-[10px] cc-caps text-right">Amount</span>
+          <span className="text-[10px] cc-caps text-right">U cost</span>
+          <span className="text-[10px] cc-caps text-right">Margin</span>
         </div>
         <div className="max-h-[168px] overflow-y-auto thin-scrollbar">
           {recentLookups.map((r) => (
@@ -79,9 +69,7 @@ const RecentLookupsStrip = ({
 
   return (
     <div>
-      <div className="text-[10px] cc-caps mb-2">
-        Recent lookups
-      </div>
+      <div className="text-[10px] cc-caps mb-2">Recent lookups</div>
       <div className="flex gap-2 overflow-x-auto pb-1">
         {recentLookups.map((r) => (
           <button

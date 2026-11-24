@@ -126,10 +126,7 @@ const GroupStoreAssignMobile = () => {
                       }
                     >
                       <div className="font-medium space-y-0.5 w-full md:w-auto">
-                        <div>Store {store.store_number}</div>
-                        <div>
-                          {store.storeid} - {store.store_name}
-                        </div>
+                        <div>{store.store_name}</div>
                       </div>
                     </div>
                   ),
@@ -155,10 +152,7 @@ const GroupStoreAssignMobile = () => {
                       }
                     >
                       <div className="font-medium space-y-0.5 w-full md:w-auto">
-                        <div>Store {store.store_number}</div>
-                        <div>
-                          {store.storeid} - {store.store_name}
-                        </div>
+                        <div>{store.store_name}</div>
                       </div>
                     </div>
                   ),

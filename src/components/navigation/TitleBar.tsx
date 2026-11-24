@@ -7,14 +7,14 @@ import { useNavCtx } from "./hooks";
 import { setUserPrefs } from "../../api/user";
 
 // Utils
-import { SAMPLE_RELEASES } from "../../content/releaseNotes";
+import { RELEASES, releasesForLevel } from "../../content/releaseNotes";
 
 // Interfaces
 import type { JsonError } from "../../interfaces";
 
 // Components
 import SignInAsModal from "../../components-dev/SignInAsModal";
-import ReleaseNotesPanel from "../../components-dev/releaseNotes/ReleaseNotesPanel";
+import ReleaseNotesPanel from "../releaseNotes/ReleaseNotesPanel";
 import AvatarDropdown from "./components/AvatarDropdown";
 import MobileBottomNav from "./mobile/MobileBottomNav";
 import CategoryNavList from "./components/CategoryNavList";
@@ -97,8 +97,7 @@ const TitleBar = () => {
 
       {releaseNotesOpen && (
         <ReleaseNotesPanel
-          releases={SAMPLE_RELEASES}
-          sample
+          releases={releasesForLevel(RELEASES, user.userLevel)}
           href={currentPath}
           pageName={currentPage?.name ?? null}
           onClose={() => setReleaseNotesOpen(false)}

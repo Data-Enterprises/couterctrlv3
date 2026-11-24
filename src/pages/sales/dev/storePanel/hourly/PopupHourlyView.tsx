@@ -1,6 +1,6 @@
 // Hooks
-import { useMemo, useRef, useState } from "react";
-import { useSalesCtx, useSalesState } from "../../hooks";
+import { useMemo, useState } from "react";
+import { useLastValidThreshold, useSalesCtx, useSalesState } from "../../hooks";
 
 // Utils
 import { buildHourRows } from "./utils";
@@ -27,13 +27,12 @@ const PopupHourlyView = ({
   lyDateLabel,
 }: PopupHourlyViewProps) => {
   const { gradingMetric, hourlyThreshold, selectedHour } = useSalesCtx();
-  const { hourlySales, hourlySalesLastWeek, hourlySalesLastYear } = useSalesState();
+  const { hourlySales, hourlySalesLastWeek, hourlySalesLastYear } =
+    useSalesState();
 
   // A cleared threshold box keeps grading on the last valid amount, so rows do
   // not move until a new number is typed.
-  const thresholdRef = useRef<number>(hourlyThreshold ?? 9);
-  if (hourlyThreshold != null) thresholdRef.current = hourlyThreshold;
-  const threshold = thresholdRef.current;
+  const threshold = useLastValidThreshold(hourlyThreshold);
 
   // Kept here, above the empty-day return, so the filter, sort and open
   // toggles survive a day with no rows.
@@ -51,7 +50,13 @@ const PopupHourlyView = ({
         threshold,
         gradingMetric,
       ),
-    [hourlySales, hourlySalesLastWeek, hourlySalesLastYear, threshold, gradingMetric],
+    [
+      hourlySales,
+      hourlySalesLastWeek,
+      hourlySalesLastYear,
+      threshold,
+      gradingMetric,
+    ],
   );
 
   if (!rows.length) {
@@ -63,7 +68,9 @@ const PopupHourlyView = ({
   }
 
   const selected =
-    selectedHour !== null ? (rows.find((h) => h.hour === selectedHour) ?? null) : null;
+    selectedHour !== null
+      ? (rows.find((h) => h.hour === selectedHour) ?? null)
+      : null;
 
   return (
     <div className="flex h-full">

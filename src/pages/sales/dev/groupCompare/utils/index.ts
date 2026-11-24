@@ -25,24 +25,26 @@ export const BAR_CEILING_PCT = 25;
  * grading a figure against a threshold, which is a different question and
  * belongs to the dots.
  */
-export const BALANCE_TONE: Record<ShareStanding, { pill: string; text: string; bar: string }> =
-  {
-    falling: {
-      pill: "bg-delta_negative_bg text-delta_negative_text",
-      text: "text-delta_negative_text",
-      bar: severityDotClass.critical,
-    },
-    consistent: {
-      pill: "bg-fill_track text-content",
-      text: "text-content",
-      bar: "bg-brand_navy",
-    },
-    rising: {
-      pill: "bg-delta_positive_bg text-delta_positive_text",
-      text: "text-delta_positive_text",
-      bar: severityDotClass.healthy,
-    },
-  };
+export const BALANCE_TONE: Record<
+  ShareStanding,
+  { pill: string; text: string; bar: string }
+> = {
+  falling: {
+    pill: "bg-delta_negative_bg text-delta_negative_text",
+    text: "text-delta_negative_text",
+    bar: severityDotClass.critical,
+  },
+  consistent: {
+    pill: "bg-fill_track text-content",
+    text: "text-content",
+    bar: "bg-brand_navy",
+  },
+  rising: {
+    pill: "bg-delta_positive_bg text-delta_positive_text",
+    text: "text-delta_positive_text",
+    bar: severityDotClass.healthy,
+  },
+};
 
 /** What each share standing means, for its tooltip. */
 export const BAND_WHY: Record<ShareStanding, string> = {

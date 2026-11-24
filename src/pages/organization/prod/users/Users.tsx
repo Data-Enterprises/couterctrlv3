@@ -1,16 +1,23 @@
+// Hooks
 import { useState } from "react";
 import { useOrganizationCtx } from "../hooks";
+
+// Redux
 import {
   resetUserInfo,
   setSelectedUserForm,
   setSelectedUserId,
 } from "../../../../features/usersSlice";
-import UserGrid from "./UserGrid";
-import CreateUserWizard from "./create/CreateUserWizard";
-import UserDetailShell from "./view/UserDetailShell";
 
-type View = "grid" | "create";
+// Interfaces
+import type { View } from "./interfaces";
 
+// Components
+import UserGrid from "./components/UserGrid";
+import UserWizard from "./create/UserWizard";
+
+/** The Users tab: the user list, or the Add or Edit wizard when a user is being created or opened.
+ *  Someone above the viewer's own level can't be opened. */
 const Users = () => {
   const ctx = useOrganizationCtx();
   const [view, setView] = useState<View>("grid");
@@ -24,13 +31,24 @@ const Users = () => {
     ctx.dispatch(setSelectedUserForm(""));
   };
 
+  // Edit is Add, filled in: the same four steps. Someone above your own level
+  // is not yours to edit, so their row opens nothing.
   if (isDetail) {
-    return <UserDetailShell onBack={handleBack} />;
+    const target = ctx.users.find((u) => u.id === ctx.selectedUserId);
+    if (!target || target.user_level > ctx.userLevel) return null;
+    return (
+      <UserWizard
+        key={ctx.selectedUserId}
+        editUserId={ctx.selectedUserId}
+        onComplete={handleBack}
+        onCancel={handleBack}
+      />
+    );
   }
 
   if (view === "create") {
     return (
-      <CreateUserWizard
+      <UserWizard
         onComplete={() => setView("grid")}
         onCancel={() => setView("grid")}
       />

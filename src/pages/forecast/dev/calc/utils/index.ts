@@ -1,5 +1,9 @@
 // Utils
-import { calcFcstQty, estimateDaysActive, forecastUnits } from "../../../../../utils/forecastCalc";
+import {
+  calcFcstQty,
+  estimateDaysActive,
+  forecastUnits,
+} from "../../../../../utils/forecastCalc";
 
 // Interfaces
 import type { Args, ScenarioRow } from "../interfaces";
@@ -64,3 +68,9 @@ export const SECTION = "border border-line_field rounded-lg overflow-hidden";
 export const SECTION_HEAD =
   "px-3 py-1.5 bg-fill_soft border-b border-line_hair text-[11px] font-semibold uppercase tracking-wide text-content/95";
 export const FIELD_LABEL = "text-[11px] font-medium text-content/95 ml-0.5";
+
+/** Keeps a typed value only while it is a number in the making: digits and
+ *  at most one point. */
+export const onlyNumeric = (v: string, set: (s: string) => void) => {
+  if (/^\d*\.?\d*$/.test(v)) set(v);
+};

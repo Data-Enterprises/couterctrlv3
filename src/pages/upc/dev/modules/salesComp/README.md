@@ -25,14 +25,14 @@ Each row represents one UPC. Columns are Mon–Sun showing the **average daily s
 
 The color intensity is computed against a 6-band scale:
 
-| Band | Ratio to max | Color |
-|------|-------------|-------|
-| 0 | value = 0 | transparent |
-| 1 | < 15% | lightest blue |
-| 2 | 15–35% | light blue |
-| 3 | 35–55% | medium blue |
-| 4 | 55–75% | strong blue |
-| 5 | > 75% | darkest blue |
+| Band | Ratio to max | Color         |
+| ---- | ------------ | ------------- |
+| 0    | value = 0    | transparent   |
+| 1    | < 15%        | lightest blue |
+| 2    | 15–35%       | light blue    |
+| 3    | 35–55%       | medium blue   |
+| 4    | 55–75%       | strong blue   |
+| 5    | > 75%        | darkest blue  |
 
 **Heat scale modes (Global / Per item toggle):**
 
@@ -70,13 +70,13 @@ Sticky to the bottom of the table. Shows the sum of all UPC day-avgs per column 
 
 Five tiles displayed above the tab bar, updated whenever the selection changes:
 
-| Tile | What it shows |
-|------|--------------|
-| **UPCs** | Count of selected UPCs + week count as sub-label |
-| **Total net sales** | Period aggregate across all selected UPCs (formatted as $k/$M) |
-| **Peak day** | The day of week that is most commonly the peak day across individual UPCs, shown as e.g. `Sat · 5 of 8 UPCs` (mode, not sum) |
-| **Avg daily / UPC** | Total ÷ active days ÷ UPC count — normalized per-item daily performance |
-| **WoW trend** | Count of UPCs trending above vs below their period average, e.g. `3 ↑ / 2 ↓`. Sub-label reads "vs period avg" |
+| Tile                | What it shows                                                                                                                |
+| ------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| **UPCs**            | Count of selected UPCs + week count as sub-label                                                                             |
+| **Total net sales** | Period aggregate across all selected UPCs (formatted as $k/$M)                                                               |
+| **Peak day**        | The day of week that is most commonly the peak day across individual UPCs, shown as e.g. `Sat · 5 of 8 UPCs` (mode, not sum) |
+| **Avg daily / UPC** | Total ÷ active days ÷ UPC count — normalized per-item daily performance                                                      |
+| **WoW trend**       | Count of UPCs trending above vs below their period average, e.g. `3 ↑ / 2 ↓`. Sub-label reads "vs period avg"                |
 
 ---
 
@@ -92,9 +92,9 @@ The export modal is opened via the download icon in the right panel header. It e
 
 ### Sales Comp presets
 
-| Preset | What is exported |
-|--------|-----------------|
-| **All UPCs** | Every row in `salesComp` regardless of selection |
+| Preset            | What is exported                                                                               |
+| ----------------- | ---------------------------------------------------------------------------------------------- |
+| **All UPCs**      | Every row in `salesComp` regardless of selection                                               |
 | **Selected UPCs** | Only rows whose `product_code` is in `selectedUpcs`. Falls back to all if nothing is selected. |
 
 **CSV columns:** `UPC, Description, Week, Mon, Tue, Wed, Thu, Fri, Sat, Sun, Total`
@@ -105,12 +105,12 @@ Each row is one UPC × one week. The Total column is the sum of the seven day va
 
 Custom export would allow the user to configure the output before downloading. Planned options:
 
-| Option | Description |
-|--------|-------------|
-| **Column selection** | Choose which day columns to include (e.g. weekdays only, or weekend only) |
-| **Aggregation** | Raw per-week rows (current) vs a single aggregated row per UPC showing period totals and day-avgs |
-| **UPC filter** | All / Selected / Trending up only / Trending down only |
-| **Include peak day column** | Appends a `Peak Day` column derived from the day-avg computation |
-| **Include WoW column** | Appends a `WoW %` column (most recent week vs period avg) per UPC |
+| Option                      | Description                                                                                       |
+| --------------------------- | ------------------------------------------------------------------------------------------------- |
+| **Column selection**        | Choose which day columns to include (e.g. weekdays only, or weekend only)                         |
+| **Aggregation**             | Raw per-week rows (current) vs a single aggregated row per UPC showing period totals and day-avgs |
+| **UPC filter**              | All / Selected / Trending up only / Trending down only                                            |
+| **Include peak day column** | Appends a `Peak Day` column derived from the day-avg computation                                  |
+| **Include WoW column**      | Appends a `WoW %` column (most recent week vs period avg) per UPC                                 |
 
 Custom export config would be surfaced as a second section in the export modal below the preset list, collapsed by default and expanded when "Custom" is selected as the export type.

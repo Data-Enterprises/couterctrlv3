@@ -14,11 +14,16 @@ import {
 
 // Utils
 import { groupStoresConfirm } from "../../utils/bulkConfirm";
-import { callReason, summarizeAssign, summarizeUnassign } from "../utils";
+import { summarizeAssign, summarizeUnassign } from "../utils";
+import { reasonOf } from "../../../../../utils/serverError";
 
 // Interfaces
 import type { StoreSplit, StoreOutcome } from "../interfaces";
-import type { CompanyBaseGroup, JsonError, User } from "../../../../../interfaces";
+import type {
+  CompanyBaseGroup,
+  JsonError,
+  User,
+} from "../../../../../interfaces";
 
 // Components
 import {
@@ -57,10 +62,10 @@ const BaseGroupDetail = ({
   const ctx = useBaseGroupsCtx();
   const toast = useToast();
   const markUsersStale = useMarkUsersStale();
-  const [editing, setEditing] = useState(false);
-  const [nameDraft, setNameDraft] = useState(group.name);
-  const [confirmDelete, setConfirmDelete] = useState(false);
-  const [exportOpen, setExportOpen] = useState(false);
+  const [editing, setEditing] = useState<boolean>(false);
+  const [nameDraft, setNameDraft] = useState<string>(group.name);
+  const [confirmDelete, setConfirmDelete] = useState<boolean>(false);
+  const [exportOpen, setExportOpen] = useState<boolean>(false);
   const [subTab, setSubTab] = useState<"stores" | "users">("stores");
 
   // Another group opened: start it fresh. A rename is the same group, so it
@@ -162,11 +167,15 @@ const BaseGroupDetail = ({
     const outcomes: StoreOutcome[] = settled.map((res, i) => {
       const storeid = ids[i];
       if (res.status === "rejected") {
-        return { storeid, ok: false, reason: callReason(res.reason) };
+        return { storeid, ok: false, reason: reasonOf(res.reason) };
       }
       const j = res.value.data;
       if (j.error !== 0) {
-        return { storeid, ok: false, reason: j.msg ?? "The server refused it." };
+        return {
+          storeid,
+          ok: false,
+          reason: j.msg ?? "The server refused it.",
+        };
       }
       return {
         storeid,
@@ -196,7 +205,7 @@ const BaseGroupDetail = ({
   const unassigned = stores?.unassigned ?? [];
 
   return (
-    <div>
+    <div className="flex-1 min-h-0 flex flex-col">
       <div className="flex items-center gap-1">
         {editing ? (
           <input
@@ -240,7 +249,10 @@ const BaseGroupDetail = ({
       </div>
       <div className="text-[11.5px] text-content/95 mb-2">{companyName}</div>
 
-      <div data-help="group-tabs" className="flex border-b border-line_hair mb-4">
+      <div
+        data-help="group-tabs"
+        className="flex border-b border-line_hair mb-4"
+      >
         {(["stores", "users"] as const).map((t) => (
           <button
             key={t}
@@ -260,7 +272,7 @@ const BaseGroupDetail = ({
         (!stores ? (
           <div className="text-[11.5px] text-content/95">Loading…</div>
         ) : (
-          <div data-help="assign" className="w-full">
+          <div data-help="assign" className="w-full flex-1 min-h-0 flex flex-col">
             {/* One call per store, and each reaches every user holding this
                 group, so say it is working. */}
             <div className="h-4 mb-1">
@@ -284,8 +296,13 @@ const BaseGroupDetail = ({
               onAssign={handleAssign}
               onUnassign={handleUnassign}
               moving={moving}
+              fill
               confirmBulk={(direction, ids) =>
-                groupStoresConfirm({ direction, count: ids.length, group: group.name })
+                groupStoresConfirm({
+                  direction,
+                  count: ids.length,
+                  group: group.name,
+                })
               }
             />
           </div>

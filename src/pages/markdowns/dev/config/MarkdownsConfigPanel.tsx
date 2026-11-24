@@ -10,7 +10,12 @@ import {
 
 // Utils
 import { markAvailability } from "../../../../utils/filterAvailability";
-import { FILTER_FIELDS, activeFilterCount, availableOptions, buildOptions } from "./utils";
+import {
+  FILTER_FIELDS,
+  activeFilterCount,
+  availableOptions,
+  buildOptions,
+} from "./utils";
 
 // Interfaces
 import type { MarkdownType } from "../../../../interfaces/markdowns";
@@ -35,16 +40,21 @@ const MarkdownsConfigPanel = ({ onOpenSearch }: MarkdownsConfigPanelProps) => {
   const { markdowns, filters, dispatch } = ctx;
 
   const options = useMemo(() => buildOptions(markdowns), [markdowns]);
-  const reachable = useMemo(() => availableOptions(markdowns, filters), [markdowns, filters]);
+  const reachable = useMemo(
+    () => availableOptions(markdowns, filters),
+    [markdowns, filters],
+  );
 
   /** A filter's picks as the multi-select holds them: strings. */
-  const picked = (key: MarkdownFilterKey) => (filters[key] as (string | number)[]).map(String);
+  const picked = (key: MarkdownFilterKey) =>
+    (filters[key] as (string | number)[]).map(String);
 
   /** A multi-select's new picks, back in the filter's own type. */
   const setPicks = (key: MarkdownFilterKey, values: string[]) => {
     if (key === "subIds" || key === "categories")
       dispatch(setMarkdownFilters({ [key]: values.map(Number) }));
-    else if (key === "types") dispatch(setMarkdownFilters({ types: values as MarkdownType[] }));
+    else if (key === "types")
+      dispatch(setMarkdownFilters({ types: values as MarkdownType[] }));
     else dispatch(setMarkdownFilters({ [key]: values }));
   };
 
@@ -60,7 +70,11 @@ const MarkdownsConfigPanel = ({ onOpenSearch }: MarkdownsConfigPanelProps) => {
         {FILTER_FIELDS.map((f) => (
           <Field key={f.key} label={f.label}>
             <MultiSelectFilter
-              options={markAvailability(options[f.key], reachable[f.key], picked(f.key))}
+              options={markAvailability(
+                options[f.key],
+                reachable[f.key],
+                picked(f.key),
+              )}
               values={picked(f.key)}
               onChange={(v) => setPicks(f.key, v)}
               placeholder={f.all}
@@ -71,8 +85,18 @@ const MarkdownsConfigPanel = ({ onOpenSearch }: MarkdownsConfigPanelProps) => {
 
         <Field label="Markdown percent at least">
           <ThresholdFilter
-            value={filters.minPercent === null ? null : { op: "gt", amount: filters.minPercent }}
-            onChange={(v) => dispatch(setMarkdownFilters({ minPercent: v === null ? null : v.amount }))}
+            value={
+              filters.minPercent === null
+                ? null
+                : { op: "gt", amount: filters.minPercent }
+            }
+            onChange={(v) =>
+              dispatch(
+                setMarkdownFilters({
+                  minPercent: v === null ? null : v.amount,
+                }),
+              )
+            }
             showOp={false}
             suffix="%"
             placeholder="Markdown"

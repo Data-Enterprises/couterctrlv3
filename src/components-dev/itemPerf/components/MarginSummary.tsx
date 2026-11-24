@@ -39,17 +39,13 @@ const MarginSummary = () => {
           than overlap again. */}
       <div className="grid grid-cols-3 items-end gap-2">
         <div className="flex min-w-0 flex-col">
-          <span className="mb-1 cc-caps-mono text-[9.5px]">
-            TY margin
-          </span>
+          <span className="mb-1 cc-caps-mono text-[9.5px]">TY margin</span>
           <span className="truncate font-display text-[20px] font-extrabold leading-none tracking-tight text-content">
             {pct(totals.gpm)}
           </span>
         </div>
         <div className="flex min-w-0 flex-col pb-0.5">
-          <span className="mb-1 cc-caps-mono text-[9.5px]">
-            LY margin
-          </span>
+          <span className="mb-1 cc-caps-mono text-[9.5px]">LY margin</span>
           {/* No record isn't a 0% margin. */}
           <span className="truncate font-display text-[17px] font-bold leading-none tracking-tight text-content/95">
             {cardNoLy ? "no history" : pct(totals.gpmLy)}
@@ -63,9 +59,7 @@ const MarginSummary = () => {
             already the only one it could be. */}
         {totals.gpm !== null && totals.gpmLy !== null && (
           <div className="flex min-w-0 flex-col items-end pb-0.5">
-            <span className="mb-1 cc-caps-mono text-[9.5px]">
-              +/-
-            </span>
+            <span className="mb-1 cc-caps-mono text-[9.5px]">+/-</span>
             <PerfDelta
               ty={totals.gpm}
               ly={totals.gpmLy}
@@ -118,9 +112,7 @@ const MarginSummary = () => {
           { k: "LY cost", v: totals.cogsLy, ly: true },
         ].map(({ k, v, ly }) => (
           <div key={k} className="flex flex-col items-center text-center">
-            <span className="cc-caps-mono text-[9.5px]">
-              {k}
-            </span>
+            <span className="cc-caps-mono text-[9.5px]">{k}</span>
             <span
               className={`font-display text-[15px] font-bold ${
                 ly ? "text-content/95" : "text-content"

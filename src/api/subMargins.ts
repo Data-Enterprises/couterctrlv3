@@ -4,41 +4,6 @@ import type {
   SubsPricePoint,
 } from "../interfaces";
 
-export const getSubDepts = async (
-  url: string,
-  token: string,
-  startDate: string,
-  endDate: string,
-  useGroups: number,
-  searchValue: number,
-  singleStore: number,
-  consolidated: number = 0,
-  displayHourly: number = 0,
-  page: number = 1,
-  download: number = 0,
-) => {
-  const json = await axios({
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-    url: url + "subs/sub_sales",
-    data: {
-      startDate,
-      endDate,
-      useGroups,
-      searchValue,
-      singleStore,
-      consolidated,
-      displayHourly,
-      page,
-      download,
-    },
-  });
-  return json;
-};
-
 /**
  * `subs/subs` with the price-point payload switched on.
  *

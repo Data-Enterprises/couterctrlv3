@@ -1,9 +1,9 @@
 // Hooks
 import { useEffect, useMemo, useState } from "react";
 import { useAppDispatch } from "../../../../hooks";
-import { useToast } from "../../../../components/toasts/hooks/useToast";
 import { useTriStateSort } from "../../../../utils/useTriStateSort";
 import { useCouponSalesCtx } from "../hooks";
+import { useCpnSalesReceipt } from "./hooks";
 
 // Redux
 import {
@@ -13,27 +13,21 @@ import {
   type CouponTierFilter,
 } from "../../../../features/dev/devCouponSalesSlice";
 
-// API
-import { getCashierTransaction } from "../../../../api/lossPrevention";
-
 // Utils
-import { downloadCsv } from "../../../../utils/csvExport";
 import {
   buildBreakdownRows,
   buildTransactions,
   sectionKeyOf,
   totalsFor,
-  type CouponTransaction,
   type GradingOptions,
 } from "../utils";
-import { transactionCsv } from "./utils";
 
 // Interfaces
-import type { CouponItem, JsonError, TransactionListItem } from "../../../../interfaces";
+import type { CouponItem } from "../../../../interfaces";
 import type { SectionSortCol, TxSortCol } from "./interfaces";
 
 // Components
-import CpnSalesDayCards from "../components/CpnSalesDayCards";
+import CpnSalesDayCards from "./components/CpnSalesDayCards";
 import DetailTitleBar from "./components/DetailTitleBar";
 import DetailKpiStrip from "./components/DetailKpiStrip";
 import BreakdownTabs from "./components/BreakdownTabs";
@@ -68,60 +62,22 @@ const CpnSalesDetailPanel = ({
   grading,
 }: CpnSalesDetailPanelProps) => {
   const dispatch = useAppDispatch();
-  const toast = useToast();
-  const { url, token, receiptLines: txLines, breakdown, selectedSectionKey, selectedStoreKey, sectionFilter } =
+  const { breakdown, selectedSectionKey, selectedStoreKey, sectionFilter } =
     useCouponSalesCtx();
 
-  // Which transaction the right pane is showing, if any. Local like dev
-  // Coupons' own selectedSaleId — it's view state for one pane, not something
-  // a re-search or another panel needs to read.
-  const [openSaleId, setOpenSaleId] = useState("");
+  // Which transaction the right pane is showing, and its receipt.
+  const {
+    openSaleId,
+    setOpenSaleId,
+    openTransaction,
+    handleBackFromTransaction,
+    exportTransaction,
+  } = useCpnSalesReceipt();
 
   // Which day of the week the panel is scoped to; "" is the whole week. Local
   // like the section filter — it's a view control on this panel, not page
   // state another component reads.
   const [selectedDay, setSelectedDay] = useState("");
-
-  // Fetches the whole receipt from LP's endpoint and renders it in place. The
-  // coupons/ payload only carries the coupon lines, so on its own it can't
-  // show what the discount was actually applied against.
-  const openTransaction = (t: CouponTransaction) => {
-    const saleDate = t.rawSaleDate.split("T")[0];
-    const [y, m, d] = saleDate.split("-");
-    const joinedSaleId = `${t.storeid}-${t.sale_id}-${t.terminal}-${parseInt(m)}-${parseInt(d)}-${y}`;
-    if (joinedSaleId === openSaleId) return;
-
-    setOpenSaleId(joinedSaleId);
-    dispatch(setCouponReceiptLines([]));
-    getCashierTransaction(url, token, saleDate, joinedSaleId, t.storeid)
-      .then((resp) => {
-        const j = resp.data;
-        if (j.error !== 0) return;
-        const lines: TransactionListItem[] = [...j.transaction].map(
-          (item: TransactionListItem) => ({
-            ...item,
-            transaction_id: item.sale_id.split("-")[1],
-            qty: item.qty ? item.qty : 0,
-          }),
-        );
-        dispatch(setCouponReceiptLines(lines));
-      })
-      .catch((err: JsonError) => {
-        setOpenSaleId("");
-        toast.error("Error fetching transaction: " + err.message);
-      });
-  };
-
-  const handleBackFromTransaction = () => {
-    setOpenSaleId("");
-    dispatch(setCouponReceiptLines([]));
-  };
-
-  const exportTransaction = () => {
-    if (!txLines.length) return;
-    const { csv, filename } = transactionCsv(txLines);
-    downloadCsv(csv, filename);
-  };
 
   // Switching the breakdown tab, picking a different row in the left column, or
   // changing store all replace what this panel is about — an open receipt from
@@ -143,7 +99,8 @@ const CpnSalesDetailPanel = ({
 
   // Local like LP's cashier filter — it's a view control on one column, not
   // page state worth persisting across selections.
-  const [sectionTierFilter, setSectionTierFilter] = useState<CouponTierFilter>("all");
+  const [sectionTierFilter, setSectionTierFilter] =
+    useState<CouponTierFilter>("all");
   const sectionSort = useTriStateSort<SectionSortCol>();
   const txSort = useTriStateSort<TxSortCol>();
 
@@ -224,9 +181,8 @@ const CpnSalesDetailPanel = ({
 
   const transactions = useMemo(
     () =>
-      txSort.applySort(
-        buildTransactions(scopedCoupons, threshold),
-        (r, col) => (col === "amount" ? r.amount : r.lines),
+      txSort.applySort(buildTransactions(scopedCoupons, threshold), (r, col) =>
+        col === "amount" ? r.amount : r.lines,
       ),
     [scopedCoupons, threshold, txSort.sort],
   );
@@ -235,7 +191,11 @@ const CpnSalesDetailPanel = ({
 
   return (
     <div className="cc-panel min-w-0 h-full shadow-sm">
-      <DetailTitleBar storeTier={storeTier} storeLabel={storeLabel} rangeLabel={rangeLabel} />
+      <DetailTitleBar
+        storeTier={storeTier}
+        storeLabel={storeLabel}
+        rangeLabel={rangeLabel}
+      />
 
       <DetailKpiStrip totals={totals} baselineTotals={baselineTotals} />
 
@@ -274,7 +234,10 @@ const CpnSalesDetailPanel = ({
             has the coupon lines, so it can't show what was discounted. */}
         <div className="flex-1 min-w-0 flex flex-col min-h-0">
           {openSaleId ? (
-            <ReceiptPane onBack={handleBackFromTransaction} onExport={exportTransaction} />
+            <ReceiptPane
+              onBack={handleBackFromTransaction}
+              onExport={exportTransaction}
+            />
           ) : (
             <TransactionsPane
               selectedSection={selectedSection}

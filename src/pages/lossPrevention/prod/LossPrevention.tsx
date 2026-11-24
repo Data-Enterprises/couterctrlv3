@@ -1,20 +1,34 @@
+// Hooks
 import { useAppSelector, useAppDispatch } from "../../../hooks";
 import { useToast } from "../../../components/toasts/hooks/useToast";
-import { getSaleTypes } from "../../../api/lossPrevention";
 import { useApiContext } from "../../../hooks/useApiContext";
-import EventPerfMobile from "../../shared/eventPerf/prod/EventPerfMobile";
-import { fetchLpEvents, fetchLpReceipt } from "../../../api/eventPerf/lpAdapter";
-import { LP_MOBILE_INFO } from "./lpInfo";
+
+// Redux
 import {
   resetCashierSlice,
+  setSearchedScope,
   setSaleTypes,
   setNoSaleTypesFound,
   setLoadingSaleTypes,
 } from "../../../features/lossPreventionSlice";
-import type { JsonError } from "../../../interfaces";
-import LPDesktop from "./desktop/LPDesktop";
 import { isGroupSearch } from "../../../features/searchSlice";
 
+// API
+import { getSaleTypes } from "../../../api/lossPrevention";
+import {
+  fetchLpEvents,
+  fetchLpReceipt,
+} from "../../../api/eventPerf/lpAdapter";
+
+// Interfaces
+import type { JsonError } from "../../../interfaces";
+
+// Components
+import EventPerfMobile from "../../../components/eventPerf/EventPerfMobile";
+import LPDesktop from "./components/LPDesktop";
+
+/** The Loss Prevention page: loads the exception types for the searched store or group,
+ *  then shows the desktop page, or the shared event-performance screens on a phone. */
 const LossPrevention = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
@@ -30,6 +44,13 @@ const LossPrevention = () => {
     // where the panels are gone but loading has not flipped, and the page
     // drops to the entry card mid-search. Sales keeps its rows until the new
     // ones land; the reset now happens in the success branch below.
+    // Recorded once the sale types land, so every later fetch stays on this search.
+    const scope = {
+      singleDate: search.singleDate,
+      type: search.type,
+      lastStore: search.lastStore,
+      lastGroup: search.lastGroup,
+    };
     const [sm, sd, sy] = search.singleDate.split("/").map(Number);
     const end = new Date(sy, sm - 1, sd);
     const start = new Date(sy, sm - 1, sd - 6);
@@ -61,7 +82,6 @@ const LossPrevention = () => {
       .then((resp) => {
         const j = resp.data;
         if (j.error === 0) {
-          // const saleTypes = [...j.sale_types, { sale_type: "Description" }];
           const saleTypes = j.sale_types.filter(
             (st: { sale_type: string }) => st.sale_type !== "Tender",
           );
@@ -70,6 +90,7 @@ const LossPrevention = () => {
           // panels never blink through an empty state. Clearing
           // selectedSaleType is also what re-arms the auto-select effect.
           dispatch(resetCashierSlice());
+          dispatch(setSearchedScope(scope));
           dispatch(setNoSaleTypesFound(saleTypes.length === 0));
           dispatch(setSaleTypes(saleTypes));
         } else {
@@ -113,7 +134,7 @@ const LossPrevention = () => {
             onProgress,
           )
         }
-        info={LP_MOBILE_INFO}
+        helpPage="loss-prevention"
         loadReceipt={(saleId, day, storeid) =>
           fetchLpReceipt(
             { url: api.url, token: api.token },

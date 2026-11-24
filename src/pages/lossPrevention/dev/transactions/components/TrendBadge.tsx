@@ -1,5 +1,3 @@
-
-
 interface TrendBadgeProps {
   current: number;
   trend: number;

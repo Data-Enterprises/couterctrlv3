@@ -1,7 +1,11 @@
 // Hooks
 import { useEffect, useState, useRef, useMemo } from "react";
 import { useAppDispatch } from "../../../../../hooks";
-import { useSubMarginCtx, useSubMarginActions, useSubMarginState } from "../../hooks";
+import {
+  useSubMarginCtx,
+  useSubMarginActions,
+  useSubMarginState,
+} from "../../hooks";
 
 // Utils
 import { getLYDate } from "../../../../../utils/dates";
@@ -298,7 +302,9 @@ const MarginPerfItemsTable = ({
                     sev={getItemSeverity(item, thresholdAmt, gradingMetric)}
                     isSel={isSel}
                     activeMetric={activeMetric}
-                    onSelect={() => setSelectedUpc(isSel ? null : item.productCode)}
+                    onSelect={() =>
+                      setSelectedUpc(isSel ? null : item.productCode)
+                    }
                     onMenu={(e) => openCtxMenu(e, item.productCode)}
                   />
                 );

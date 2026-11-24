@@ -202,7 +202,8 @@ interface SalesPerfState {
 
   /** The sub department whose items the drill is showing, or null for the
    *  sub department list. Closed by changing tab, store or search. */
-  openSubDept: { id: number; label: string } | null;
+  /** `subDeptKey` (number and name) and the label shown. */
+  openSubDept: { key: string; label: string } | null;
 
   /**
    * Item rows keyed `${storeScope}|${subDeptId}`, fetched when a department is
@@ -369,9 +370,9 @@ const salesPerfSlice = createSlice({
     },
     openPerfSubDept: (
       state,
-      action: PayloadAction<{ id: number; label: string } | null>,
+      action: PayloadAction<{ key: string; label: string } | null>,
     ) => {
-      if (state.openSubDept?.id !== action.payload?.id) state.itemQuery = "";
+      if (state.openSubDept?.key !== action.payload?.key) state.itemQuery = "";
       state.openSubDept = action.payload;
     },
     setPerfItemQuery: (state, action: PayloadAction<string>) => {

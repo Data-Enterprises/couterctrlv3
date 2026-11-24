@@ -2,7 +2,12 @@
 import { sameWeekDayLastYear } from "../../../../utils";
 
 // Interfaces
-import type { DayPair, TrackerBasis, WeekBucket, WindowPlan } from "../interfaces";
+import type {
+  DayPair,
+  TrackerBasis,
+  WeekBucket,
+  WindowPlan,
+} from "../interfaces";
 
 /**
  * Week bucketing for the tracker, and the TY-to-LY day pairing under it. Two
@@ -139,8 +144,8 @@ export const buildWindowPlan = (
 };
 
 /**
- * Buckets dated rows by their own date. `dateOf` slices because `getWeekly`
- * returns both bare dates and timestamps. Rows outside the plan are dropped.
+ * Buckets dated rows by their own date. `dateOf` slices because some routes
+ * return bare dates and others timestamps. Rows outside the plan are dropped.
  */
 export const bucketByDate = <T>(
   rows: T[],

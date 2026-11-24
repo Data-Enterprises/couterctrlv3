@@ -1,12 +1,10 @@
-
-
 interface KpisProps {
   cells: {
-      label: string;
-      value: string;
-      flagged?: boolean;
-      onClick?: () => void;
-    }[];
+    label: string;
+    value: string;
+    flagged?: boolean;
+    onClick?: () => void;
+  }[];
 }
 
 /** Three equal tiles, on the KPI strip the rest of the app uses so a nested
@@ -24,9 +22,7 @@ const Kpis = ({ cells }: KpisProps) => (
           c.onClick ? "cursor-pointer hover:bg-brand_navy/[0.06]" : ""
         }`}
       >
-        <div className="text-[10px] cc-caps-strong">
-          {c.label}
-        </div>
+        <div className="text-[10px] cc-caps-strong">{c.label}</div>
         <div
           className={`text-[12px] font-medium truncate ${
             c.flagged

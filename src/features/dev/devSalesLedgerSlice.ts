@@ -18,6 +18,7 @@ import {
 // Interfaces
 import type { FinancialsRow } from "../../api/financials";
 import type {
+  ItemDetailResponse,
   TopItemRow,
   TopItemPricePoint,
 } from "../../api/topItems";
@@ -33,6 +34,15 @@ import type {
   RecapItem,
   RecapMix,
 } from "../../pages/sales/dev/storePanel/summary/interfaces/index";
+import type {
+  Cause,
+  Col,
+} from "../../pages/sales/dev/investigate/interfaces";
+import type { SortState } from "../../utils/useTriStateSort";
+import {
+  DEFAULT_TOP_ITEM_SORT,
+  type TopItemSort,
+} from "../../pages/sales/dev/storePanel/top200/utils/topItems";
 
 export type GradingMetric = "sales" | "qty";
 
@@ -155,6 +165,53 @@ export interface PopupStoreData {
   rawLYHourly: HourlySale[];
 }
 
+/** The open investigation's Items grid: what it is filtered, sorted and paged
+ *  to, and which item's evidence is open. Cleared whenever the investigation
+ *  changes, so each one opens on a clean grid. */
+export interface InvestigationGrid {
+  cause: Cause | null;
+  itemQ: string;
+  upcQ: string;
+  vendorQ: string;
+  sort: SortState<Col>;
+  /** Which page of the grid is showing, from 0. */
+  page: number;
+  picked: string | null;
+  /** Codes the Supply tab is narrowed to, carried over from the grid. */
+  supplyUpcs: string;
+}
+
+export const EMPTY_INVESTIGATION_GRID: InvestigationGrid = {
+  cause: null,
+  itemQ: "",
+  upcQ: "",
+  vendorQ: "",
+  sort: null,
+  page: 0,
+  picked: null,
+  supplyUpcs: "",
+};
+
+/** The Top 200 tab's list and open item. Cleared when the tab closes, as it
+ *  was when this was the tab's own state. */
+export interface Top200View {
+  search: string;
+  sort: TopItemSort;
+  dept: string;
+  selectedCode: string | null;
+  detail: ItemDetailResponse | null;
+  detailLoading: boolean;
+}
+
+export const EMPTY_TOP200_VIEW: Top200View = {
+  search: "",
+  sort: DEFAULT_TOP_ITEM_SORT,
+  dept: "",
+  selectedCode: null,
+  detail: null,
+  detailLoading: false,
+};
+
 interface SalesLedgerState {
   // Navigation (shared desktop + mobile)
   hasSearched: boolean;
@@ -167,20 +224,8 @@ interface SalesLedgerState {
   tab: LedgerTab;
   selectedDate: string | null;
   investigation: InvestigationTarget | null;
+  investigationGrid: InvestigationGrid;
   counterpart: Counterpart | null;
-  /**
-   * Which group view the right panel rests on.
-   *
-   * Both answer a question about the GROUP, which is why they are two tabs
-   * rather than one screen hidden behind the other: "stores" ranks the
-   * stores, "departments" breaks every store into its departments. The
-   * investigation below them is about selected stores instead, which is a
-   * different scope and so a different screen.
-   */
-  groupView: "stores" | "departments";
-  /** The departments view, taken full width. Nine stores by twenty
-   *  departments is readable in half a page and comfortable in all of it. */
-  matrixOpen: boolean;
 
   // Loading
   ledgerLoading: boolean;
@@ -290,6 +335,7 @@ interface SalesLedgerState {
    * single-store visit answers it perfectly — and only writes here.
    */
   topItemsTyCache: Record<string, { rows: TopItemRow[]; points: TopItemPricePoint[] }>;
+  top200View: Top200View;
   topItemsTyOrder: string[];
 
   // Raw API data (shared desktop + mobile)
@@ -319,7 +365,7 @@ interface SalesLedgerState {
   exportSubDeptItems: ExportSubDeptItem[];
 
   // Popup row selections — persist across tab switches, reset on new store
-  selectedSubDeptId: number | null;
+  selectedSubDeptKey: string | null;
   selectedSubDeptItems: Top10Item[];
   // Items that sold LW and/or LY but not at all this week, for the same
   // sub dept/day selection — surfaced via the item list's Active/Inactive
@@ -350,9 +396,8 @@ const initialState: SalesLedgerState = {
   tab: "subdept",
   selectedDate: null,
   investigation: null,
+  investigationGrid: EMPTY_INVESTIGATION_GRID,
   counterpart: null,
-  groupView: "stores",
-  matrixOpen: false,
   ledgerLoading: false,
   reportLoading: false,
   top10Loading: false,
@@ -373,6 +418,7 @@ const initialState: SalesLedgerState = {
   topItemsCache: {},
   topItemsCacheOrder: [],
   topItemsTyCache: {},
+  top200View: EMPTY_TOP200_VIEW,
   topItemsTyOrder: [],
   financials: [],
   financialsWindow: null,
@@ -390,7 +436,7 @@ const initialState: SalesLedgerState = {
   top10: [],
   exportSubDeptName: "",
   exportSubDeptItems: [],
-  selectedSubDeptId: null,
+  selectedSubDeptKey: null,
   selectedSubDeptItems: [],
   inactiveSubDeptItems: [],
   selectedHour: null,
@@ -452,22 +498,16 @@ const salesLedgerSlice = createSlice({
       action: PayloadAction<InvestigationTarget | null>,
     ) => {
       state.investigation = action.payload;
-      // Opening an investigation from the matrix leaves the matrix behind,
-      // so Back from the investigation returns to the ledger rather than to
-      // a grid the reader has already finished with.
-      if (action.payload !== null) state.matrixOpen = false;
+      state.investigationGrid = EMPTY_INVESTIGATION_GRID;
     },
-    setGroupView: (
+    setInvestigationGrid: (
       state,
-      action: PayloadAction<"stores" | "departments">,
+      action: PayloadAction<Partial<InvestigationGrid>>,
     ) => {
-      state.groupView = action.payload;
+      state.investigationGrid = { ...state.investigationGrid, ...action.payload };
     },
-    setMatrixOpen: (state, action: PayloadAction<boolean>) => {
-      state.matrixOpen = action.payload;
-      // Expanding is the same view with more room, so coming back from it
-      // lands on the tab it expanded from rather than on the store list.
-      if (action.payload) state.groupView = "departments";
+    setTop200View: (state, action: PayloadAction<Partial<Top200View>>) => {
+      state.top200View = { ...state.top200View, ...action.payload };
     },
     setLedgerSelectedDate: (state, action: PayloadAction<string | null>) => {
       state.selectedDate = action.payload;
@@ -653,8 +693,8 @@ const salesLedgerSlice = createSlice({
     setExportSubDeptItems: (state, action: PayloadAction<ExportSubDeptItem[]>) => {
       state.exportSubDeptItems = action.payload;
     },
-    setSelectedSubDeptId: (state, action: PayloadAction<number | null>) => {
-      state.selectedSubDeptId = action.payload;
+    setSelectedSubDeptKey: (state, action: PayloadAction<string | null>) => {
+      state.selectedSubDeptKey = action.payload;
     },
     setSelectedSubDeptItems: (state, action: PayloadAction<Top10Item[]>) => {
       state.selectedSubDeptItems = action.payload;
@@ -672,7 +712,7 @@ const salesLedgerSlice = createSlice({
       state.lastFetchedItemsKey = action.payload;
     },
     clearPopupSelections: (state) => {
-      state.selectedSubDeptId = null;
+      state.selectedSubDeptKey = null;
       state.selectedSubDeptItems = [];
       state.inactiveSubDeptItems = [];
       state.selectedHour = null;
@@ -753,7 +793,7 @@ const salesLedgerSlice = createSlice({
       state.top10 = [];
       state.exportSubDeptName = "";
       state.exportSubDeptItems = [];
-      state.selectedSubDeptId = null;
+      state.selectedSubDeptKey = null;
       state.selectedSubDeptItems = [];
       state.inactiveSubDeptItems = [];
       state.selectedHour = null;
@@ -796,8 +836,8 @@ export const {
   setLedgerTab,
   setCounterpart,
   setInvestigation,
-  setGroupView,
-  setMatrixOpen,
+  setInvestigationGrid,
+  setTop200View,
   setLedgerSelectedDate,
   setLedgerLoading,
   setFinancials,
@@ -827,7 +867,7 @@ export const {
   setTop10,
   setExportSubDeptName,
   setExportSubDeptItems,
-  setSelectedSubDeptId,
+  setSelectedSubDeptKey,
   setSelectedSubDeptItems,
   setInactiveSubDeptItems,
   setSelectedHour,

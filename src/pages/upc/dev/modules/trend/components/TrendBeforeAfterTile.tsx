@@ -6,7 +6,11 @@ interface TrendBeforeAfterTileProps {
 
 /** A plain before/after tile for metrics with no natural ceiling (Total units, Volatility,
  *  Slope), labelled in words. */
-const TrendBeforeAfterTile = ({ label, before, after }: TrendBeforeAfterTileProps) => {
+const TrendBeforeAfterTile = ({
+  label,
+  before,
+  after,
+}: TrendBeforeAfterTileProps) => {
   return (
     <div className="text-center bg-fill_track/60 rounded py-2 px-1.5">
       <div className="text-[12px] text-content/95 mb-1">{label}</div>

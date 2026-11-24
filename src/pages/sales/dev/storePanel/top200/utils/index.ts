@@ -21,7 +21,8 @@ export const pts = (v: number) => (v >= 0 ? "+" : "−") + Math.abs(v).toFixed(2
 export const signedMoney = (v: number) =>
   (v >= 0 ? "+" : "−") + formatCurrency2(Math.abs(v));
 
-export const pct = (v: number | null) => (v === null ? "—" : `${v.toFixed(2)}%`);
+export const pct = (v: number | null) =>
+  v === null ? "—" : `${v.toFixed(2)}%`;
 
 /** Ahead or behind. No threshold: there is no third state to grade into
  *  when the only question is which of two stores sells more of a thing. */
@@ -93,8 +94,11 @@ export const priceLines = (
   const byPrice = new Map<number, PriceLine>();
   const put = (p: TopItemPricePoint, side: "mine" | "theirs") => {
     if (p.product_code !== code) return;
-    const held =
-      byPrice.get(p.price) ?? { price: p.price, mine: null, theirs: null };
+    const held = byPrice.get(p.price) ?? {
+      price: p.price,
+      mine: null,
+      theirs: null,
+    };
     held[side] = p;
     byPrice.set(p.price, held);
   };

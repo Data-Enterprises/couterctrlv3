@@ -1,21 +1,14 @@
 // Hooks
-import { useState, useMemo } from "react";
+import { useOrdersExportSheet } from "./hooks/exportSheet";
 
 // Utils
-import {
-  fmtNum,
-  rowsToCsv,
-  downloadCsv,
-  aggregateRows,
-  type AggFn,
-  type AggRow,
-} from "../../../../utils/csvExport";
-import { buildOrdersCsv, DIMS, METRICS, AGG_OPTIONS } from "./utils";
+import { DIMS, METRICS, AGG_OPTIONS } from "./utils";
 
 // Interfaces
+import type { AggFn } from "../../../../utils/csvExport";
 import type { AllOrder } from "../../../../interfaces";
 import type { SelectedOrder } from "../../../../features/dev/devOrdersSlice";
-import type { ModalMode, ExportDataset, MetricSelection } from "./interfaces";
+import type { ModalMode } from "./interfaces";
 
 // Components
 import { ArrowDownTrayIcon } from "@heroicons/react/20/solid";
@@ -42,186 +35,45 @@ const OrdersExportSheet = ({
   selectedOrderItems,
   selectedOrder,
 }: OrdersExportSheetProps) => {
-  const isMultiStore = storeNames.length > 1;
-  const storeLabel = isMultiStore ? `${storeNames.length} stores` : (storeNames[0] ?? "");
-
-  const [mode, setMode] = useState<ModalMode>("presets");
-  const [selected, setSelected] = useState<Set<ExportDataset>>(() => new Set());
-
-  const uniqueSubDepts = useMemo(() => {
-    const map = new Map<string, { id: string; count: number }>();
-    allOrders.forEach((o) => {
-      const key = o.sub_department_description ?? "null";
-      const existing = map.get(key);
-      if (existing) existing.count += 1;
-      else map.set(key, { id: key, count: 1 });
-    });
-    return Array.from(map.values()).sort((a, b) => a.id.localeCompare(b.id));
-  }, [allOrders]);
-
-  const isMultiSubDept = uniqueSubDepts.length > 1;
-
-  const [customSubDepts, setCustomSubDepts] = useState<Set<string>>(() => new Set());
-
-  const toggleCustomSubDept = (id: string) =>
-    setCustomSubDepts((prev) => {
-      const n = new Set(prev);
-      n.has(id) ? n.delete(id) : n.add(id);
-      return n;
-    });
-
-  const allSubDeptsSelected = customSubDepts.size === uniqueSubDepts.length;
-  const noSubDeptsSelected = customSubDepts.size === 0;
-
-  const customFilteredOrders = useMemo(
-    () => allOrders.filter((o) => !isMultiSubDept || customSubDepts.has(o.sub_department_description ?? "null")),
-    [allOrders, customSubDepts, isMultiSubDept],
-  );
-
-  const [presetSubDepts, setPresetSubDepts] = useState<Set<string>>(() => new Set());
-
-  const applyPresetSubDepts = (next: Set<string>) => {
-    setPresetSubDepts(next);
-    setSelected((prev) => {
-      const n = new Set(prev);
-      if (next.size > 0) n.add("subDepts");
-      else n.delete("subDepts");
-      return n;
-    });
-  };
-
-  const togglePresetSubDept = (id: string) => {
-    const next = new Set(presetSubDepts);
-    next.has(id) ? next.delete(id) : next.add(id);
-    applyPresetSubDepts(next);
-  };
-
-  const allPresetSubDeptsSelected = presetSubDepts.size === uniqueSubDepts.length;
-  const noPresetSubDeptsSelected = presetSubDepts.size === 0;
-
-  const presetSubDeptFilteredOrders = useMemo(
-    () => allOrders.filter((o) => presetSubDepts.has(o.sub_department_description ?? "null")),
-    [allOrders, presetSubDepts],
-  );
-
-  const [groupBy, setGroupBy] = useState<Set<string>>(new Set());
-  const [metrics, setMetrics] = useState<Map<string, MetricSelection>>(
-    new Map([
-      ["qty", { fn: "sum", enabled: false }],
-      ["e_ret", { fn: "sum", enabled: false }],
-      ["cogs", { fn: "sum", enabled: false }],
-      ["rev", { fn: "sum", enabled: false }],
-      ["active_retail_price", { fn: "avg", enabled: false }],
-      ["net_cost", { fn: "sum", enabled: false }],
-      ["profit", { fn: "sum", enabled: false }],
-      ["margin", { fn: "avg", enabled: false }],
-      ["weight", { fn: "sum", enabled: false }],
-    ]),
-  );
-
-  const toggleGroupBy = (key: string) =>
-    setGroupBy((prev) => {
-      const n = new Set(prev);
-      n.has(key) ? n.delete(key) : n.add(key);
-      return n;
-    });
-
-  const toggleMetric = (key: string) =>
-    setMetrics((prev) => {
-      const n = new Map(prev);
-      const c = n.get(key)!;
-      n.set(key, { ...c, enabled: !c.enabled });
-      return n;
-    });
-
-  const setMetricFn = (key: string, fn: AggFn) =>
-    setMetrics((prev) => {
-      const n = new Map(prev);
-      const c = n.get(key)!;
-      n.set(key, { ...c, fn });
-      return n;
-    });
-
-  // Profit/Margin/Edited aren't raw AllOrder fields, so they're computed
-  // here before aggregation — mirrors desktop's OrdersExportModal.tsx.
-  const flatRows = useMemo<AggRow[]>(
-    () =>
-      customFilteredOrders.map((o) => {
-        const profit = o.e_ret - o.cogs;
-        const margin = o.e_ret > 0 ? (profit / o.e_ret) * 100 : 0;
-        return {
-          ...o,
-          profit,
-          margin,
-          edited_label: o.edited ? "Yes" : "No",
-        } as unknown as AggRow;
-      }),
-    [customFilteredOrders],
-  );
-
-  const { aggRows, columns } = useMemo(() => {
-    const activeDims = DIMS.filter((d) => groupBy.has(d.key));
-    const activeMetrics = METRICS
-      .map((m) => ({ ...m, sel: metrics.get(m.key) }))
-      .filter((m) => m.sel?.enabled)
-      .map((m) => ({ key: m.key, fn: m.sel!.fn, label: m.label }));
-
-    const agg = aggregateRows(
-      flatRows,
-      activeDims.map((d) => d.key),
-      activeMetrics.map((m) => ({ key: m.key, fn: m.fn })),
-    );
-
-    const display = agg.map((row) => {
-      const out: Record<string, string> = {};
-      for (const d of activeDims) out[d.key] = String(row[d.key] ?? "");
-      for (const m of activeMetrics) {
-        const colKey = `${m.fn}__${m.key}`;
-        const val = Number(row[colKey]);
-        out[colKey] = m.fn === "count" ? String(Math.round(val)) : fmtNum(val);
-      }
-      return out;
-    });
-
-    const cols = [
-      ...activeDims.map((d) => ({ key: d.key, label: d.label })),
-      ...activeMetrics.map((m) => ({
-        key: `${m.fn}__${m.key}`,
-        label: `${m.fn.charAt(0).toUpperCase() + m.fn.slice(1)} ${m.label}`,
-      })),
-    ];
-
-    return { aggRows: display, columns: cols };
-  }, [flatRows, groupBy, metrics]);
-
-  const handlePresetDownload = () => {
-    const sections: string[] = [];
-    if (selected.has("all")) sections.push(buildOrdersCsv(allOrders, `All Orders — ${storeLabel} ${orderType} ${dateLabel}`));
-    if (selected.has("selected") && selectedOrderItems.length) sections.push(buildOrdersCsv(selectedOrderItems, `Order #${selectedOrder?.orderId}`));
-    if (selected.has("subDepts") && presetSubDeptFilteredOrders.length) {
-      sections.push(
-        buildOrdersCsv(presetSubDeptFilteredOrders, `By Sub Depts (${presetSubDepts.size} of ${uniqueSubDepts.length}) — ${storeLabel} ${orderType} ${dateLabel}`),
-      );
-    }
-    if (!sections.length) return;
-    const safeName = (isMultiStore ? orderType : `${storeLabel}_${orderType}`).replace(/[^a-z0-9]/gi, "_");
-    const safeDateLabel = dateLabel.replace(/[^a-z0-9]/gi, "_");
-    downloadCsv(sections.join("\n\n"), `${safeName}_${safeDateLabel}.csv`);
-    onClose();
-  };
-
-  const handleCustomDownload = () => {
-    if (!columns.length || !aggRows.length) return;
-    const headers = columns.map((c) => c.label);
-    const rows = aggRows.map((r) => columns.map((c) => r[c.key] ?? ""));
-    const safeName = (isMultiStore ? orderType : `${storeLabel}_${orderType}`).replace(/[^a-z0-9]/gi, "_");
-    const safeDateLabel = dateLabel.replace(/[^a-z0-9]/gi, "_");
-    downloadCsv(rowsToCsv(headers, rows), `${safeName}_custom_${safeDateLabel}.csv`);
-    onClose();
-  };
-
-  const hasSelected = selectedOrder !== null && selectedOrderItems.length > 0;
-  const canCustomDownload = columns.length > 0 && aggRows.length > 0;
+  const {
+    storeLabel,
+    mode,
+    setMode,
+    selected,
+    setSelected,
+    uniqueSubDepts,
+    isMultiSubDept,
+    customSubDepts,
+    setCustomSubDepts,
+    toggleCustomSubDept,
+    allSubDeptsSelected,
+    noSubDeptsSelected,
+    customFilteredOrders,
+    presetSubDepts,
+    setPresetSubDepts,
+    applyPresetSubDepts,
+    togglePresetSubDept,
+    allPresetSubDeptsSelected,
+    noPresetSubDeptsSelected,
+    presetSubDeptFilteredOrders,
+    groupBy,
+    toggleGroupBy,
+    metrics,
+    toggleMetric,
+    setMetricFn,
+    handlePresetDownload,
+    handleCustomDownload,
+    hasSelected,
+    canCustomDownload,
+  } = useOrdersExportSheet({
+    onClose,
+    storeNames,
+    orderType,
+    dateLabel,
+    allOrders,
+    selectedOrderItems,
+    selectedOrder,
+  });
 
   return (
     <BottomSheet onClose={onClose}>
@@ -238,7 +90,9 @@ const OrdersExportSheet = ({
               key={m}
               onClick={() => setMode(m)}
               className={`cc-chip-btn text-[11px] ${
-                mode === m ? "bg-brand_navy text-custom-white" : "text-content/95"
+                mode === m
+                  ? "bg-brand_navy text-custom-white"
+                  : "text-content/95"
               }`}
             >
               {m === "presets" ? "Presets" : "Custom"}
@@ -253,13 +107,22 @@ const OrdersExportSheet = ({
             <input
               type="checkbox"
               checked={selected.has("all")}
-              onChange={() => setSelected((p) => { const n = new Set(p); n.has("all") ? n.delete("all") : n.add("all"); return n; })}
+              onChange={() =>
+                setSelected((p) => {
+                  const n = new Set(p);
+                  n.has("all") ? n.delete("all") : n.add("all");
+                  return n;
+                })
+              }
               className="mt-0.5 cc-checkbox border-line_strong flex-shrink-0"
             />
             <div>
-              <div className="text-[13px] font-medium text-content">All Orders</div>
+              <div className="text-[13px] font-medium text-content">
+                All Orders
+              </div>
               <div className="text-[11px] text-content/95 mt-0.5">
-                All {allOrders.length} line items for {storeLabel} — {orderType} on {dateLabel}
+                All {allOrders.length} line items for {storeLabel} — {orderType}{" "}
+                on {dateLabel}
               </div>
             </div>
           </label>
@@ -269,15 +132,24 @@ const OrdersExportSheet = ({
               type="checkbox"
               checked={selected.has("selected")}
               disabled={!hasSelected}
-              onChange={() => setSelected((p) => { const n = new Set(p); n.has("selected") ? n.delete("selected") : n.add("selected"); return n; })}
+              onChange={() =>
+                setSelected((p) => {
+                  const n = new Set(p);
+                  n.has("selected") ? n.delete("selected") : n.add("selected");
+                  return n;
+                })
+              }
               className="mt-0.5 cc-checkbox border-line_strong flex-shrink-0"
             />
             <div>
               <div className="text-[13px] font-medium text-content">
-                Selected Order {selectedOrder ? `#${selectedOrder.orderId}` : ""}
+                Selected Order{" "}
+                {selectedOrder ? `#${selectedOrder.orderId}` : ""}
               </div>
               <div className="text-[11px] text-content/95 mt-0.5">
-                {hasSelected ? `${selectedOrderItems.length} line items for order #${selectedOrder?.orderId}` : "Select an order from the list to enable"}
+                {hasSelected
+                  ? `${selectedOrderItems.length} line items for order #${selectedOrder?.orderId}`
+                  : "Select an order from the list to enable"}
               </div>
             </div>
           </label>
@@ -290,20 +162,34 @@ const OrdersExportSheet = ({
                 onChange={() => {
                   const checking = !selected.has("subDepts");
                   if (checking) {
-                    if (noPresetSubDeptsSelected) setPresetSubDepts(new Set(uniqueSubDepts.map((s) => s.id)));
+                    if (noPresetSubDeptsSelected)
+                      setPresetSubDepts(
+                        new Set(uniqueSubDepts.map((s) => s.id)),
+                      );
                   } else {
                     setPresetSubDepts(new Set());
                   }
-                  setSelected((p) => { const n = new Set(p); checking ? n.add("subDepts") : n.delete("subDepts"); return n; });
+                  setSelected((p) => {
+                    const n = new Set(p);
+                    checking ? n.add("subDepts") : n.delete("subDepts");
+                    return n;
+                  });
                 }}
                 className="mt-0.5 cc-checkbox border-line_strong flex-shrink-0"
               />
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between">
-                  <div className="text-[13px] font-medium text-content">By Sub Depts</div>
+                  <div className="text-[13px] font-medium text-content">
+                    By Sub Depts
+                  </div>
                   <div className="flex items-center gap-2">
                     <button
-                      onClick={(e) => { e.preventDefault(); applyPresetSubDepts(new Set(uniqueSubDepts.map((s) => s.id))); }}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        applyPresetSubDepts(
+                          new Set(uniqueSubDepts.map((s) => s.id)),
+                        );
+                      }}
                       disabled={allPresetSubDeptsSelected}
                       className="text-[10px] text-brand_navy disabled:text-content/40 transition-colors"
                     >
@@ -311,7 +197,10 @@ const OrdersExportSheet = ({
                     </button>
                     <span className="text-[10px] text-content/95">·</span>
                     <button
-                      onClick={(e) => { e.preventDefault(); applyPresetSubDepts(new Set()); }}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        applyPresetSubDepts(new Set());
+                      }}
                       disabled={noPresetSubDeptsSelected}
                       className="text-[10px] text-brand_navy disabled:text-content/40 transition-colors"
                     >
@@ -320,13 +209,17 @@ const OrdersExportSheet = ({
                   </div>
                 </div>
                 <div className="text-[11px] text-content/95 mt-0.5">
-                  {presetSubDeptFilteredOrders.length} line items across {presetSubDepts.size} of {uniqueSubDepts.length} sub depts
+                  {presetSubDeptFilteredOrders.length} line items across{" "}
+                  {presetSubDepts.size} of {uniqueSubDepts.length} sub depts
                 </div>
                 <div className="flex flex-wrap gap-1.5 mt-2">
                   {uniqueSubDepts.map((s) => (
                     <button
                       key={s.id}
-                      onClick={(e) => { e.preventDefault(); togglePresetSubDept(s.id); }}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        togglePresetSubDept(s.id);
+                      }}
                       className={`text-[10px] px-2 py-1 rounded-full border transition-colors ${
                         presetSubDepts.has(s.id)
                           ? "bg-brand_navy text-custom-white border-brand_navy"
@@ -349,7 +242,11 @@ const OrdersExportSheet = ({
                 <div className="text-[10px] cc-caps">Sub Depts</div>
                 <div className="flex items-center gap-2">
                   <button
-                    onClick={() => setCustomSubDepts(new Set(uniqueSubDepts.map((s) => s.id)))}
+                    onClick={() =>
+                      setCustomSubDepts(
+                        new Set(uniqueSubDepts.map((s) => s.id)),
+                      )
+                    }
                     disabled={allSubDeptsSelected}
                     className="text-[10px] text-brand_navy disabled:text-content/40 transition-colors"
                   >
@@ -374,8 +271,12 @@ const OrdersExportSheet = ({
                       onChange={() => toggleCustomSubDept(s.id)}
                       className="cc-checkbox flex-shrink-0"
                     />
-                    <span className="text-[12px] text-content truncate flex-1">{s.id}</span>
-                    <span className="text-[10px] text-content/95 flex-shrink-0">{s.count} ln</span>
+                    <span className="text-[12px] text-content truncate flex-1">
+                      {s.id}
+                    </span>
+                    <span className="text-[10px] text-content/95 flex-shrink-0">
+                      {s.count} ln
+                    </span>
                   </label>
                 ))}
               </div>
@@ -412,11 +313,17 @@ const OrdersExportSheet = ({
                       onChange={() => toggleMetric(m.key)}
                       className="cc-checkbox flex-shrink-0"
                     />
-                    <span className={`text-[12px] flex-1 ${sel.enabled ? "text-content" : "text-content/95"}`}>{m.label}</span>
+                    <span
+                      className={`text-[12px] flex-1 ${sel.enabled ? "text-content" : "text-content/95"}`}
+                    >
+                      {m.label}
+                    </span>
                     <select
                       value={sel.fn}
                       disabled={!sel.enabled}
-                      onChange={(e) => setMetricFn(m.key, e.target.value as AggFn)}
+                      onChange={(e) =>
+                        setMetricFn(m.key, e.target.value as AggFn)
+                      }
                       className="text-[10px] border border-line_field rounded px-1 py-1 text-content disabled:opacity-40 bg-custom-white outline-none"
                     >
                       {AGG_OPTIONS.map((o) => (
@@ -432,8 +339,12 @@ const OrdersExportSheet = ({
           </div>
 
           <div className="text-[10px] text-content/95">
-            Working on {customFilteredOrders.length} of {allOrders.length} line items
-            {isMultiSubDept ? ` · ${customSubDepts.size} of ${uniqueSubDepts.length} sub depts` : ""} for {orderType} on {dateLabel}.
+            Working on {customFilteredOrders.length} of {allOrders.length} line
+            items
+            {isMultiSubDept
+              ? ` · ${customSubDepts.size} of ${uniqueSubDepts.length} sub depts`
+              : ""}{" "}
+            for {orderType} on {dateLabel}.
           </div>
         </div>
       )}
@@ -443,8 +354,12 @@ const OrdersExportSheet = ({
           Cancel
         </button>
         <button
-          onClick={mode === "presets" ? handlePresetDownload : handleCustomDownload}
-          disabled={mode === "presets" ? selected.size === 0 : !canCustomDownload}
+          onClick={
+            mode === "presets" ? handlePresetDownload : handleCustomDownload
+          }
+          disabled={
+            mode === "presets" ? selected.size === 0 : !canCustomDownload
+          }
           className="flex items-center gap-1.5 cc-btn-primary text-[12px]"
         >
           <ArrowDownTrayIcon className="w-3.5 h-3.5" />

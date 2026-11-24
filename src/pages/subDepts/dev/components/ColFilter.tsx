@@ -14,14 +14,22 @@ interface ColFilterProps {
 }
 
 /** A column header button that opens a filter popover. */
-const ColFilter = ({ label, active, align = "left", onApply, onClear, children }: ColFilterProps) => {
+const ColFilter = ({
+  label,
+  active,
+  align = "left",
+  onApply,
+  onClear,
+  children,
+}: ColFilterProps) => {
   const [open, setOpen] = useState(false);
   const wrapRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!open) return;
     const close = (e: MouseEvent) => {
-      if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) setOpen(false);
+      if (wrapRef.current && !wrapRef.current.contains(e.target as Node))
+        setOpen(false);
     };
     document.addEventListener("mousedown", close);
     return () => document.removeEventListener("mousedown", close);
@@ -36,9 +44,13 @@ const ColFilter = ({ label, active, align = "left", onApply, onClear, children }
         }`}
       >
         {label}
-        {active && <span className="w-1 h-1 rounded-full bg-brand_navy flex-shrink-0" />}
+        {active && (
+          <span className="w-1 h-1 rounded-full bg-brand_navy flex-shrink-0" />
+        )}
       </button>
-      {open && <div className="fixed inset-0 z-[199]" onClick={() => setOpen(false)} />}
+      {open && (
+        <div className="fixed inset-0 z-[199]" onClick={() => setOpen(false)} />
+      )}
       {open && (
         <div
           style={{
@@ -57,15 +69,24 @@ const ColFilter = ({ label, active, align = "left", onApply, onClear, children }
           {children}
           <div className="flex gap-1.5 mt-2">
             <button
-              onClick={() => { onApply(); setOpen(false); }}
+              onClick={() => {
+                onApply();
+                setOpen(false);
+              }}
               className="flex-1 flex items-center justify-center gap-1 rounded py-1 text-[10px] font-medium"
-              style={{ background: "rgb(var(--color-brand-navy))", color: "white" }}
+              style={{
+                background: "rgb(var(--color-brand-navy))",
+                color: "white",
+              }}
             >
               <MagnifyingGlassIcon className="w-3 h-3" /> Apply
             </button>
             {onClear && (
               <button
-                onClick={() => { onClear(); setOpen(false); }}
+                onClick={() => {
+                  onClear();
+                  setOpen(false);
+                }}
                 className="px-2 rounded py-1 text-[10px] text-content border border-line_field hover:text-content transition-colors"
               >
                 Clear

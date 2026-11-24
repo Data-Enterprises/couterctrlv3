@@ -3,10 +3,7 @@ import { useState } from "react";
 import { useOrganizationCtx } from "../../hooks";
 
 // API
-import {
-  setUsersActive,
-  type SetActiveResult,
-} from "../../../../../api/team";
+import { setUsersActive, type SetActiveResult } from "../../../../../api/team";
 
 // Utils
 import { capitalise } from "../utils";
@@ -145,7 +142,9 @@ const SetActiveModal = ({ users, active, onClose }: SetActiveModalProps) => {
                 </div>
                 <span
                   className={`text-[11.5px] flex-shrink-0 text-right ${
-                    failed ? "text-brand_danger font-semibold" : "text-content/95"
+                    failed
+                      ? "text-brand_danger font-semibold"
+                      : "text-content/95"
                   }`}
                 >
                   {out === null

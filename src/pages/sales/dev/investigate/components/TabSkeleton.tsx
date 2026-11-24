@@ -31,9 +31,8 @@ const TabSkeleton = ({ tab }: TabSkeletonProps) => (
             <span className="font-bold text-content">
               Reading orders and receivers.
             </span>{" "}
-            Until they land a supply gap cannot be told from a
-            merchandising one, so this stays masked rather than changing under
-            you.
+            Until they land a supply gap cannot be told from a merchandising
+            one, so this stays masked rather than changing under you.
           </>
         )}
       </LoadNote>

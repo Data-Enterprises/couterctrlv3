@@ -75,7 +75,9 @@ const ItemFixPanel = ({
 
   const rows = useMemo(
     () =>
-      item ? itemStoreRows(item.code, scope, all, drafts, valid ? unit : null) : [],
+      item
+        ? itemStoreRows(item.code, scope, all, drafts, valid ? unit : null)
+        : [],
     [item, scope, all, drafts, unit, valid],
   );
   const hint = useMemo(() => commonUnit(rows), [rows]);
@@ -156,9 +158,7 @@ const ItemFixPanel = ({
 
         <div className="flex flex-wrap items-center gap-3">
           <label className="flex items-center gap-2">
-            <span className="text-[11px] cc-caps">
-              New unit cost
-            </span>
+            <span className="text-[11px] cc-caps">New unit cost</span>
             <ThresholdFilter
               value={unit === null ? null : { op: "eq", amount: unit }}
               onChange={(v) => setUnit(v === null ? null : v.amount)}
@@ -187,9 +187,12 @@ const ItemFixPanel = ({
           <div className="flex items-start gap-2 rounded-lg bg-filter_active border border-filter_active_border px-3 py-2">
             <InformationCircleIcon className="h-4 w-4 flex-shrink-0 text-brand_navy mt-px" />
             <span className="text-[12px] leading-snug text-content">
-              {byUnit === rows.length ? "Every store here orders" : `${byUnit} of these orders are`}{" "}
-              {byUnit === rows.length ? "this by the unit" : "by the unit"} — no case
-              size, so the unit cost goes into the case cost column as it is.
+              {byUnit === rows.length
+                ? "Every store here orders"
+                : `${byUnit} of these orders are`}{" "}
+              {byUnit === rows.length ? "this by the unit" : "by the unit"} — no
+              case size, so the unit cost goes into the case cost column as it
+              is.
             </span>
           </div>
         )}
@@ -231,8 +234,8 @@ const ItemFixPanel = ({
                         {padStoreNumber(r.doc.storenumber)} — {r.doc.storename}
                       </span>
                       <span className="block text-[11px] text-content/95 tabular-nums">
-                        Order {r.doc.order_id} · {fmtOrderDate(r.doc.order_date)} · qty{" "}
-                        {r.qty}
+                        Order {r.doc.order_id} ·{" "}
+                        {fmtOrderDate(r.doc.order_date)} · qty {r.qty}
                       </span>
                     </td>
                     <td className="px-2.5 py-2 text-right tabular-nums text-content">
@@ -280,7 +283,11 @@ const ItemFixPanel = ({
           </button>
           <button
             onClick={() =>
-              valid && onStage(willChange.map((r) => r.doc.key), unit!)
+              valid &&
+              onStage(
+                willChange.map((r) => r.doc.key),
+                unit!,
+              )
             }
             disabled={!valid || willChange.length === 0}
             className="rounded-md bg-brand_navy px-4 py-1.5 text-[12.5px] font-semibold text-custom-white hover:bg-brand_navy_hover disabled:bg-fill_track_strong disabled:cursor-not-allowed"

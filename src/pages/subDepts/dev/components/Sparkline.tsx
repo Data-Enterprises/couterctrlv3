@@ -19,7 +19,12 @@ const Sparkline = ({ values, stroke }: SparklineProps) => {
     })
     .join(" ");
   return (
-    <svg viewBox={`0 0 ${w} ${h}`} width={w} height={h} className="flex-shrink-0">
+    <svg
+      viewBox={`0 0 ${w} ${h}`}
+      width={w}
+      height={h}
+      className="flex-shrink-0"
+    >
       <polyline points={points} fill="none" stroke={stroke} strokeWidth={1.5} />
     </svg>
   );

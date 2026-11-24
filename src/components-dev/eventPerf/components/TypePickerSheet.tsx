@@ -21,7 +21,8 @@ interface TypePickerSheetProps {
  *  tap from a menu that already says which is worst. */
 const TypePickerSheet = ({ allLabel, measure }: TypePickerSheetProps) => {
   const dispatch = useAppDispatch();
-  const { perf, pages, cardTotals, fmt, valueOf, setTypePickerOpen } = useEventPerfCtx();
+  const { perf, pages, cardTotals, fmt, valueOf, setTypePickerOpen } =
+    useEventPerfCtx();
   return (
     <BottomSheet onClose={() => setTypePickerOpen(false)}>
       <div className="px-4 pb-6 pt-1">

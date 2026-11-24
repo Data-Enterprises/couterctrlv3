@@ -1,5 +1,10 @@
 // Interfaces
-import type { CashierSeverity, CashierMetric, CashierGrade, PeerAverages } from "../interfaces";
+import type {
+  CashierSeverity,
+  CashierMetric,
+  CashierGrade,
+  PeerAverages,
+} from "../interfaces";
 import type {
   TransactionOverview,
   UniqueCashier,
@@ -93,7 +98,9 @@ export const passFailChipClass = (isPass: boolean | null): string => {
   // pass/fail at full strength, and on a row of four chips it read as an alarm
   // rather than a grade.
   if (isPass === null) return "bg-row_stripe text-brand_slate";
-  return isPass ? "bg-severity_healthy_bg text-severity_healthy_text" : "bg-severity_critical_bg text-severity_critical_text";
+  return isPass
+    ? "bg-severity_healthy_bg text-severity_healthy_text"
+    : "bg-severity_critical_bg text-severity_critical_text";
 };
 
 // Trend pill for the KPI strips — the same soft fill and dark text
@@ -104,7 +111,9 @@ export const passFailChipClass = (isPass: boolean | null): string => {
 // Up is worse here: LP grades exceptions, where staying under the baseline is
 // the good outcome.
 export const trendPillClass = (pct: number): string =>
-  pct > 0 ? "bg-delta_negative_bg text-delta_negative_text" : "bg-delta_positive_bg text-delta_positive_text";
+  pct > 0
+    ? "bg-delta_negative_bg text-delta_negative_text"
+    : "bg-delta_positive_bg text-delta_positive_text";
 
 // ── Step 1: aggregate transOverviews into per-cashier stats ─────────────────
 

@@ -48,7 +48,9 @@ export const foldItems = (rows: SubDeptMargin[]): RecapItem[] => {
     held.item.pounds += r.weight || 0;
     held.item.net += net;
     const name = vendorOf(r);
-    let part: RecapVendorPart | undefined = held.item.vendors.find((v) => v.vendor === name);
+    let part: RecapVendorPart | undefined = held.item.vendors.find(
+      (v) => v.vendor === name,
+    );
     if (!part) {
       part = { vendor: name, units: 0, pounds: 0, net: 0 };
       held.item.vendors.push(part);

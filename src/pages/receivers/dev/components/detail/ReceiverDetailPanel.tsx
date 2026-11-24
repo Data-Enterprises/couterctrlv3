@@ -25,10 +25,7 @@ const ReceiverDetailPanel = () => {
   const totals = state.totals[0] ?? null;
 
   return (
-    <div
-      className="cc-panel shadow-lg"
-      style={{ flex: 1, minWidth: 0 }}
-    >
+    <div className="cc-panel shadow-lg" style={{ flex: 1, minWidth: 0 }}>
       {exportOpen && selectedReceiver && (
         <ReceiversExportModal
           onClose={() => setExportOpen(false)}

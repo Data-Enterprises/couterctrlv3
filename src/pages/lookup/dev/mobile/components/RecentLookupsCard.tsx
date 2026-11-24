@@ -16,7 +16,10 @@ interface RecentLookupsCardProps {
  * Recent lookups, dev only: two lines per row (as `PerfDrillList`) so the name
  * gets the width. A scale item shows pounds (it rings `qty: 0`).
  */
-const RecentLookupsCard = ({ onSelect, bare = false }: RecentLookupsCardProps) => {
+const RecentLookupsCard = ({
+  onSelect,
+  bare = false,
+}: RecentLookupsCardProps) => {
   const { recentLookups } = useLookupCtx();
   if (!recentLookups.length) return null;
 
@@ -56,7 +59,9 @@ const RecentLookupsCard = ({ onSelect, bare = false }: RecentLookupsCardProps) =
               {r.costMissing ? (
                 <span>no cost</span>
               ) : (
-                r.marginPct !== null && <span>{r.marginPct.toFixed(1)}% mgn</span>
+                r.marginPct !== null && (
+                  <span>{r.marginPct.toFixed(1)}% mgn</span>
+                )
               )}
             </div>
           </button>

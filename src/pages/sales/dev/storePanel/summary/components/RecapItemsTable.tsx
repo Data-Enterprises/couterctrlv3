@@ -54,7 +54,11 @@ const RecapItemsTable = ({
 }: RecapItemsTableProps) => {
   const cols = colsOf(withPounds, narrow);
   const { tip, track, clear } = useCursorTip<string>();
-  const [menu, setMenu] = useState<{ x: number; y: number; upc: string } | null>(null);
+  const [menu, setMenu] = useState<{
+    x: number;
+    y: number;
+    upc: string;
+  } | null>(null);
   const tipRow = tip ? rows.find((r) => r.code === tip.key) : undefined;
   const head = (col: ItemSortCol, label: string, right = false) => (
     <RecapSortHead col={col} sort={sort} onSort={onSort} right={right}>
@@ -95,7 +99,9 @@ const RecapItemsTable = ({
               <span className="truncate">{r.name}</span>
               <span className="truncate">{r.subDeptName}</span>
               <span className="min-w-0 flex items-baseline gap-1">
-                <span className="truncate">{!lead || lead === NO_VENDOR ? "—" : lead}</span>
+                <span className="truncate">
+                  {!lead || lead === NO_VENDOR ? "—" : lead}
+                </span>
                 {r.vendors.length > 1 && (
                   <span
                     onMouseMove={track(r.code)}
@@ -106,9 +112,17 @@ const RecapItemsTable = ({
                   </span>
                 )}
               </span>
-              <span className="text-right font-semibold tabular-nums">{money(r.net)}</span>
-              <span className="text-right font-semibold tabular-nums">{count(r.units)}</span>
-              {withPounds && <span className="text-right font-semibold tabular-nums">{lb(r.pounds)}</span>}
+              <span className="text-right font-semibold tabular-nums">
+                {money(r.net)}
+              </span>
+              <span className="text-right font-semibold tabular-nums">
+                {count(r.units)}
+              </span>
+              {withPounds && (
+                <span className="text-right font-semibold tabular-nums">
+                  {lb(r.pounds)}
+                </span>
+              )}
             </div>
           );
         })}
@@ -126,7 +140,9 @@ const RecapItemsTable = ({
         <span />
         <span className="text-right tabular-nums">{money(totals.net)}</span>
         <span className="text-right tabular-nums">{count(totals.units)}</span>
-        {withPounds && <span className="text-right tabular-nums">{lb(totals.pounds)}</span>}
+        {withPounds && (
+          <span className="text-right tabular-nums">{lb(totals.pounds)}</span>
+        )}
       </div>
 
       {menu && (
@@ -138,7 +154,9 @@ const RecapItemsTable = ({
           onClose={() => setMenu(null)}
         />
       )}
-      {tip && tipRow && <CursorTip lines={tipRow.vendors} x={tip.x} y={tip.y} />}
+      {tip && tipRow && (
+        <CursorTip lines={tipRow.vendors} x={tip.x} y={tip.y} />
+      )}
     </>
   );
 };

@@ -73,8 +73,11 @@ Put a file in the **lowest folder that contains everything that uses it**.
   library. When a shared file ends up with one user, move it down into that user.
 - **A whole screen shared by pages** lives in the library as its own folder with the page layout
   inside it: the phone Item Perf and Event Perf screens are `src/components-dev/itemPerf` and
-  `src/components-dev/eventPerf` (8c4b4b35). `src/pages/shared/*/prod` are their prod copies, left
-  for promotion; don't add dev code under `pages/shared`.
+  `src/components-dev/eventPerf` (8c4b4b35); their prod copies are `src/components/itemPerf` and
+  `src/components/eventPerf`, by `promote:lib`. `src/pages/shared` is gone (bd860a3e).
+- **A hook several library parts share** goes in the library's own `hooks/` (`useCriticalReport` is in
+  `src/components-dev/hooks`, its types in `src/components-dev/interfaces`), so its prod twin reads
+  the prod slice.
 - **Helpers are grouped by kind, one file per kind per folder:**
   - `utils/index.ts` holds plain functions and constants;
   - `hooks/index.ts` holds hooks;
@@ -197,7 +200,10 @@ Every file groups its imports under these labels, in this order, leaving out any
   - `src/features/dev/<rest>` → `tests/dev/features/<rest>`
 - When a source file moves, its test moves in the same commit.
 - Test what a person would notice: a figure, a label, what a click does.
-- Prod-tree and shared-code tests (`src/utils`, `src/store`, `src/api`, …) still sit beside their
+- Prod tests live in `tests/prod` (`pages/<page>`, `components`, `features`), copied from
+  `tests/dev` by `promote:page` and `promote:lib`, which swap `getState().dev` for `getState().prod`.
+  Never edit them by hand: fix the dev test and promote again.
+- Shared-code tests (`src/utils`, `src/store`, `src/api`, `src/content`, …) still sit beside their
   source for now.
 
 ## 9. Commits
@@ -459,11 +465,15 @@ purpose and the gates to switch; it matches the Production Update Guide's scope.
 and promote the library with the first page that needs a changed library file. Never let the library
 drift for months again: by the first move it had 133 new and 54 changed files.
 
-**Before the first move (Nov 2026).** The tools above are partly to build: the manifest,
-`release:plan`, `promote:lib`, promote-page creating missing prod slices and copying tests, and
-check-split's PROD-API check. The measured numbers, page order, gate list and the decisions Steve
-still owes are in `docs/prod-move-plan-2026-11-11.md`. The background (what each case involves, the
-traps) is `Documents/doc-templates/dev-to-prod-release.md`.
+**The first move** is `prod_catch_up_11_23_26`, merged into master_publish on 24 Nov 2026: the library, every
+Performance page, Item Lookup, Cashiers, Upc List, Forecasting, Receivers, Coupons, Groups, User
+Management and Admin. Orders, Quicksight and every Coming Soon page stayed. Built for it:
+`promote:lib`, and `promote:page` creating a missing prod slice and copying tests to `tests/prod`.
+Still to build: the manifest, `release:plan` and check-split's PROD-API check, so until then check by
+hand that no prod tree calls `useDevApi`, and sweep the endpoints with `docs/tools/prod-endpoints.mjs`
+against the backend's prod branch before publishing. The log of that move is
+`docs/since-last-publish.md`; the background (what each case involves, the traps) is
+`Documents/doc-templates/dev-to-prod-release.md`.
 
 ## Before every commit
 

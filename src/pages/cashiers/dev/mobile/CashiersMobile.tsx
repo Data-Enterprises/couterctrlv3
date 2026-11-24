@@ -73,7 +73,9 @@ const CashiersMobile = () => {
     if (preflight.outcome === "stale") return;
     if (preflight.outcome === "empty") {
       dispatch(
-        setExplorerNotice("No exceptions were recorded for that search and week."),
+        setExplorerNotice(
+          "No exceptions were recorded for that search and week.",
+        ),
       );
       return;
     }
@@ -123,7 +125,9 @@ const CashiersMobile = () => {
 
   if (explorerMobileScreen === "transactions" && !signalGone) {
     return (
-      <SignalTransactionsMobile onBack={() => dispatch(closeExplorerSignal())} />
+      <SignalTransactionsMobile
+        onBack={() => dispatch(closeExplorerSignal())}
+      />
     );
   }
 

@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { buildFacts, decompose, summarise, tilesAt } from "@/pages/sales/dev/investigate/utils/investigationFacts";
 import { causeOf, evidenceSays, judge, ladderSays, marginsOf, ratiosOf, splitGap, DEFAULT_BANDS } from "@/pages/sales/dev/investigate/utils/deptInvestigation";
-import { ladderFor, supplyTimeline } from "@/pages/sales/dev/investigate/utils/supplyEvidence";
+import { ladderFor, supplyTimeline } from "@/pages/sales/dev/investigate/items/evidence/utils/supplyEvidence";
 import type { PriceLadder, ItemFacts } from "@/pages/sales/dev/investigate/interfaces";
 import type {
   AllOrder,

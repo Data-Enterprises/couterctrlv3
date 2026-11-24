@@ -22,10 +22,7 @@ const CustomModeTable = ({
           className={i % 2 === 0 ? "bg-custom-white" : "bg-fill_soft/50"}
         >
           {columns.map((c) => (
-            <td
-              key={c.key}
-              className="cc-td text-content/95"
-            >
+            <td key={c.key} className="cc-td text-content/95">
               {row[c.key] ?? "—"}
             </td>
           ))}

@@ -8,7 +8,11 @@ interface LedgerEntryCardProps {
 }
 
 /** The Sales ledger's entry card: pick a store or group and a week ending date, then load the stores. */
-const LedgerEntryCard = ({ onSearch, loading, notice }: LedgerEntryCardProps) => {
+const LedgerEntryCard = ({
+  onSearch,
+  loading,
+  notice,
+}: LedgerEntryCardProps) => {
   return (
     <SearchCard
       title="Weekly Sales Performance"

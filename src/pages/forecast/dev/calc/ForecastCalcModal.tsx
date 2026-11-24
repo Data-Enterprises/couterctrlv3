@@ -12,15 +12,17 @@ import {
 } from "../../../../features/dev/devForecastDevSlice";
 
 // Utils
-import { formatCurrency2 } from "../../../../utils";
 import { fitLinearDemand, predictQty } from "../../../../utils/forecastCalc";
 import { forecastUnits } from "../../../../utils/priceSimCalc";
-import { FIELD_LABEL, SECTION, SECTION_HEAD } from "./utils";
 
 // Components
 import { XMarkIcon } from "@heroicons/react/24/outline";
 import ResizableModalShell from "../../../../components-dev/modals/ResizableModalShell";
 import ForecastScenarios from "./components/ForecastScenarios";
+import ItemFacts from "./components/ItemFacts";
+import CalculatorSection from "./components/CalculatorSection";
+import NoteSection from "./components/NoteSection";
+import AdListSection from "./components/AdListSection";
 
 /**
  * The per-item popup, opened by double-clicking a row. Scenarios (which price
@@ -44,12 +46,12 @@ const ForecastCalcModal = () => {
 
   /** The price/cost the calculator is reporting on — committed by its button,
    *  so typing doesn't churn the figures. */
-  const [priceText, setPriceText] = useState("");
-  const [newPrice, setNewPrice] = useState("");
-  const [costText, setCostText] = useState("0.00");
-  const [newCost, setNewCost] = useState("0.00");
+  const [priceText, setPriceText] = useState<string>("");
+  const [newPrice, setNewPrice] = useState<string>("");
+  const [costText, setCostText] = useState<string>("0.00");
+  const [newCost, setNewCost] = useState<string>("0.00");
   const [customPrices, setCustomPrices] = useState<number[]>([]);
-  const [noteText, setNoteText] = useState("");
+  const [noteText, setNoteText] = useState<string>("");
   const lastUpcRef = useRef<string | null>(null);
 
   const history = result?.price_history ?? [];
@@ -105,10 +107,6 @@ const ForecastCalcModal = () => {
   const revenue = activePrice * qty;
   const profit = revenue - activeCost * qty;
 
-  const numeric = (v: string, set: (s: string) => void) => {
-    if (/^\d*\.?\d*$/.test(v)) set(v);
-  };
-
   const ad = row.adListData;
 
   return (
@@ -135,28 +133,12 @@ const ForecastCalcModal = () => {
         </button>
       </div>
 
-      {/* Item facts the fit stands on: Reg retail is the baseline every
-          Markdown figure is measured against; price points is how many prices
-          the demand curve is fitted through. */}
-      <div className="grid grid-cols-4 divide-x divide-brand_navy/15 border-b border-line_hair bg-fill_soft flex-shrink-0">
-        {(
-          [
-            ["Reg retail", formatCurrency2(result.regular_retail_price)],
-            ["90-day qty", overallUnits.toLocaleString()],
-            ["Days active", `${row.daysActive} / 90`],
-            ["Price points", String(history.length)],
-          ] as const
-        ).map(([label, value]) => (
-          <div key={label} className="px-4 pt-2.5 pb-2.5 text-center min-w-0">
-            <div className="text-[10px] cc-caps-strong">
-              {label}
-            </div>
-            <div className="text-[13px] font-bold text-content truncate tabular-nums">
-              {value}
-            </div>
-          </div>
-        ))}
-      </div>
+      <ItemFacts
+        regularRetail={result.regular_retail_price}
+        overallUnits={overallUnits}
+        daysActive={row.daysActive}
+        pricePoints={history.length}
+      />
 
       <div className="grid grid-cols-[1.7fr_1fr] gap-3 p-3 flex-1 min-h-0">
         {/* ── Left: the scenarios, and nothing else ── */}
@@ -180,151 +162,31 @@ const ForecastCalcModal = () => {
 
         {/* ── Right: sectioned ── */}
         <div className="flex flex-col gap-3 min-w-0 overflow-y-auto thin-scrollbar">
-          {/* Calculator */}
-          <div className={SECTION}>
-            <div className={SECTION_HEAD}>Calculator</div>
-            <div className="p-3 flex flex-col gap-2.5">
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <label className={FIELD_LABEL}>Price</label>
-                  <input
-                    className="basic-input bg-custom-white w-full py-1.5 px-2 text-[13px] mt-1"
-                    style={{ outline: "none", boxShadow: "none" }}
-                    data-testid="calc-modal-price-input"
-                    value={priceText}
-                    onChange={(e) => numeric(e.target.value, setPriceText)}
-                  />
-                </div>
-                <div>
-                  <label className={FIELD_LABEL}>Cost</label>
-                  <input
-                    className="basic-input bg-custom-white w-full py-1.5 px-2 text-[13px] mt-1"
-                    style={{ outline: "none", boxShadow: "none" }}
-                    data-testid="calc-modal-cost-input"
-                    value={costText}
-                    onChange={(e) => numeric(e.target.value, setCostText)}
-                  />
-                </div>
-              </div>
+          <CalculatorSection
+            priceText={priceText}
+            setPriceText={setPriceText}
+            costText={costText}
+            setCostText={setCostText}
+            onCalculate={() => {
+              setNewPrice(priceText);
+              setNewCost(costText);
+            }}
+            activePrice={activePrice}
+            qty={qty}
+            revenue={revenue}
+            profit={profit}
+          />
 
-              <button
-                data-testid="calc-modal-calculate-button"
-                onClick={() => {
-                  setNewPrice(priceText);
-                  setNewCost(costText);
-                }}
-                className="w-full py-1.5 text-[12px] font-semibold text-custom-white rounded-lg bg-brand_navy hover:bg-brand_navy_hover transition-colors"
-              >
-                Calculate
-              </button>
+          <NoteSection
+            noteText={noteText}
+            setNoteText={setNoteText}
+            changed={noteText !== (row.notes ?? "")}
+            onSave={() =>
+              dispatch(setItemNotes({ upc: row.upc, notes: noteText }))
+            }
+          />
 
-              {/* The calculator's answer stays in its own section: it writes
-                  nothing back. */}
-              <div className="border-t border-line_hair pt-2 flex flex-col gap-1">
-                <div className="text-[10.5px] font-medium text-content/95">
-                  At {formatCurrency2(activePrice)} over 7 days
-                </div>
-                {(
-                  [
-                    ["Quantity", String(qty), "calc-modal-qty"],
-                    ["Revenue", formatCurrency2(revenue), "calc-modal-revenue"],
-                    ["Profit", formatCurrency2(profit), "calc-modal-profit"],
-                  ] as const
-                ).map(([label, value, testid]) => (
-                  <div
-                    key={label}
-                    className="flex items-baseline justify-between"
-                  >
-                    <span className="text-[12px] font-medium text-content/95">
-                      {label}
-                    </span>
-                    <span
-                      data-testid={testid}
-                      className="text-[13px] font-bold tabular-nums text-content"
-                    >
-                      {value}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Note */}
-          <div className={SECTION}>
-            <div className="flex items-stretch bg-fill_soft border-b border-line_hair">
-              <div className="px-3 py-1.5 text-[11px] cc-caps flex-1">
-                Note
-              </div>
-              {noteText !== (row.notes ?? "") && (
-                <button
-                  onClick={() =>
-                    dispatch(setItemNotes({ upc: row.upc, notes: noteText }))
-                  }
-                  className="px-3 text-[11px] font-medium text-brand_navy hover:underline"
-                >
-                  Save
-                </button>
-              )}
-            </div>
-            <div className="p-3">
-              <textarea
-                value={noteText}
-                onChange={(e) => setNoteText(e.target.value)}
-                placeholder="e.g. Labor day end cap"
-                rows={2}
-                className="basic-input bg-custom-white w-full py-1.5 px-2 text-[12px] resize-none"
-                style={{ outline: "none", boxShadow: "none" }}
-              />
-            </div>
-          </div>
-
-          {/* AD list */}
-          {ad && (
-            <div className={SECTION}>
-              <div className={SECTION_HEAD}>Ad list</div>
-              <div className="p-3 flex flex-col gap-1.5 text-[12px]">
-                {ad.featureDescription && (
-                  <div className="font-medium text-content">
-                    {ad.featureDescription}
-                    {ad.pageName && (
-                      <span className="ml-1.5 text-content/95 font-normal">
-                        ({ad.pageName})
-                      </span>
-                    )}
-                  </div>
-                )}
-                {(
-                  [
-                    [
-                      "Ad retail",
-                      ad.adCount > 1
-                        ? `${ad.adCount}/${formatCurrency2(ad.adRetail)} (${formatCurrency2(ad.unitAdRetail)}/ea)`
-                        : formatCurrency2(ad.adRetail),
-                    ],
-                    ["Reg retail", formatCurrency2(ad.regularRetail)],
-                    ["Net unit cost", formatCurrency2(ad.netUnitCost)],
-                    ["Pack / size", `${ad.pack} / ${ad.size}`],
-                  ] as const
-                ).map(([label, value]) => (
-                  <div
-                    key={label}
-                    className="flex items-baseline justify-between"
-                  >
-                    <span className="font-medium text-content/95">{label}</span>
-                    <span className="font-medium tabular-nums text-content">
-                      {value}
-                    </span>
-                  </div>
-                ))}
-                {ad.featureNotes && (
-                  <div className="border-t border-line_hair pt-1.5 text-[11px] font-medium text-content/95">
-                    {ad.featureNotes}
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
+          {ad && <AdListSection ad={ad} />}
         </div>
       </div>
     </ResizableModalShell>

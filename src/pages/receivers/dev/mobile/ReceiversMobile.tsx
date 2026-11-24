@@ -2,7 +2,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
 import { useAppDispatch, useStoreName } from "../../../../hooks";
-import { useReceiversActions, useReceiversCtx, useReceiversState } from "../hooks";
+import {
+  useReceiversActions,
+  useReceiversCtx,
+  useReceiversState,
+} from "../hooks";
 
 // API
 import { getReceiversList } from "../../../../api/receivers";
@@ -14,9 +18,10 @@ import {
   storeNumbersIn,
 } from "../../../../utils/storeIdentity";
 import { fmtSearchDate } from "./utils";
+import { reasonOf } from "../../../../utils/serverError";
 
 // Interfaces
-import type { ReceiverListResponse, JsonError } from "../../../../interfaces";
+import type { ReceiverListResponse } from "../../../../interfaces";
 import type { Screen } from "./interfaces";
 
 // Components
@@ -94,7 +99,7 @@ const ReceiversMobile = () => {
           dispatch(actions.setNoReceivers(true));
         }
       })
-      .catch((err: JsonError) => toast.error(err.message))
+      .catch((err) => toast.error(reasonOf(err)))
       .finally(() => dispatch(actions.setIsFetchingList(false)));
   };
 

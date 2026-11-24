@@ -91,7 +91,10 @@ export const buildKpiMetrics = (
 
 /** The open cashier's figures against their peers' average. Total and Avg
  *  ticket only where the sale type carries dollars. */
-export const buildScoreMetrics = (selectedGrade: CashierGrade | null, isNoDollar: boolean) => {
+export const buildScoreMetrics = (
+  selectedGrade: CashierGrade | null,
+  isNoDollar: boolean,
+) => {
   const scoreMetrics = selectedGrade
     ? [
         {

@@ -1,6 +1,11 @@
 // Utils
 import { formatCurrency2 } from "../../../../../../utils";
-import { cmpWord, type CmpBasis, type PerfDay, type PerfTotals } from "../utils/perfData";
+import {
+  cmpWord,
+  type CmpBasis,
+  type PerfDay,
+  type PerfTotals,
+} from "../utils/perfData";
 import { COUPON_KEYS } from "../utils";
 
 // Interfaces
@@ -10,7 +15,12 @@ import { ChevronRightIcon } from "@heroicons/react/20/solid";
 import PairedBars from "../../../../../../components-dev/mobile/perf/PairedBars";
 import PerfDayChart from "../../../../../../components-dev/mobile/perf/PerfDayChart";
 import PerfDelta from "../../../../../../components-dev/mobile/perf/PerfDelta";
-import { COUPON_COLORS, COUPON_LABELS, LY_COLOR, TY_SWATCH_BG } from "../../../../../../components-dev/mobile/perf/perfColors";
+import {
+  COUPON_COLORS,
+  COUPON_LABELS,
+  LY_COLOR,
+  TY_SWATCH_BG,
+} from "../../../../../../components-dev/mobile/perf/perfColors";
 
 interface PerfStoreReportProps {
   days: PerfDay[];
@@ -69,11 +79,7 @@ const PerfStoreReport = ({
   <div className="border-t border-brand_line">
     {/* ── the week ───────────────────────────────────────────────── */}
     <div className="px-3.5 pb-1 pt-2.5">
-      <PerfDayChart
-        days={days}
-        selected={selectedDay}
-        onToggle={onToggleDay}
-      />
+      <PerfDayChart days={days} selected={selectedDay} onToggle={onToggleDay} />
       <div className="mt-1 flex gap-3.5 px-1 text-[12px] text-content/95">
         <span className="inline-flex items-center gap-1.5">
           <span
@@ -145,20 +151,14 @@ const PerfStoreReport = ({
             not a zero nobody measured. */}
         {(
           [
-            [
-              "Transactions",
-              totals.transactions.toLocaleString("en-US"),
-              true,
-            ],
+            ["Transactions", totals.transactions.toLocaleString("en-US"), true],
             ["Avg basket", formatCurrency2(totals.avgBasket), true],
             ["Tax", formatCurrency2(totals.tax), false],
             ["Coupons", formatCurrency2(totals.coupons), true],
           ] as const
         ).map(([k, v, fromBundle]) => (
           <div key={k} className="flex flex-col items-center text-center">
-            <span className="cc-caps-mono text-[9.5px]">
-              {k}
-            </span>
+            <span className="cc-caps-mono text-[9.5px]">{k}</span>
             {fromBundle && bundleLoading ? (
               <span
                 aria-label="Loading"

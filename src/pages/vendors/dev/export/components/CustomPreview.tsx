@@ -35,10 +35,7 @@ const CustomPreview = ({ columns, aggRows }: CustomPreviewProps) => {
             <thead className="sticky top-0 bg-fill_soft z-10">
               <tr>
                 {columns.map((c) => (
-                  <th
-                    key={c.key}
-                    className="cc-th text-content"
-                  >
+                  <th key={c.key} className="cc-th text-content">
                     {c.label}
                   </th>
                 ))}

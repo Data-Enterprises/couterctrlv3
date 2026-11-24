@@ -9,7 +9,12 @@ import {
 } from "../../../../../../features/dev/devSalesLedgerSlice";
 
 // Utils
-import { fmtNum, aggregateRows, type AggFn, type AggRow } from "../../../../../../utils/csvExport";
+import {
+  fmtNum,
+  aggregateRows,
+  type AggFn,
+  type AggRow,
+} from "../../../../../../utils/csvExport";
 import { dayKey, isCacheableDay } from "../../summary/utils/recapKeys";
 import { loadDayItems } from "../../summary/utils/recapLoad";
 import {
@@ -229,7 +234,13 @@ export const useRecapWeekItems = (storeId: number, storeNumber: string) => {
             return { date, items: cached };
           }
           try {
-            const items = await loadDayItems(url, token, storeId, storeNumber, date);
+            const items = await loadDayItems(
+              url,
+              token,
+              storeId,
+              storeNumber,
+              date,
+            );
             if (isCacheableDay(date)) dispatch(cacheRecapItems({ key, items }));
             return { date, items };
           } catch {

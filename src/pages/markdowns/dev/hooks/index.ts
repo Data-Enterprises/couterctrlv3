@@ -43,7 +43,9 @@ export const useMarkdownsCtx = () => {
     selectedStore,
     selectedGroup,
   } = useAppSelector((state) => state.search);
-  const { assignedStores, selectedGroupStores } = useAppSelector((state) => state.user);
+  const { assignedStores, selectedGroupStores } = useAppSelector(
+    (state) => state.user,
+  );
   const markdowns = useAppSelector((state) => state.dev.markdowns);
   const scopeLabel = isGroupSearch(type)
     ? (selectedGroup?.group_name ?? "Group")
@@ -162,7 +164,11 @@ export const useLoadMarkdowns = () => {
       // resolved here, once, so the grid, sort, filters and export share them.
       ctx.dispatch(
         finishMarkdownsSearch({
-          rows: withStoreNames(rows, ctx.assignedStores, ctx.selectedGroupStores),
+          rows: withStoreNames(
+            rows,
+            ctx.assignedStores,
+            ctx.selectedGroupStores,
+          ),
           searched,
         }),
       );

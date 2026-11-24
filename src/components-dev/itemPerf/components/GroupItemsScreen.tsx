@@ -1,9 +1,12 @@
 // Hooks
-import { useAppDispatch, useAppSelector } from "../../../hooks";
-import { useItemPerfCtx } from "../hooks";
+import { useAppDispatch } from "../../../hooks";
+import { useItemPerfCtx, useItemPerfState } from "../hooks";
 
 // Redux
-import { openItemDetail, selectPerfItem } from "../../../features/dev/devItemPerfSlice";
+import {
+  openItemDetail,
+  selectPerfItem,
+} from "../../../features/dev/devItemPerfSlice";
 
 // Components
 import MobilePerfDetail from "../../mobile/MobilePerfDetail";
@@ -13,8 +16,9 @@ import ItemPerfInfoSheet from "./ItemPerfInfoSheet";
 /** The items inside one department, vendor or category. */
 const GroupItemsScreen = () => {
   const dispatch = useAppDispatch();
-  const perf = useAppSelector((s) => s.dev.itemPerf);
-  const { storeName, dayLabel, windowLabel, listLabel, query } = useItemPerfCtx();
+  const { perf } = useItemPerfState();
+  const { storeName, dayLabel, windowLabel, listLabel, query } =
+    useItemPerfCtx();
   return (
     <>
       <MobilePerfDetail
@@ -27,15 +31,15 @@ const GroupItemsScreen = () => {
         onBack={() => dispatch(openItemDetail(false))}
         levelKey={`items|${perf.openGroup?.key ?? ""}`}
       >
-          <MarginRowList
-            onRow={(r) => dispatch(selectPerfItem(r.key))}
-            emptyText={
-              query
-                ? `Nothing matches "${query}".`
-                : "Nothing recorded for this selection."
-            }
-            withQuery
-          />
+        <MarginRowList
+          onRow={(r) => dispatch(selectPerfItem(r.key))}
+          emptyText={
+            query
+              ? `Nothing matches "${query}".`
+              : "Nothing recorded for this selection."
+          }
+          withQuery
+        />
       </MobilePerfDetail>
       <ItemPerfInfoSheet />
     </>

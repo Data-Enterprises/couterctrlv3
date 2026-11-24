@@ -31,7 +31,12 @@ import type {
 import type { RollupRow } from "../../../../api/rollup";
 
 // Defined in src/interfaces — Vendors. Re-exported for this page's files.
-export type { VendorMetric, VendorRow, VendorDay, VendorTier } from "../../../../interfaces";
+export type {
+  VendorMetric,
+  VendorRow,
+  VendorDay,
+  VendorTier,
+} from "../../../../interfaces";
 
 /** Margin percentage from a net/COGS pair. Re-exported rather than defined:
  *  this page and Sub Dept Margins read the same rows, and the one definition
@@ -96,7 +101,8 @@ interface VendorAgg {
  *  on coupon lines, so anything reading them has to coerce before it trims —
  *  `(0).trim()` is a TypeError, and TypeScript can't warn about it because the
  *  interface says otherwise. */
-const asText = (v: unknown) => (v === null || v === undefined ? "" : String(v)).trim();
+const asText = (v: unknown) =>
+  (v === null || v === undefined ? "" : String(v)).trim();
 
 /** Empty, or all zeros — `0`, `"0"`, `"00000"`. A real id like `"00050"` is
  *  numerically 50, so it never lands here. */
@@ -213,12 +219,23 @@ export const buildVendorRows = (
       };
     });
 
-    let twNet = 0, twQty = 0, twCogs = 0;
-    let lwNet = 0, lwQty = 0, lwCogs = 0;
-    let twNetForLW = 0, twQtyForLW = 0, twCogsForLW = 0;
-    let lyNet = 0, lyQty = 0, lyCogs = 0;
-    let twNetForLY = 0, twQtyForLY = 0, twCogsForLY = 0;
-    let hasLW = false, hasLY = false;
+    let twNet = 0,
+      twQty = 0,
+      twCogs = 0;
+    let lwNet = 0,
+      lwQty = 0,
+      lwCogs = 0;
+    let twNetForLW = 0,
+      twQtyForLW = 0,
+      twCogsForLW = 0;
+    let lyNet = 0,
+      lyQty = 0,
+      lyCogs = 0;
+    let twNetForLY = 0,
+      twQtyForLY = 0,
+      twCogsForLY = 0;
+    let hasLW = false,
+      hasLY = false;
 
     for (const d of days) {
       twNet += d.twNet;
@@ -251,10 +268,23 @@ export const buildVendorRows = (
       vendorName: agg.name,
       noVendor: id === NO_VENDOR_ID,
       days,
-      twNet, twQty, twCogs,
-      lwNet, lwQty, lwCogs, twNetForLW, twQtyForLW, twCogsForLW,
-      lyNet, lyQty, lyCogs, twNetForLY, twQtyForLY, twCogsForLY,
-      hasLW, hasLY,
+      twNet,
+      twQty,
+      twCogs,
+      lwNet,
+      lwQty,
+      lwCogs,
+      twNetForLW,
+      twQtyForLW,
+      twCogsForLW,
+      lyNet,
+      lyQty,
+      lyCogs,
+      twNetForLY,
+      twQtyForLY,
+      twCogsForLY,
+      hasLW,
+      hasLY,
       coverage,
       tyMarginPct: marginPct(twNet, twCogs),
       lwMarginPct: lwNet > 0 ? marginPct(lwNet, lwCogs) : null,
@@ -353,7 +383,9 @@ export const fmtDelta = (d: number | null, isMargin: boolean) =>
 /** Ungraded has no severity equivalent, so it falls back to the neutral dot
  *  rather than borrowing a colour that would imply a verdict. */
 export const dotFor = (tier: Tier) =>
-  tier === "ungraded" ? "bg-fill_track_strong" : severityDotClass[tier as Severity];
+  tier === "ungraded"
+    ? "bg-fill_track_strong"
+    : severityDotClass[tier as Severity];
 
 /** Written out in full because Tailwind scans source text and never sees a
  *  class assembled at runtime. */

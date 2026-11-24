@@ -3,7 +3,7 @@ import type { PhoneHelp } from "../helpTypes";
 
 /** Help for Store Groups on a phone. Ported from its `-mobile` help page. */
 export const STORE_GROUPS_PHONE_HELP: PhoneHelp = {
-  screen: "Store Groups",
+  screen: "Groups",
   purpose:
     "Build your own groups of stores so you can look at several stores together in one search.",
 
@@ -47,7 +47,7 @@ export const STORE_GROUPS_PHONE_HELP: PhoneHelp = {
     {
       q: "Why are some groups missing under Update, Delete or Assign?",
       a: [
-        "Shared groups can't be changed on your phone, so they are left out of those lists. Only the person who created a shared group can change it, from User Management on a computer.",
+        "Shared groups can't be changed on your phone, so they are left out of those lists. Only the owner who created a shared group can change it, from Groups > Shared Groups on a computer.",
       ],
     },
     {

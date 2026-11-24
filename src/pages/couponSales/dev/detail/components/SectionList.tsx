@@ -68,19 +68,23 @@ const SectionList = ({
         </button>
         {/* Avg $ is a two-tier question, so Watch has nothing to count. */}
         {grading.metric === "trend" && (
-        <button
-          onClick={() => setSectionTierFilter((f) => (f === "watch" ? "all" : "watch"))}
-          className={`text-[10px] font-semibold px-2 py-1 rounded-full bg-severity_watch_bg text-severity_watch_text transition-shadow ${
-            sectionTierFilter === "watch"
-              ? "ring-2 ring-severity_watch_text/40 shadow-sm"
-              : ""
-          }`}
-        >
-          Watch ({watchCount})
-        </button>
+          <button
+            onClick={() =>
+              setSectionTierFilter((f) => (f === "watch" ? "all" : "watch"))
+            }
+            className={`text-[10px] font-semibold px-2 py-1 rounded-full bg-severity_watch_bg text-severity_watch_text transition-shadow ${
+              sectionTierFilter === "watch"
+                ? "ring-2 ring-severity_watch_text/40 shadow-sm"
+                : ""
+            }`}
+          >
+            Watch ({watchCount})
+          </button>
         )}
         <button
-          onClick={() => setSectionTierFilter((f) => (f === "ok" ? "all" : "ok"))}
+          onClick={() =>
+            setSectionTierFilter((f) => (f === "ok" ? "all" : "ok"))
+          }
           className={`text-[10px] font-semibold px-2 py-1 rounded-full bg-severity_healthy_bg text-severity_healthy_text transition-shadow ${
             sectionTierFilter === "ok"
               ? "ring-2 ring-severity_healthy_text/40 shadow-sm"
@@ -140,14 +144,14 @@ const SectionList = ({
             Nothing matches
           </div>
         ) : (
-        visibleSections.map((row) => (
-          <SectionRow
-            key={row.key}
-            row={row}
-            isSel={selectedSectionKey === row.key}
-            isItemView={isItemView}
-          />
-        ))
+          visibleSections.map((row) => (
+            <SectionRow
+              key={row.key}
+              row={row}
+              isSel={selectedSectionKey === row.key}
+              isItemView={isItemView}
+            />
+          ))
         )}
       </div>
     </div>

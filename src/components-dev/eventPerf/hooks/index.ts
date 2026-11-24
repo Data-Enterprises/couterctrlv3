@@ -1,5 +1,13 @@
 // Hooks
-import { createContext, useContext, useDeferredValue, useEffect, useLayoutEffect, useMemo, useRef } from "react";
+import {
+  createContext,
+  useContext,
+  useDeferredValue,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+} from "react";
 import { useStore } from "react-redux";
 import { useAppDispatch, useAppSelector } from "../../../hooks";
 import { useToast } from "../../../components/toasts/hooks/useToast";
@@ -286,7 +294,13 @@ export const useEventPerfView = (
   /** Busiest day for the open store, on its own scope. */
   const storeBusiest = useMemo(
     () =>
-      buildLensBusiest(perf.rows, shownCard, [perf.lens], weekDates, measure)[0],
+      buildLensBusiest(
+        perf.rows,
+        shownCard,
+        [perf.lens],
+        weekDates,
+        measure,
+      )[0],
     [perf.rows, shownCard, perf.lens, weekDates, measure],
   );
 
@@ -338,7 +352,16 @@ export const useEventPerfView = (
       cashierSort,
       cashierReversed,
     );
-  }, [perf.rows, perf.baseline, shownCard, perf.detailOpen, perf.view, measure, cashierSort, cashierReversed]);
+  }, [
+    perf.rows,
+    perf.baseline,
+    shownCard,
+    perf.detailOpen,
+    perf.view,
+    measure,
+    cashierSort,
+    cashierReversed,
+  ]);
 
   const receipts = useMemo(() => {
     if (!perf.detailOpen || perf.view !== "receipts") return [];
@@ -393,7 +416,6 @@ export const useEventPerfView = (
   const baseOf = (t: EventTotals) =>
     measure === "amount" ? t.baselineAmount : t.baselineTransactions;
   const fmt = measure === "amount" ? formatCurrency2 : fmtInt;
-
 
   /** The day, when one is picked. It takes the window's place on the header
    *  line rather than sitting beside it — see PerfCardHeader. */

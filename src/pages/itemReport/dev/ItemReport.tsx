@@ -1,59 +1,35 @@
 // Hooks
-import { useEffect, useMemo } from "react";
-import { useAppDispatch, useAppSelector, useStoreName } from "../../../hooks";
-import { useToast } from "../../../components/toasts/hooks/useToast";
-import { useActualPricePoints, type ActualFetchState } from "../../../hooks/useActualPricePoints";
+import { useAppDispatch, useStoreName } from "../../../hooks";
+import { useActualPricePoints } from "../../../hooks/useActualPricePoints";
 import { usePricePoints } from "../../../hooks/usePricePoints";
-import { useReceivingWalk, useItemReportCtx } from "./hooks";
+import {
+  useItemReportCtx,
+  useInvoiceLines,
+  useItemReportSheet,
+  useItemRegisters,
+} from "./hooks";
+import { useItemReportRun } from "./hooks/run";
 
 // Redux
 import {
   setItemReportStoreId,
-  setItemReportLoading,
-  startItemReportSearch,
-  setItemReportResults,
-  setItemReportActual,
-  setItemReportSelected,
   setItemReportSearchOpen,
   setItemReportExportOpen,
-  clearItemReportHandoff,
-  setItemReportSource,
   openItemReportInvoice,
-  setItemReportInvoiceLines,
-  setItemReportInvoiceError,
-  type ItemReportHandoff,
 } from "../../../features/dev/devItemReportSlice";
 
 // Utils
-import { formatDateSimple } from "../../../utils";
-import { collectCriticalItems } from "../../../utils/itemGrading";
-import { scopeToStoreNumber } from "../../../utils/storeIdentity";
-import { normalizeProductCode } from "../../../utils/productCode";
 import {
-  fetchAllItemRows,
-  fetchItemRowsForCodes,
-  fetchItemRowsWithPricePoints,
-  lwWindow,
-  lyWindow,
-  weekEnding,
-  fetchInvoiceById,
   RECEIVING_LOOKBACK_DAYS as RECEIVING_LOOKBACK,
-  dayCount,
+  reportPeriods,
 } from "./utils";
-import { buildPriceEras } from "./utils/priceEras";
-import { buildReport, buildRollup } from "./utils/report";
-import { verdictFor } from "./utils/verdict";
-
-// Interfaces
-import type { ReportScope, SheetRow } from "./interfaces";
-import type { SubDeptMargin, SubsPricePoint } from "../../../interfaces";
 
 // Components
 import LoadingIndicator from "../../../components-dev/loading/LoadingIndicator";
 import SearchPopup from "../../../components-dev/SearchPopup";
 import ItemReportEntry from "./components/ItemReportEntry";
 import InvoiceSheet from "./components/InvoiceSheet";
-import ItemReportSheet from "./components/ItemReportSheet";
+import ItemReportSheet from "./sheet/ItemReportSheet";
 import ItemReportRail from "./rail/ItemReportRail";
 import ItemReportExportModal from "./export/ItemReportExportModal";
 
@@ -80,28 +56,9 @@ import ItemReportExportModal from "./export/ItemReportExportModal";
  * that dies when someone clicks away and comes back.
  */
 const ItemReport = () => {
-  const toast = useToast();
   const dispatch = useAppDispatch();
-  const { url, token } = useAppSelector((s) => s.app);
-  /**
-   * Off until something reads them.
-   *
-   * `include_price_points` re-runs the whole inner query and aggregates it a
-   * second time, so it is not free — but it is what the suggestions are built
-   * on now. Every price signal used to be derived by dividing a day's revenue
-   * by its units, which on a day carrying two prices produces one the register
-   * never charged: a promotion starting read as a price cut, a promotion
-   * ending as a rise, and reprice actions fired on both.
-   *
-   * Only page 1 asks for it — `getSubMarginsWithPricePoints` derives that from
-   * the page number, since the payload is identical on every page.
-   */
-  const useSubsPricePoints = true;
-  const { singleDate } = useAppSelector((s) => s.search);
-  const { assignedStores } = useAppSelector((s) => s.user);
   const state = useItemReportCtx();
 
-  const { startWalk, cancelWalk } = useReceivingWalk();
   const { actual, loadActual, resetActual } = useActualPricePoints();
   /**
    * The price table, from `cashiers/price_points`.
@@ -113,459 +70,28 @@ const ItemReport = () => {
   const { prices, loadPrices } = usePricePoints();
   const storeName = useStoreName(state.scope?.storeid ?? state.storeId);
 
-  const run = async (
-    upcs: string[],
-    uploadDepartments: string[],
-    /** Where the list came from. Absent for an upload, which is the point —
-     *  every run sets it, so a manual search can't inherit the provenance of a
-     *  handoff that ran before it. */
-    source?: { sourceLabel: string; basisLabel: string },
-    /** A handed-over week and its rows. When present the department fan-out is
-     *  skipped entirely — the caller already made those calls to grade the
-     *  items it is passing over. */
-    preloaded?: {
-      window: { start: string; end: string };
-      rows?: { ty: SubDeptMargin[]; lw: SubDeptMargin[]; ly: SubDeptMargin[] };
-      /** Grading the caller deferred — resolved here, after the fetch. */
-      grade?: ItemReportHandoff["grade"];
-    },
-  ) => {
-    if (!state.storeId) {
-      toast.warn("Please select a store");
-      return;
-    }
-    if (upcs.length === 0 && !preloaded?.grade) {
-      toast.warn("Add or upload at least one UPC");
-      return;
-    }
-    // One date in, a fixed seven-day week out — the same contract the graded
-    // pages work to, and what keeps the three periods comparable. A handoff
-    // brings its own window, because its rows were fetched against that one and
-    // the picker may have moved since.
-    const week = preloaded?.window ?? weekEnding(singleDate);
-    const next: ReportScope = {
-      url,
-      token,
-      storeid: state.storeId,
-      start: week.start,
-      end: week.end,
-    };
-    dispatch(setItemReportSearchOpen(false));
-    dispatch(setItemReportLoading({ loading: true }));
-    dispatch(startItemReportSearch());
-    dispatch(
-      setItemReportSource(source ?? { sourceLabel: "", basisLabel: "" }),
-    );
-    resetActual();
-    cancelWalk();
-
-    try {
-      // Rows in hand: nothing to fetch, so the report is on screen immediately
-      // and only the invoice walk is left running behind it.
-      if (preloaded?.rows) {
-        dispatch(
-          setItemReportResults({
-            scope: { storeid: next.storeid, start: next.start, end: next.end },
-            upcs,
-            uploadDepartments,
-            tyRows: preloaded.rows.ty,
-            lwRows: preloaded.rows.lw,
-            lyRows: preloaded.rows.ly,
-          }),
-        );
-        // The handed-over list, and only that — same rule as the fetched path.
-        const retained = new Set(upcs);
-        void startWalk(next, [...retained]);
-        return;
-      }
-
-      dispatch(
-        setItemReportLoading({ loading: true, message: "Reading sales…" }),
-      );
-
-      /**
-       * One read per window.
-       *
-       * `subs/subs` answers for every department at once, so nothing has to
-       * discover which departments exist first — which is what the two
-       * ninety-day `sub_sales` calls were for, and why they reached back a
-       * quarter to answer a question about one week.
-       *
-       * This week and last week used to share one fourteen-day range that was
-       * split by date afterwards. They are separate reads now because the
-       * price points ride on this call: a span request returns the prices of
-       * BOTH weeks with no way to tell them apart — a point's `units` covers
-       * the whole range — so last week's prices appeared in a panel headed by
-       * this week's dates, and `highestPrice` spanned fourteen days while
-       * every figure it is quoted against spanned seven.
-       *
-       * Only this week asks for points. Last week and last year carry none,
-       * so the split costs no extra aggregate — and each response is smaller
-       * than the span's was.
-       */
-      /**
-       * Ask for the uploaded items, or for the whole store.
-       *
-       * `buildReport` keeps only the uploaded list — `for (const code of
-       * wanted)` — so on the upload path every other item in the store was
-       * fetched, paged, transferred and discarded. `subs/item_actions` pushes
-       * the codes into the query instead: 100 rows in 109ms against 11,799 in
-       * 781ms, and the narrowed answer fits in one page, so the count and the
-       * concurrent page burst stop happening rather than getting cheaper.
-       *
-       * The grade path cannot use it. Arriving with a threshold instead of a
-       * list, the page has no codes yet — `collectCriticalItems` derives them
-       * FROM the store's rows below — so it still reads the whole store.
-       */
-      const narrowed = !preloaded?.grade && upcs.length > 0;
-
-      const [tyResult, lw, ly] = await Promise.all([
-        narrowed
-          ? fetchItemRowsForCodes(
-              next,
-              { start: next.start, end: next.end },
-              upcs,
-            )
-          : useSubsPricePoints
-            ? fetchItemRowsWithPricePoints(next, {
-                start: next.start,
-                end: next.end,
-              })
-            : fetchAllItemRows(next, { start: next.start, end: next.end }).then(
-                (rows) => ({ rows, pricePoints: [] as SubsPricePoint[] }),
-              ),
-        narrowed
-          ? fetchItemRowsForCodes(next, lwWindow(next), upcs).then((r) => r.rows)
-          : fetchAllItemRows(next, lwWindow(next)),
-        narrowed
-          ? fetchItemRowsForCodes(next, lyWindow(next), upcs).then((r) => r.rows)
-          : fetchAllItemRows(next, lyWindow(next)),
-      ]);
-
-      const ty = tyResult.rows;
-
-      if (ty.length === 0 && lw.length === 0 && ly.length === 0) {
-        toast.warn("No sales came back for that store and week");
-        return;
-      }
-
-      /**
-       * Deferred grading, resolved now that the rows are here.
-       *
-       * The rule is still the caller's — this page invents no severity of its
-       * own. All that moved is *when* it gets applied, so the wait happens on
-       * this page's loading screen rather than on the one the user just left.
-       */
-      let tyRows = ty;
-      let lwRows = lw;
-      let lyRows = ly;
-      let listUpcs = upcs;
-      let listDepts = uploadDepartments;
-
-      if (preloaded?.grade) {
-        const num = preloaded.grade.storeNumber;
-        tyRows = scopeToStoreNumber(ty, num);
-        lwRows = scopeToStoreNumber(lw, num);
-        lyRows = scopeToStoreNumber(ly, num);
-
-        const graded = collectCriticalItems(
-          tyRows,
-          lwRows,
-          lyRows,
-          preloaded.grade.threshold,
-          preloaded.grade.metric,
-        );
-        if (graded.length === 0) {
-          toast.info("No critical items in that store for that week");
-          return;
-        }
-        listUpcs = [
-          ...new Set(graded.map((g) => normalizeProductCode(g.productCode))),
-        ];
-        listDepts = [
-          ...new Set(graded.map((g) => g.dept).filter((d) => d.length > 0)),
-        ];
-      }
-
-      dispatch(
-        setItemReportResults({
-          scope: { storeid: next.storeid, start: next.start, end: next.end },
-          upcs: listUpcs,
-          uploadDepartments: listDepts,
-          tyRows,
-          lwRows,
-          lyRows,
-          pricePoints: tyResult.pricePoints,
-        }),
-      );
-
-      // The uploaded list, and only that. It used to be widened with every
-      // product that sold in any of the three windows, so the sheet could
-      // discover items the file never named — but those codes travel to
-      // `receivers/item_search` as the request body, and on a full store that
-      // was 10,831 of them against a 2,000 ceiling. The report answers for the
-      // list it was given.
-      const retain = new Set(listUpcs);
-
-      // Deliberately not awaited — the sheet is readable before the walk lands,
-      // and receipts fill in behind it.
-      void startWalk(next, [...retain]);
-    } catch (e) {
-      toast.error(
-        e instanceof Error ? e.message : "Could not build the action list",
-      );
-    } finally {
-      dispatch(setItemReportLoading({ loading: false }));
-    }
-  };
-
-  /**
-   * A list handed over from Sub Dept Margins or Vendors.
-   *
-   * The handoff is cleared *before* the run starts, not after: `run` dispatches
-   * on the way through, and a re-render that still saw the handoff would fire a
-   * second identical fan-out on top of the first.
-   */
-  const handoff = state.handoff;
-  useEffect(() => {
-    if (!handoff) return;
-    dispatch(clearItemReportHandoff());
-    void run(
-      handoff.upcs,
-      handoff.departments,
-      { sourceLabel: handoff.sourceLabel, basisLabel: handoff.basisLabel },
-      { window: handoff.window, rows: handoff.rows, grade: handoff.grade },
-    );
-    // Keyed on the handoff object alone: `run` is redefined every render, and
-    // depending on it would re-fire the fan-out on each one.
-  }, [handoff]);
-
-  /**
-   * The full order behind one delivery, fetched on demand.
-   *
-   * The walk discards every line that isn't on the report's list, so this is a
-   * refetch rather than something already in hand — one call, and cached by
-   * invoice id because people compare two deliveries back and forth.
-   */
+  const run = useItemReportRun(state, resetActual);
+  useInvoiceLines(state);
+  const {
+    items,
+    receivingAvailable,
+    noReceiverItems,
+    sheetRows,
+    counts,
+    selected,
+  } = useItemReportSheet(state);
+  const { selectRow, selectedActual, openPrice } = useItemRegisters(
+    state,
+    actual,
+    loadActual,
+    resetActual,
+    loadPrices,
+  );
   const openInvoice = state.openInvoice;
-  useEffect(() => {
-    if (!openInvoice || !state.scope) return;
-    const key = String(openInvoice.invoiceId);
-    if (state.invoiceLines[key]) return;
-    let cancelled = false;
-    fetchInvoiceById(
-      {
-        url,
-        token,
-        storeid: state.scope.storeid,
-        start: state.scope.start,
-        end: state.scope.end,
-      },
-      openInvoice.invoiceId,
-      openInvoice.date,
-    )
-      .then((lines) => {
-        if (cancelled) return;
-        dispatch(
-          setItemReportInvoiceLines({
-            invoiceId: openInvoice.invoiceId,
-            lines,
-          }),
-        );
-      })
-      .catch((e: unknown) => {
-        if (cancelled) return;
-        dispatch(
-          setItemReportInvoiceError(
-            e instanceof Error ? e.message : "Could not load that invoice",
-          ),
-        );
-      });
-    return () => {
-      cancelled = true;
-    };
-    // Keyed on the open invoice alone — the scope can't change while a modal
-    // over the report is open.
-  }, [openInvoice]);
-
-  const windowDays = state.scope
-    ? dayCount(state.scope.start, state.scope.end)
-    : 30;
-
-  /** Points keyed by product code, normalised the same way the rows are —
-   *  `subs/subs` sends codes as numbers on some rows and with a trailing `.0`
-   *  on others, so an unnormalised key silently matches nothing. */
-  const pointsByUpc = useMemo(() => {
-    const map: Record<string, SubsPricePoint[]> = {};
-    for (const pp of state.pricePoints) {
-      const code = normalizeProductCode(pp.product_code);
-      (map[code] ??= []).push(pp);
-    }
-    return map;
-  }, [state.pricePoints]);
-
-  const items = useMemo(
-    () =>
-      state.scope
-        ? buildReport(
-            state.upcs,
-            state.tyRows,
-            state.lwRows,
-            state.lyRows,
-            state.receipts,
-            pointsByUpc,
-            state.scope.start,
-            state.scope.end,
-          )
-        : [],
-    [
-      pointsByUpc,
-      state.scope,
-      state.upcs,
-      state.tyRows,
-      state.lwRows,
-      state.lyRows,
-      state.receipts,
-    ],
-  );
-
-  /**
-   * The two populations, and the counts the toggle shows.
-   *
-   * Both are derived from one `buildReport` pass, so flipping scope costs a
-   * filter rather than a rebuild — and the counts stay honest while the walk is
-   * still running, since "all found" climbs as receipts land.
-   */
-  const scopedItems = items;
-
-  /**
-   * Whether this store has any receiving at all in the lookback.
-   *
-   * A finished walk that opened zero invoices is `receivers/` answering
-   * `record_count: 0` — the store keeps no received orders in the data, which
-   * is a different thing from an item never appearing on one. Only meaningful
-   * once the walk is done; while it runs the rows are "pending" anyway.
-   */
-  const receivingAvailable = !(
-    state.receivingComplete && state.invoicesTotal === 0
-  );
-
-  /**
-   * How many items have no invoice behind them — the number that replaced an
-   * action.
-   *
-   * "Check receiving" used to be a verdict, and on a store whose orders arrive
-   * electronically it swallowed every row: 522 items in one bucket, reading
-   * `Reprice 0` because the chain returned before the pricing tests ran. The
-   * absence is one fact about the data, so it is counted once and said once,
-   * and the rows carry whatever their sales actually show.
-   */
-  const noReceiverItems = useMemo(
-    () =>
-      items.filter((i) => (state.receipts[i.productCode] ?? []).length === 0),
-    [items, state.receipts],
-  );
-  const noReceiverCount = noReceiverItems.length;
-
-  const sheetRows: SheetRow[] = useMemo(
-    () =>
-      scopedItems.map((item) => {
-        const receipts = state.receipts[item.productCode] ?? [];
-        return {
-          item,
-          verdict: verdictFor(
-            item,
-            receipts,
-            buildPriceEras(item, receipts),
-            windowDays,
-            state.scope?.end ?? "",
-            RECEIVING_LOOKBACK,
-            state.receivingComplete,
-          ),
-        };
-      }),
-    [
-      scopedItems,
-      state.receipts,
-      state.receivingComplete,
-      state.scope?.end,
-      windowDays,
-    ],
-  );
-
-  const counts = useMemo(
-    () => buildRollup(sheetRows.map((r) => r.verdict)),
-    [sheetRows],
-  );
-
-  const selected = sheetRows.find(
-    (r) => r.item.productCode === state.selectedUpc,
-  );
-
-  /**
-   * Registers load on selection. Two calls for one item, never across the
-   * sheet — and no verdict depends on them, so a reader who clicks nothing
-   * loses nothing.
-   */
-  const selectRow = (row: SheetRow) => {
-    if (!state.scope) return;
-    const code = row.item.productCode;
-    dispatch(setItemReportSelected(code));
-    // Already fetched this search? Two calls saved, and the panel paints from
-    // the cache immediately instead of spinning.
-    const { storeid, start, end } = state.scope;
-    loadPrices(code, storeid, start, end);
-    // Receipts are the expensive half and most rows never open one. Cached
-    // from an earlier look, they are already here; otherwise they wait.
-    if (state.actualByUpc[code]) {
-      resetActual();
-      return;
-    }
-  };
-
-  /**
-   * Fetched lines go to Redux the moment they land.
-   *
-   * The hook is shared with Inventory's two panels, so its internals stay as
-   * they are — Item Actions keeps its own copy in its own slice rather than
-   * moving component state that three pages depend on.
-   */
-  useEffect(() => {
-    if (actual.loading || actual.error || !actual.upc) return;
-    if (state.actualByUpc[actual.upc]) return;
-    dispatch(
-      setItemReportActual({
-        upc: actual.upc,
-        lines: actual.lines,
-        truncated: actual.truncated,
-      }),
-    );
-  }, [actual, state.actualByUpc, dispatch]);
-
-  /**
-   * What the rail reads: the live fetch while one is in flight, the cache
-   * otherwise. Without this a return to the page shows an empty panel beside a
-   * still-selected row.
-   */
-  const selectedActual: ActualFetchState = useMemo(() => {
-    const code = state.selectedUpc;
-    if (!code) return actual;
-    if (actual.upc === code && (actual.loading || actual.error)) return actual;
-    const cached = state.actualByUpc[code];
-    if (cached)
-      return {
-        lines: cached.lines,
-        upc: code,
-        loading: false,
-        error: null,
-        truncated: cached.truncated,
-      };
-    return actual;
-  }, [actual, state.actualByUpc, state.selectedUpc]);
 
   const entry = (
     <ItemReportEntry
-      stores={assignedStores}
+      stores={state.assignedStores}
       storeId={state.storeId}
       onStoreSelect={(id) => dispatch(setItemReportStoreId(id))}
       onRun={run}
@@ -592,23 +118,9 @@ const ItemReport = () => {
     );
   }
 
-  const dateLabel = `${formatDateSimple(state.scope.start)} – ${formatDateSimple(state.scope.end)}`;
-  // The strip names the days each figure covers, the way the Sales strip does —
-  // "vs last year" means nothing without saying which week that was.
-  const range = (w: { start: string; end: string }) =>
-    `${formatDateSimple(w.start)} – ${formatDateSimple(w.end)}`;
-  const windowScope = {
-    url,
-    token,
-    storeid: state.scope.storeid,
-    start: state.scope.start,
-    end: state.scope.end,
-  };
-  const periods = {
-    tw: dateLabel,
-    lw: range(lwWindow(windowScope)),
-    ly: range(lyWindow(windowScope)),
-  };
+  // The strip names the days each figure covers, the way the Sales strip does.
+  const periods = reportPeriods(state.scope);
+  const dateLabel = periods.tw;
 
   return (
     <div className="w-full p-4 select-none min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] overflow-hidden">
@@ -616,7 +128,9 @@ const ItemReport = () => {
           load this expensive to change one field is what that pattern
           prevents. */}
       {state.searchOpen && (
-        <SearchPopup onClose={() => dispatch(setItemReportSearchOpen(false))}>{entry}</SearchPopup>
+        <SearchPopup onClose={() => dispatch(setItemReportSearchOpen(false))}>
+          {entry}
+        </SearchPopup>
       )}
 
       {openInvoice && (
@@ -666,7 +180,7 @@ const ItemReport = () => {
               : `${state.invoicesSeen} of ${state.invoicesTotal} invoices`
           }
           receivingAvailable={receivingAvailable}
-          noReceiverCount={noReceiverCount}
+          noReceiverCount={noReceiverItems.length}
           noReceiverItems={noReceiverItems}
           itemCount={items.length}
         />
@@ -683,16 +197,7 @@ const ItemReport = () => {
           periods={periods}
           actual={selectedActual}
           prices={prices}
-          onOpenPrice={() => {
-            const code = state.selectedUpc;
-            if (!state.scope || !code || state.actualByUpc[code]) return;
-            loadActual(
-              code,
-              state.scope.storeid,
-              state.scope.start,
-              state.scope.end,
-            );
-          }}
+          onOpenPrice={openPrice}
         />
       </div>
     </div>

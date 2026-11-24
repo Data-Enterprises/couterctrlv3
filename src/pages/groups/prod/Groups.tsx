@@ -15,6 +15,7 @@ import FormNavTabs from "./components/FormNavTabs";
 import ResizeHandle from "../../../components/ResizeHandle";
 import UserGroupsPanel from "./components/UserGroupsPanel";
 import GroupsMobile from "./mobile/GroupsMobile";
+import PageInfoButton from "../../../components/PageInfoButton";
 
 /**
  * Config → Groups: the two kinds of group a person owns.
@@ -59,6 +60,8 @@ const Groups = () => {
           <span className="cc-navy-title text-[13px] flex-shrink-0">
             Groups
           </span>
+          <div className="flex-1" />
+          <PageInfoButton page="store-groups" title="About Groups" />
         </div>
 
         {/* User level gated to Owner for shared groups */}

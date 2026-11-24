@@ -47,10 +47,7 @@ const ThresholdChip = ({ value, onChange, ariaLabel }: ThresholdChipProps) => {
         Thresh
       </button>
       {open && (
-        <div
-          ref={popRef}
-          className="cc-dropdown left-0 p-1.5 z-20"
-        >
+        <div ref={popRef} className="cc-dropdown left-0 p-1.5 z-20">
           <div className="flex items-center gap-2">
             <ThresholdSlider
               value={value}

@@ -41,15 +41,27 @@ const ItemsTable = ({ items, sort, onSort, onItemMenu }: ItemsTableProps) => {
           Items
         </span>
         <div className="flex items-center gap-[14px]">
-          <button onClick={() => onSort("ty")} className={`${ITEMS_HEAD} pl-2.5`} style={{ width: 64 }}>
+          <button
+            onClick={() => onSort("ty")}
+            className={`${ITEMS_HEAD} pl-2.5`}
+            style={{ width: 64 }}
+          >
             TY
             {chevron("ty")}
           </button>
-          <button onClick={() => onSort("lw")} className={ITEMS_HEAD} style={{ width: 64 }}>
+          <button
+            onClick={() => onSort("lw")}
+            className={ITEMS_HEAD}
+            style={{ width: 64 }}
+          >
             LW
             {chevron("lw")}
           </button>
-          <button onClick={() => onSort("ly")} className={ITEMS_HEAD} style={{ width: 64 }}>
+          <button
+            onClick={() => onSort("ly")}
+            className={ITEMS_HEAD}
+            style={{ width: 64 }}
+          >
             LY
             {chevron("ly")}
           </button>
@@ -78,11 +90,18 @@ const ItemsTable = ({ items, sort, onSort, onItemMenu }: ItemsTableProps) => {
               {/* An item that did not sell this week has no TY figure at all. */}
               {item.hasTY === false ? (
                 <div className="flex-shrink-0 pl-2.5" style={{ width: 64 }}>
-                  <div className="text-[13px] font-semibold text-content">—</div>
+                  <div className="text-[13px] font-semibold text-content">
+                    —
+                  </div>
                   <div className="text-[10px] text-content"></div>
                 </div>
               ) : (
-                <Cell net={item.tyNet} qty={item.tyQty} isQty={isQty} className="pl-2.5" />
+                <Cell
+                  net={item.tyNet}
+                  qty={item.tyQty}
+                  isQty={isQty}
+                  className="pl-2.5"
+                />
               )}
               <Cell net={item.lwNet} qty={item.lwQty} isQty={isQty} />
               <Cell net={item.lyNet} qty={item.lyQty} isQty={isQty} />

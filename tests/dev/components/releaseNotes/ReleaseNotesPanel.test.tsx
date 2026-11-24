@@ -30,7 +30,6 @@ const show = (href: string, pageName: string | null, onClose = vi.fn()) => {
   render(
     <ReleaseNotesPanel
       releases={releases}
-      sample
       href={href}
       pageName={pageName}
       onClose={onClose}
@@ -110,11 +109,6 @@ describe("ReleaseNotesPanel", () => {
     show("sales", "Sales");
     expect(screen.getByRole("option", { name: "November 11, 2026 · Latest" })).toBeTruthy();
     expect(screen.getByRole("option", { name: "October 20, 2026" })).toBeTruthy();
-  });
-
-  it("says it is a sample", () => {
-    show("sales", "Sales");
-    expect(screen.getByText("Sample notes, for trying the panel")).toBeTruthy();
   });
 
   it("closes from its button and from Escape, once the slide is done", async () => {

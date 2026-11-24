@@ -5,7 +5,10 @@ import { dayNumber } from "../utils";
 import type { DayBucket } from "../../interfaces";
 
 // Components
-import { TY_COLOR, UNSCOPED_OPACITY } from "../../../../../components-dev/mobile/perf/perfColors";
+import {
+  TY_COLOR,
+  UNSCOPED_OPACITY,
+} from "../../../../../components-dev/mobile/perf/perfColors";
 
 interface ItemDayChartProps {
   buckets: DayBucket[];

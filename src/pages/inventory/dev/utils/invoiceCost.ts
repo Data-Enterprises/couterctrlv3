@@ -33,17 +33,21 @@ export const latestInvoiceCost = (
 ): InvoiceCost | null => {
   const want = normalizeProductCode(upc);
   const lines = receivers
-    .flatMap((rec) => rec.lines.map((line) => toReceiptLineFromSearch(rec, line)))
+    .flatMap((rec) =>
+      rec.lines.map((line) => toReceiptLineFromSearch(rec, line)),
+    )
     .filter(
       (l) =>
-        l.productCode === want &&
-        l.unitCost > 0 &&
-        l.date.slice(0, 10) <= asOf,
+        l.productCode === want && l.unitCost > 0 && l.date.slice(0, 10) <= asOf,
     )
     .sort((a, b) => b.date.localeCompare(a.date));
   const top = lines[0];
   return top
-    ? { unitCost: top.unitCost, date: top.date.slice(0, 10), invoiceId: top.invoiceId }
+    ? {
+        unitCost: top.unitCost,
+        date: top.date.slice(0, 10),
+        invoiceId: top.invoiceId,
+      }
     : null;
 };
 

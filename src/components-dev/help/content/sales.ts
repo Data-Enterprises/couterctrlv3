@@ -61,13 +61,13 @@ export const SALES_HELP: HelpContent = {
         },
         {
           title: "Narrow to one day",
-          pre: "Click a day in the strip. Click it again, or",
+          pre: "Click a day in the strip. Click",
           chip: "All Week",
-          post: ", to go back to the whole week.",
+          post: "to go back to the whole week.",
         },
         {
           title: "Find the department",
-          pre: "Open the Sub dept tab and click a department to list its items. You can search by UPC or description.",
+          pre: "Open the Sub depts tab and click a department to list its items. You can search by UPC or description.",
           see: "Items for that department. Inactive items sold last week or last year but have not sold this week.",
         },
       ],
@@ -79,8 +79,8 @@ export const SALES_HELP: HelpContent = {
       steps: [
         {
           title: "Narrow the items",
-          pre: "With a department open on the Sub dept tab, pick a grade, search, or choose Active or Inactive.",
-          see: "A row under the filters with Copy and Compare. It only shows while something is narrowing the list.",
+          pre: "With a department open on the Sub depts tab, pick a grade, search, or choose Active or Inactive.",
+          see: "A row under the filters with Copy and Compare. It shows while something is narrowing the list, or while a list A is kept.",
         },
         {
           title: "Copy the UPCs shown",
@@ -107,7 +107,7 @@ export const SALES_HELP: HelpContent = {
         {
           title: "Read the comparison",
           pre: "A panel slides over the report tabs, under the KPIs and day cards. On the left, one sheet sets the two lists' columns side by side: sales, with this week's change in red or green; the items selling more, selling less, new this week and stopped this week, with their change against last week; and the items sold only last year.",
-          see: "The bucket behind each list's verdict is tinted. On the right, a carousel shows a bucket's items from both lists, tagged A or B, biggest change first; click a row on the left, or the carousel's tabs or arrows, to turn it.",
+          see: "The open bucket's row is highlighted, and the panel opens on the bucket behind list A's biggest drop. On the right, a carousel shows a bucket's items from both lists, tagged A or B, biggest change first; click a row on the left, or the carousel's tabs or arrows, to turn it.",
         },
         {
           title: "Copy a bucket's UPCs",
@@ -118,9 +118,7 @@ export const SALES_HELP: HelpContent = {
         },
         {
           title: "Take it with you",
-          pre: "Click",
-          chip: "Export CSV",
-          post: "in the panel's header for both lists in one file.",
+          pre: "Click the download button in the panel's header for both lists in one file.",
           see: "Every item with where it stands, then a total for each list. The changes are on the grading measure, which the headings name.",
           anchor: "compare-export",
         },
@@ -147,17 +145,17 @@ export const SALES_HELP: HelpContent = {
           chip: "Top 200",
           post: "tab.",
           anchor: "store-tabs",
-          see: "The store's 200 biggest items for the week, biggest sales first. The number under each name is how many units that took.",
+          see: "The store's 200 biggest items for the week, biggest sales first. Under each name are its UPC and sub department.",
         },
         {
           title: "Read the landing report",
-          pre: "Before you pick anything, the right side shows where the money came from: each sub department the top 200 sits in, its share as a bar and its sales. No grades and no comparison here: last week and last year are in an item's own detail. Pick a day in the day cards and it is that day instead, against the same weekday last week and last year.",
+          pre: "Before you pick anything, the right side shows three tiles, Top 200 Sales, vs Last Week and vs Last Year, each with its share of net sales. Under them is each sub department the top 200 sits in, with its share as a bar and its sales. No grades here. Pick a day in the day cards and it is that day instead, against the same weekday last week and last year.",
           see: "Click a department to narrow the list to it. Its total will not match the Sub depts tab — that one is the whole week, this is the top 200's share of it.",
         },
         {
           title: "Narrow it down",
           pre: "Search by name or UPC, filter to one sub department, or click Sales, vs LW or vs LY to sort by it.",
-          see: "The heading says how many of the 200 are showing once anything is narrowing them.",
+          see: "The count beside the search says how many are showing once anything is narrowing them.",
         },
         {
           title: "Pick an item",
@@ -184,7 +182,7 @@ export const SALES_HELP: HelpContent = {
         },
         {
           q: "A margin shows a dash",
-          a: "Too few of that item's lines carried a cost to work out a margin worth trusting. The sales, units and prices are unaffected; only the margin and profit are withheld. Cost coverage on the right tells you what share of lines had one.",
+          a: "Too few of that item's lines carried a cost to work out a margin worth trusting. The sales, units and prices are unaffected; only the margin and profit are withheld. The sentence at the top of the item says what share of lines had one.",
         },
         {
           q: "There is no cost history",
@@ -208,16 +206,16 @@ export const SALES_HELP: HelpContent = {
         {
           title: "Pick a day",
           pre: "Click the day's card above the tabs, the same cards every tab uses. Nothing on the tab itself picks a day.",
-          see: "The same cards in the same places, with that day's figures. All week in the cards goes back to the week's.",
+          see: "The same cards in the same places, with that day's figures. All Week in the cards goes back to the week's.",
         },
         {
           title: "Read the money",
-          pre: "Money leads with net sales, the same figure as the day card picked (All week for the week), and shows the sum behind it: sales with tax, less tax. The bar below splits the net sales into regular price and on sale or TPR, with the dollars on each side.",
+          pre: "Money leads with net sales, the same figure as the day card picked (All Week for the week), and shows the sum behind it: sales with tax, less tax. The bar below splits the net sales into regular price and on sale or TPR, with the dollars on each side.",
           see: "A store that sends no price type, such as Sonic, shows an empty bar marked not reported rather than a full one that would claim everything sold at regular.",
         },
         {
           title: "Read the exceptions",
-          pre: "Exceptions counts the transactions that had a void, cancel, refund or no sale, with their amount, then each type on its own line. A transaction is one receipt however many lines it voided. The week's exceptions are read once when the tab opens.",
+          pre: "Exceptions counts the transactions that had a void, cancel, refund, no sale or backup, with their amount, then each type on its own line. A transaction is one receipt however many lines it voided. The week's exceptions are read once when the tab opens.",
         },
         {
           title: "See every item",
@@ -259,7 +257,7 @@ export const SALES_HELP: HelpContent = {
           chip: "Compare",
           post: "tab and pick a counterpart. That choice follows you across the tabs — it is not a setting you make twice.",
           anchor: "store-tabs",
-          see: "Sub depts and Top 200 both turn into comparisons against that store. Back takes the counterpart off again.",
+          see: "Sub depts, Hourly and Top 200 all turn into comparisons against that store. Back takes the counterpart off again.",
         },
         {
           title: "Open Top 200",
@@ -267,7 +265,7 @@ export const SALES_HELP: HelpContent = {
           chip: "Top 200",
           post: "tab. With a counterpart chosen it opens as a comparison instead of the single store's list.",
           anchor: "store-tabs",
-          see: "A heading saying how many of the items differ, and a bar underneath splitting them into three.",
+          see: "Back, and beside it a bar splitting every item into three piles.",
         },
         {
           title: "Read the three piles",
@@ -303,7 +301,7 @@ export const SALES_HELP: HelpContent = {
           title: "Read a row",
           pre: "Each row carries one bar. Its length is this item against the biggest item on screen; inside it, this store's share of the pair is green when ahead and red when behind, and the other store's is navy.",
           anchor: "top200-compare-list",
-          see: "A hatched cap on the end means the other store does not have it in their top 200. The figure in the corner is the gap in share, in points.",
+          see: "A hatched cap on the end means the other store does not have it in their top 200. The figure in the corner is the gap the rows report: points of share, or dollars.",
         },
         {
           title: "Open an item",
@@ -338,7 +336,7 @@ export const SALES_HELP: HelpContent = {
           a: "Share is of each store's own top 200, not of its whole week. It is the fair way to compare one store with another when one is simply bigger — but it means the denominators differ in character, and a store whose top 200 covers more of its week will read lower throughout.",
         },
         {
-          q: "A row says the amounts are not comparable",
+          q: "The panel says the stores ring this code differently",
           a: "The two stores ring that item differently — one weighs it, the other sells it as a pack. Pounds against packages is not a comparison, so the panel shows both with their own units and offers no difference. Sales and share are still comparable: money is money.",
         },
         {
@@ -406,8 +404,8 @@ export const SALES_HELP: HelpContent = {
 
   terms: [
     {
-      term: "In both / Only here / Only there",
-      def: "The three piles the comparison splits every item into. \u201cOnly here\u201d means the item is in this store's top 200 and not in the other's — which is not the same as the other store not selling it.",
+      term: "In both / Only <store>",
+      def: "The three piles the comparison splits every item into. \u201cOnly <store>\u201d means the item is in that store's top 200 and not in the other's, which is not the same as the other store not selling it.",
       anchor: "top200-piles",
     },
     {
@@ -463,7 +461,7 @@ export const SALES_HELP: HelpContent = {
     {
       term: "Why it balances",
       anchor: "share-balance",
-      def: "Shares always total 100%, so a store can only gain ground by taking it from the others. Whatever one store gives up, the rest pick up between them — which is why a Falling store always has a Rising one somewhere, and why the two totals match.",
+      def: "Shares always total 100%, so a store can only gain ground by taking it from the others. Whatever one store gives up, the rest pick up between them, though the gains may be spread too thin for any one store to read as Rising.",
     },
     {
       term: "Falling, Consistent, Rising",
@@ -476,33 +474,28 @@ export const SALES_HELP: HelpContent = {
       anchor: "share-balance",
     },
     {
-      term: "Does not cancel",
-      def: "Shown when the two sides are not equal. It happens when some stores are measured against last year and others against last week — each set of shares totals 100% on its own, so mixing them leaves a remainder. The figure says how much.",
+      term: "When did it happen?",
       anchor: "share-balance",
+      def: "Each day's gain or loss against the store's usual share, as small bars above or below a middle line, with the day that carried most of it named. Losing ground on the week's biggest day costs more than losing it on a Tuesday, and the weekly figure cannot tell you which happened.",
     },
     {
-      term: "Share by day",
+      term: "Who picked it up?",
       anchor: "share-balance",
-      def: "The selected store's share of the group on each day of the week, with the dashed line at the share it usually takes. A bar under the line is a day it came up light. Losing ground on the week's biggest day costs more than losing it on a Tuesday, and the weekly figure cannot tell you which happened.",
-    },
-    {
-      term: "The other side of it",
-      anchor: "share-balance",
-      def: "The store named beside the selected one moved the opposite way by about the same amount. Shares total 100%, so the pairing is arithmetic — it says the money is accounted for, not that one store's customers drove to the other.",
+      def: "The store that moved the opposite way by about the same amount. Shares total 100%, so the pairing is arithmetic: it says the money is accounted for, not that one store's customers drove to the other.",
     },
     {
       term: "Store Threshold",
-      def: "How far sales have to drop before a store is marked Crit. Drag the slider or type a number. The Sub dept and Hourly tabs keep their own thresholds, so changing one does not change the others.",
+      def: "How far sales have to drop before a store is marked Crit. Drag the slider or type a number. The Sub depts and Hourly tabs keep their own thresholds, so changing one does not change the others.",
       anchor: "threshold",
     },
     {
       term: "Sales / Qty",
-      def: "Swaps the whole page between dollars and units sold — the totals, the percentages and the grades.",
+      def: "Swaps the page between dollars and units sold: the totals, the percentages and the grades. Top 200 stays in dollars.",
       anchor: "metric",
     },
     {
       term: "Inactive items",
-      def: "Items that sold last week or last year but have not sold this week. On the Sub dept tab they are behind their own filter.",
+      def: "Items that sold last week or last year but have not sold this week. On the Sub depts tab they are behind their own filter.",
       anchor: "inactive-filter",
     },
     {
@@ -511,13 +504,13 @@ export const SALES_HELP: HelpContent = {
       def: "The store's 200 biggest items by sales for the week shown. Ranked on money, not units, so an expensive item that sells a few still appears. Excluded sub departments are left out, so it agrees with the rest of the page.",
     },
     {
-      term: "What it rang at",
-      def: "Every price the item sold at this week, on one axis with what it costs you. Dot size is how much went out at each price; anything in the tinted band sold for less than it cost. An item can average out below cost while most of its sales were fine — this says which price is doing it.",
+      term: "Rang at",
+      def: "Every price the item sold at this week, with the units and sales at each. The bar above splits its sales into regular, ad and TPR, and the line under it gives its highest price this week.",
       anchor: "store-tabs",
     },
     {
-      term: "What it earns",
-      def: "Price less cost, times how much sold. Read down: the selling price, the cost, what is left of one after the other, the amount that went out, and the week's gross profit. A margin that could not be trusted leaves the profit withheld rather than guessed.",
+      term: "Margin now / Gross profit",
+      def: "Read down: the selling price, the cost, the margin now (and at its top price, when it rang at more than one), and the week's gross profit with how much sold. A margin that could not be trusted leaves the profit withheld rather than guessed.",
       anchor: "store-tabs",
     },
     {
@@ -546,13 +539,13 @@ export const SALES_HELP: HelpContent = {
       anchor: "item-retail",
     },
     {
-      term: "Unit cost",
-      def: "What the week's sales cost you to buy, per unit, from the same cost the margin is worked out on. Not the price on your last invoice — that is under What it costs to buy.",
+      term: "Cost",
+      def: "What the week's sales cost you to buy, per unit (per pound on a scale item), from the same cost the margin is worked out on. Not the price on your last invoice — that is under What it costs to buy.",
       anchor: "item-cost",
     },
     {
-      term: "Cost coverage",
-      def: "The share of an item's sales lines that carried a cost. Below 90% the margin is hidden: with all the sales and only some of the costs it would read far too high, and it is safer to show nothing than a number somebody acts on. Some vendors deliver direct to the store and send no cost at all, which is why this bites most on fast movers.",
+      term: "% of lines costed",
+      def: "Shown beside Cost when there is no recent invoice: the share of the item's sales lines that carried a cost. Below 90% the margin is hidden: with all the sales and only some of the costs it would read far too high, and it is safer to show nothing than a number somebody acts on. Some vendors deliver direct to the store and send no cost at all, which is why this bites most on fast movers.",
       anchor: "item-cost",
     },
     {

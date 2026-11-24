@@ -28,6 +28,8 @@ export const PREVIOUS_STEP: Partial<Record<ForgotStep, ForgotStep>> = {
 export const WHO_EMPTY = "Enter your username and email.";
 export const ANSWER_EMPTY = "Enter your answer.";
 export const NETWORK_ERROR = "The server couldn't be reached. Try again.";
+/** The answer's proof lasts 15 minutes and works once. */
+export const RESET_EXPIRED = "That took too long. Answer your security question again.";
 
 /**
  * Step 1's refusal in plain words. The server says "Email doesn't exist." for a
@@ -42,11 +44,17 @@ export const whoError = (msg?: string) => {
   return msg;
 };
 
-/** Step 2's refusal in plain words. */
-export const answerError = (msg?: string) =>
-  msg === "Security answer does not match."
-    ? "That answer doesn't match. Check it and try again."
-    : "Your answer couldn't be checked. Try again.";
+/** Step 2's refusal in plain words. The server locks a username for 15 minutes
+ *  after five wrong answers. */
+export const answerError = (msg?: string) => {
+  if (msg === "Security answer does not match.") {
+    return "That answer doesn't match. Check it and try again.";
+  }
+  if (msg === "Too many attempts. Please try again later.") {
+    return "Too many wrong answers. Wait 15 minutes and try again.";
+  }
+  return "Your answer couldn't be checked. Try again.";
+};
 
 /** Step 3's refusal: the server's own words, or a plain fallback. */
 export const passwordError = (msg?: string) =>

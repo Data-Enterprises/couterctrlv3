@@ -232,17 +232,9 @@ export const COLS =
   "grid-cols-[30px_minmax(0,24%)_72px_minmax(0,1fr)_92px_28px]";
 
 /** How far back to look for "which departments does this store have".
- *
- *  There is no dimension table, so the answer is always "what it rang inside
- *  a window". 120 days is the default because it is quick and because a
- *  department that has not rung since spring is not one anybody is trying to
- *  keep out of this week's net sales. The longer options exist for onboarding,
- *  where a seasonal department genuinely has not rung yet. */
-export const WINDOWS = [
-  { value: "120", label: "Last 120 days" },
-  { value: "365", label: "Last year" },
-  { value: "730", label: "Last 2 years" },
-];
+ *  There is no dimension table, so the answer is "what it rang in the last 60
+ *  days": every real department rings something in that time. */
+export const CATALOG_DAYS = 60;
 
 /** The Store filter's "every store" choice; the slice starts on it. */
 export const ALL_STORES = SUB_EXCL_ALL_STORES;

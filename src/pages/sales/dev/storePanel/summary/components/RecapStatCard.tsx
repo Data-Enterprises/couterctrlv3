@@ -41,7 +41,9 @@ const RecapStatCard = ({
       <h4 className="text-[14px] font-semibold text-content">{title}</h4>
       {action}
     </div>
-    <div className={`flex flex-wrap items-baseline gap-x-2 ${short ? "mt-1" : action ? "mt-1" : "mt-1.5"}`}>
+    <div
+      className={`flex flex-wrap items-baseline gap-x-2 ${short ? "mt-1" : action ? "mt-1" : "mt-1.5"}`}
+    >
       <span
         className={`${short ? "text-[22px]" : "text-[26px]"} font-bold leading-tight text-content tabular-nums`}
       >
@@ -50,7 +52,9 @@ const RecapStatCard = ({
       <span className="text-[14px] text-content">{heroSub}</span>
     </div>
     {rows.length > 0 && (
-      <div className={`${short ? "mt-1.5" : "mt-2.5"} border-t border-brand_line`}>
+      <div
+        className={`${short ? "mt-1.5" : "mt-2.5"} border-t border-brand_line`}
+      >
         {rows.map((r) => (
           <div
             key={r.label}

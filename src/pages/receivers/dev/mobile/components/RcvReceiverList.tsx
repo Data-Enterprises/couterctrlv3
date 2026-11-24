@@ -9,6 +9,7 @@ import { getReceiverDetails } from "../../../../../api/receivers";
 // Utils
 import { formatCurrency2 } from "../../../../../utils";
 import { fmtDate, handleExport, toApiDate } from "./utils";
+import { reasonOf } from "../../../../../utils/serverError";
 
 // Interfaces
 import type {
@@ -16,7 +17,6 @@ import type {
   ReceiverDetailsItem,
   ReceiverDetailsTotals,
   ReceiverDetailsResponse,
-  JsonError,
 } from "../../../../../interfaces";
 
 // Components
@@ -108,7 +108,7 @@ const RcvReceiverList = ({
           toast.warn("Failed to load line items");
         }
       })
-      .catch((err: JsonError) => toast.error(err.message))
+      .catch((err) => toast.error(reasonOf(err)))
       .finally(() => setLoadingDetails(false));
   };
 

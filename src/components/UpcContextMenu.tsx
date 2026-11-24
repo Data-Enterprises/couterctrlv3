@@ -1,24 +1,28 @@
+// Hooks
 import { useEffect, useRef } from "react";
 
-interface SeverityUpcs {
-  critical: string[];
-  watch: string[];
-  healthy: string[];
-}
+// Utils
+import { copyToClipboard } from "./utils";
+
+// Interfaces
+import type { SeverityUpcs } from "./interfaces";
 
 interface UpcContextMenuProps {
   x: number;
   y: number;
   upc: string;
   allUpcs: string[];
+  /** The UPCs a filter leaves on screen, when one is narrowing the list. */
+  shownUpcs?: string[];
   severityUpcs?: SeverityUpcs;
   extraActions?: { label: string; onClick: () => void }[];
   onClose: () => void;
 }
 
-const copyToClipboard = (upcs: string[]) => navigator.clipboard.writeText(upcs.join(", "));
-
-const UpcContextMenu = ({ x, y, upc, allUpcs, severityUpcs, extraActions, onClose }: UpcContextMenuProps) => {
+/** Right-click menu for a UPC at the cursor: copy this UPC, the UPCs shown when
+ *  given, all UPCs, by severity when given, plus any extra actions. Closes on an
+ *  outside click. */
+const UpcContextMenu = ({ x, y, upc, allUpcs, shownUpcs, severityUpcs, extraActions, onClose }: UpcContextMenuProps) => {
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -31,6 +35,9 @@ const UpcContextMenu = ({ x, y, upc, allUpcs, severityUpcs, extraActions, onClos
 
   const items: { label: string; count: number | null; disabled: boolean; onClick: () => void }[] = [
     { label: "Copy UPC", count: null, disabled: !upc, onClick: () => copyToClipboard([upc]) },
+    ...(shownUpcs
+      ? [{ label: "Copy shown UPCs", count: shownUpcs.length, disabled: shownUpcs.length === 0, onClick: () => copyToClipboard(shownUpcs) }]
+      : []),
     { label: "Copy all UPCs", count: allUpcs.length, disabled: allUpcs.length === 0, onClick: () => copyToClipboard(allUpcs) },
   ];
 
@@ -53,11 +60,11 @@ const UpcContextMenu = ({ x, y, upc, allUpcs, severityUpcs, extraActions, onClos
       ref={menuRef}
       data-testid="upc-ctx-menu"
       style={{ position: "fixed", top: y, left: x, zIndex: 9999 }}
-      className="bg-custom-white border border-gray-200 rounded-lg shadow-lg py-1 min-w-[190px]"
+      className="bg-custom-white border border-line_field rounded-lg shadow-lg py-1 min-w-[190px]"
     >
       {upc && (
-        <div className="px-3 py-1.5 border-b border-gray-100">
-          <div className="text-[9px] font-semibold uppercase tracking-wide text-gray-400">UPC</div>
+        <div className="px-3 py-1.5 border-b border-line_hair">
+          <div className="text-[9px] font-semibold uppercase tracking-wide text-brand_slate">UPC</div>
           <div className="text-[12px] font-semibold text-content tabular-nums">{upc}</div>
         </div>
       )}
@@ -70,11 +77,11 @@ const UpcContextMenu = ({ x, y, upc, allUpcs, severityUpcs, extraActions, onClos
             item.onClick();
             onClose();
           }}
-          className="w-full flex items-center justify-between gap-2 text-left px-3 py-2 text-[12px] text-content hover:bg-gray-50 disabled:text-gray-300 disabled:hover:bg-transparent disabled:cursor-not-allowed transition-colors"
+          className="w-full flex items-center justify-between gap-2 text-left px-3 py-2 text-[12px] text-content hover:bg-fill_soft disabled:text-content/40 disabled:hover:bg-transparent disabled:cursor-not-allowed transition-colors"
         >
           <span>{item.label}</span>
           {item.count !== null && (
-            <span className="text-[10px] text-gray-400 tabular-nums">{item.count}</span>
+            <span className="text-[10px] text-brand_slate tabular-nums">{item.count}</span>
           )}
         </button>
       ))}

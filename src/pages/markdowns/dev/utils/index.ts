@@ -1,6 +1,9 @@
 // Utils
 import { formatCurrency2, resolveStoreName } from "../../../../utils";
-import { applyStoreNumberToName, numbersByStoreId } from "../../../../utils/storeIdentity";
+import {
+  applyStoreNumberToName,
+  numbersByStoreId,
+} from "../../../../utils/storeIdentity";
 
 // Interfaces
 import type { SortState } from "../../../../utils/useTriStateSort";
@@ -228,15 +231,31 @@ export const withStoreNames = (
   assignedStores: Store[],
   groupStores: Store[],
 ): MarkdownItem[] => {
-  const numbers = numbersByStoreId(rows, (r) => r.storeid, (r) => r.storenumber);
+  const numbers = numbersByStoreId(
+    rows,
+    (r) => r.storeid,
+    (r) => r.storenumber,
+  );
   const names = new Map<number, string>();
   return rows.map((r) => {
     let name = names.get(r.storeid);
     if (name === undefined) {
-      name = resolveStoreName(assignedStores, groupStores, r.storeid, `Store ${r.storenumber}`);
+      name = resolveStoreName(
+        assignedStores,
+        groupStores,
+        r.storeid,
+        `Store ${r.storenumber}`,
+      );
       names.set(r.storeid, name);
     }
-    return { ...r, storename: applyStoreNumberToName(name, r.storenumber, numbers[r.storeid] ?? []) };
+    return {
+      ...r,
+      storename: applyStoreNumberToName(
+        name,
+        r.storenumber,
+        numbers[r.storeid] ?? [],
+      ),
+    };
   });
 };
 
@@ -289,7 +308,8 @@ export const LIST_FILTERS: MarkdownFilterKey[] = [
  */
 export const compileFilters = (f: MarkdownFilters) => {
   const sets = LIST_FILTERS.filter((key) => f[key].length > 0).map(
-    (key) => [key, new Set((f[key] as (string | number)[]).map(String))] as const,
+    (key) =>
+      [key, new Set((f[key] as (string | number)[]).map(String))] as const,
   );
   return (skip: MarkdownFilterKey | null = null) =>
     (r: MarkdownItem): boolean => {

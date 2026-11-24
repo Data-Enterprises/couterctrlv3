@@ -64,7 +64,9 @@ const HourDetailPanel = ({
   const hasWeekLY =
     selectedHour !== null && rawLYHourly.some((h) => h.hour === selectedHour);
 
-  const cta = selected ? getCta(selected, coverage, threshold, gradingMetric) : null;
+  const cta = selected
+    ? getCta(selected, coverage, threshold, gradingMetric)
+    : null;
 
   return (
     <div className="flex flex-col flex-1 min-w-0">
@@ -122,7 +124,11 @@ const HourDetailPanel = ({
             </button>
             {chartOpen && weekHourDays && (
               <div className="px-2 pb-3">
-                <HourTrendChart days={weekHourDays} hasLW={hasWeekLW} hasLY={hasWeekLY} />
+                <HourTrendChart
+                  days={weekHourDays}
+                  hasLW={hasWeekLW}
+                  hasLY={hasWeekLY}
+                />
               </div>
             )}
           </div>

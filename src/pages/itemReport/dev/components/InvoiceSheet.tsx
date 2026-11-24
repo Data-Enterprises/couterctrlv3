@@ -2,10 +2,9 @@
 import { useMemo, useRef, useEffect } from "react";
 
 // Utils
-import { formatCurrency2, formatDateSimple } from "../../../../utils";
+import { formatDateSimple } from "../../../../utils";
 import { normalizeProductCode } from "../../../../utils/productCode";
-import { describeReceipt, ROW_COLS } from "../utils";
-import { ACTION_TONE } from "../utils/actionTone";
+import { ROW_COLS } from "../utils";
 
 // Interfaces
 import type { ReceiverDetailsItem } from "../../../../interfaces";
@@ -15,6 +14,7 @@ import type { ActionKind } from "../interfaces";
 import { XMarkIcon } from "@heroicons/react/20/solid";
 import ResizableModalShell from "../../../../components-dev/modals/ResizableModalShell";
 import LoadingIndicator from "../../../../components-dev/loading/LoadingIndicator";
+import InvoiceLineRow from "./InvoiceLineRow";
 
 interface InvoiceSheetProps {
   vendorName: string;
@@ -93,9 +93,7 @@ const InvoiceSheet = ({
       <div className="bg-brand_navy px-4 py-2.5 flex-shrink-0">
         <div className="flex items-center gap-3">
           <div className="min-w-0">
-            <p className="cc-navy-title text-[13px] truncate">
-              {vendorName}
-            </p>
+            <p className="cc-navy-title text-[13px] truncate">{vendorName}</p>
             <p className="text-custom-white/95 text-[12px] truncate">
               Invoice {invoiceId} · {formatDateSimple(date)}
             </p>
@@ -163,102 +161,15 @@ const InvoiceSheet = ({
             </div>
             {lines.map((l, i) => {
               const isFrom = normalizeProductCode(l.product_code) === fromUpc;
-              const flagged = l.free > 0 || l.return > 0;
-              // Computed rather than read off the response's own `gm`, so it
-              // cannot disagree with the cost and retail printed beside it.
-              // Verified identical across 47 lines on four invoices.
-              const gm =
-                l.retail > 0 ? ((l.retail - l.ucost) / l.retail) * 100 : null;
-              // The row's wash and its foreground come from the same action, so
-              // the highlighted line reads as one object. Applied per cell
-              // rather than inherited — each cell sets its own `text-content`,
-              // which would win over anything on the row.
-              const ink =
-                isFrom && fromAction
-                  ? ACTION_TONE[fromAction].text
-                  : "text-content";
               return (
-                <div
+                <InvoiceLineRow
                   key={`${l.line_number}-${l.product_code}`}
                   ref={isFrom ? fromRef : undefined}
-                  className={`grid gap-3 px-4 py-2 items-center border-b border-line_hair ${
-                    isFrom
-                      ? // The same wash as this item's action chip on the sheet
-                        // behind the modal, so the line you came for is
-                        // recognisable without reading it.
-                        fromAction
-                        ? ACTION_TONE[fromAction].row
-                        : "bg-fill_muted"
-                      : i % 2 === 1
-                        ? "bg-row_stripe"
-                        : ""
-                  }`}
-                  style={{ gridTemplateColumns: ROW_COLS }}
-                >
-                  <span
-                    className={`text-[12px] font-medium text-right tabular-nums ${
-                      isFrom ? ink : "text-content/95"
-                    }`}
-                  >
-                    {l.line_number}
-                  </span>
-                  <div className="min-w-0">
-                    <div className={`text-[13px] font-medium truncate ${ink}`}>
-                      {l.product_description}
-                    </div>
-                    <div
-                      className={`text-[12px] font-medium truncate ${
-                        // A flag still outranks the row's colour: "returned" is
-                        // the more urgent thing this line has to say.
-                        flagged
-                          ? "text-severity_watch_text"
-                          : isFrom
-                            ? ink
-                            : "text-content/95"
-                      }`}
-                    >
-                      {l.product_code}
-                      {l.return > 0 && " · returned"}
-                      {l.free > 0 && " · free"}
-                      {isFrom && " · this item"}
-                    </div>
-                  </div>
-                  {/* Words, so left-aligned — the numeric columns to its right
-                      stay right-aligned and the two don't blur together. */}
-                  <span className={`text-[12px] font-medium truncate ${ink}`}>
-                    {describeReceipt(l.qty, l.cases)}
-                  </span>
-                  <span
-                    className={`text-[12px] font-medium text-right tabular-nums ${ink}`}
-                  >
-                    {l.qty}
-                  </span>
-                  <span
-                    className={`text-[12px] font-medium text-right tabular-nums ${ink}`}
-                  >
-                    {formatCurrency2(l.ucost)}
-                  </span>
-                  <span
-                    className={`text-[12px] font-medium text-right tabular-nums ${ink}`}
-                  >
-                    {l.retail > 0 ? formatCurrency2(l.retail) : "—"}
-                  </span>
-                  <span
-                    className={`text-[12px] font-medium text-right tabular-nums ${ink}`}
-                  >
-                    {formatCurrency2(l.ext_cost)}
-                  </span>
-                  <span
-                    className={`text-[12px] font-medium text-right tabular-nums ${ink}`}
-                  >
-                    {l.ext_retail > 0 ? formatCurrency2(l.ext_retail) : "—"}
-                  </span>
-                  <span
-                    className={`text-[12px] font-medium text-right tabular-nums ${ink}`}
-                  >
-                    {gm === null ? "—" : `${gm.toFixed(1)}%`}
-                  </span>
-                </div>
+                  line={l}
+                  isFrom={isFrom}
+                  fromAction={fromAction}
+                  zebra={i % 2 === 1}
+                />
               );
             })}
           </>

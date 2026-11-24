@@ -1,6 +1,6 @@
 // Hooks
-import { useAppDispatch, useAppSelector } from "../../../hooks";
-import { useItemPerfCtx } from "../hooks";
+import { useAppDispatch } from "../../../hooks";
+import { useItemPerfCtx, useItemPerfState } from "../hooks";
 
 // Redux
 import {
@@ -10,7 +10,11 @@ import {
 } from "../../../features/dev/devItemPerfSlice";
 
 // Utils
-import { gradedChange, noLyHistory, type MarginRow } from "../utils/itemPerfData";
+import {
+  gradedChange,
+  noLyHistory,
+  type MarginRow,
+} from "../utils/itemPerfData";
 import { cmpWord, fmtChange } from "../utils";
 
 // Interfaces
@@ -32,7 +36,7 @@ interface GroupCardProps {
  *  bars and change; open it is its day chart, its margins and a way in. */
 const GroupCard = ({ row: r }: GroupCardProps) => {
   const dispatch = useAppDispatch();
-  const perf = useAppSelector((s) => s.dev.itemPerf);
+  const { perf } = useItemPerfState();
   const { measure, chartBasis, weekMatchLw, days, listFor } = useItemPerfCtx();
   const isOpen = perf.openGroup?.key === r.key;
   // Against last year, or last week where last year has nothing: the same
@@ -46,9 +50,7 @@ const GroupCard = ({ row: r }: GroupCardProps) => {
       open={isOpen}
       minimised={!isOpen && perf.openGroup !== null}
       onToggle={() =>
-        dispatch(
-          toggleItemPerfGroup({ key: r.key, label: r.label }),
-        )
+        dispatch(toggleItemPerfGroup({ key: r.key, label: r.label }))
       }
     >
       <div className="border-t border-brand_line">

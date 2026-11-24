@@ -45,12 +45,18 @@ const AssociationDetailPanel = ({
   const items = getDisplayItems(result.items, rerootUpc);
   const topCompanion = getTopCompanion(items);
   const totalRevenue = getTotalRevenue(items);
-  const avgRevenuePerBasket = getAvgRevenuePerBasket(totalRevenue, result.totalBaskets);
+  const avgRevenuePerBasket = getAvgRevenuePerBasket(
+    totalRevenue,
+    result.totalBaskets,
+  );
   const avgAttachRate = getWeightedAvgAttachRate(items);
 
   const deptBreakdown = getDepartmentBreakdown(items);
   const queryDepartments = getQueryDepartments(result.items);
-  const { cross: crossDepts, same: sameDepts } = splitDeptBreakdown(deptBreakdown, queryDepartments);
+  const { cross: crossDepts, same: sameDepts } = splitDeptBreakdown(
+    deptBreakdown,
+    queryDepartments,
+  );
   const crossRevenue = sumGroupRevenue(crossDepts);
   const sameRevenue = sumGroupRevenue(sameDepts);
 
@@ -78,7 +84,9 @@ const AssociationDetailPanel = ({
     const c = DEPT_TONE[tone];
     return (
       <div className="mb-2">
-        <div className={`text-[10px] font-bold uppercase tracking-wide mb-1 ${c.caption}`}>
+        <div
+          className={`text-[10px] font-bold uppercase tracking-wide mb-1 ${c.caption}`}
+        >
           {label} · {formatCurrency2(revenue)}
         </div>
         <div className="flex flex-wrap gap-1.5">
@@ -89,7 +97,9 @@ const AssociationDetailPanel = ({
             >
               <span className={`font-semibold ${c.label}`}>{d.label}</span>
               <span className={c.value}>{d.count}</span>
-              <span className={`tabular-nums ${c.value}`}>{formatCurrency2(d.revenue)}</span>
+              <span className={`tabular-nums ${c.value}`}>
+                {formatCurrency2(d.revenue)}
+              </span>
             </span>
           ))}
         </div>
@@ -101,21 +111,26 @@ const AssociationDetailPanel = ({
   // this is generated text pulling from live data, not fixed copy.
   const insight = isReroot ? (
     `This is a fresh lookup, not a slice of your seed search — ${result.totalBaskets.toLocaleString()} baskets contained ${title}${
-      prevTotalBaskets != null ? ` (your seed search had ${prevTotalBaskets.toLocaleString()})` : ""
+      prevTotalBaskets != null
+        ? ` (your seed search had ${prevTotalBaskets.toLocaleString()})`
+        : ""
     }.`
   ) : (
     <>
       <p className="mb-1.5">
-        {result.totalBaskets.toLocaleString()} baskets contained at least one of your seed items, generating{" "}
-        {formatCurrency2(totalRevenue)} in companion revenue across {deptBreakdown.length} sub department
+        {result.totalBaskets.toLocaleString()} baskets contained at least one of
+        your seed items, generating {formatCurrency2(totalRevenue)} in companion
+        revenue across {deptBreakdown.length} sub department
         {deptBreakdown.length === 1 ? "" : "s"}.
       </p>
-      {crossDepts.length > 0 && deptChips("Cross Sub Dept", crossDepts, crossRevenue, "cross")}
-      {sameDepts.length > 0 && deptChips("Same as seed", sameDepts, sameRevenue, "same")}
+      {crossDepts.length > 0 &&
+        deptChips("Cross Sub Dept", crossDepts, crossRevenue, "cross")}
+      {sameDepts.length > 0 &&
+        deptChips("Same as seed", sameDepts, sameRevenue, "same")}
       {topCompanion && (
         <p className="mt-0.5">
-          The strongest single pairing is {topCompanion.product_description}, showing up in{" "}
-          {topCompanion.attach_rate.toFixed(1)}% of those baskets.
+          The strongest single pairing is {topCompanion.product_description},
+          showing up in {topCompanion.attach_rate.toFixed(1)}% of those baskets.
         </p>
       )}
     </>
@@ -142,16 +157,23 @@ const AssociationDetailPanel = ({
         <KpiTileGrid items={kpis} />
         {items.length > 0 && (
           <div className="px-4 pt-2 text-[10px] font-medium text-content/95">
-            Showing top {items.length} association{items.length === 1 ? "" : "s"} by strength
+            Showing top {items.length} association
+            {items.length === 1 ? "" : "s"} by strength
           </div>
         )}
       </div>
 
       <div className="cc-scroll px-2 pb-3.5">
         {items.length > 0 ? (
-          <AssociationItemsTable items={items} onReroot={onReroot} onContextMenu={onContextMenu} />
+          <AssociationItemsTable
+            items={items}
+            onReroot={onReroot}
+            onContextMenu={onContextMenu}
+          />
         ) : (
-          <div className="text-[13px] text-content/95 italic py-2">No associations found.</div>
+          <div className="text-[13px] text-content/95 italic py-2">
+            No associations found.
+          </div>
         )}
       </div>
     </div>

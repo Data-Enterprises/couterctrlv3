@@ -53,7 +53,7 @@ export const LOSS_PREVENTION_HELP: HelpContent = {
           title: "Narrow to a day",
           pre: "Use the",
           chip: "Whole week",
-          post: "drop-down above the store list, or click a day card inside a store. A single day is compared with the same weekday in the prior two weeks.",
+          post: "drop-down above the store list to grade every store on one day, or click a day card inside a store to narrow its cashiers and transactions. A single day is compared with the same weekday in the prior two weeks.",
           anchor: "day-select",
         },
         {
@@ -85,7 +85,7 @@ export const LOSS_PREVENTION_HELP: HelpContent = {
           tone: "warn",
           badge: "Up on its own baseline",
           title: "Several figures rose against this store's own history",
-          why: "The grade counts how many of the four figures — transactions, quantity, total and average — went up against the baseline. Critical means most rose, Watch means about half did. The comparison is always with the same store or cashier's own prior two weeks, never with anybody else.",
+          why: "The grade counts how many of the four figures — transactions, quantity, total and average — went up against the baseline. No sale has no dollar figures, so it is graded on transactions and quantity alone. Critical means most rose, Watch means about half did. The comparison is always with the same store or cashier's own prior two weeks, never with anybody else.",
           todo: [
             "Open the store and see whether one cashier carries the rise.",
             "Narrow to a single day — one day often explains the week.",
@@ -120,7 +120,7 @@ export const LOSS_PREVENTION_HELP: HelpContent = {
     },
     {
       term: "Critical, Watch, OK",
-      def: "How many of the four figures (transactions, quantity, total and average) rose against the baseline. Most of them is Critical, about half is Watch, most at or below it is OK.",
+      def: "How many of the four figures (transactions, quantity, total and average) rose against the baseline; No sale is graded on transactions and quantity alone. Most of them is Critical, about half is Watch, most at or below it is OK.",
       anchor: "severity-chips",
     },
     {

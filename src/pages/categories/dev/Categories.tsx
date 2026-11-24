@@ -1,6 +1,5 @@
 // Hooks
 import { useState } from "react";
-import { useAppSelector } from "../../../hooks";
 import { useCategoryData, useCategoriesCtx } from "./hooks";
 
 // Components
@@ -9,8 +8,8 @@ import SingleStoreSearchCard from "../../../components-dev/SingleStoreSearchCard
 import SingleDatePicker from "../../../components-dev/datePickers/SingleDatePicker";
 import ItemPerfMobile from "../../../components-dev/itemPerf/ItemPerfMobile";
 import SearchPopup from "../../../components-dev/SearchPopup";
-import CategoryListPanel from "./components/CategoryListPanel";
-import CategoryDetailPanel from "./components/CategoryDetailPanel";
+import CategoryListPanel from "./list/CategoryListPanel";
+import CategoryDetailPanel from "./detail/CategoryDetailPanel";
 
 /**
  * Categories — Performance.
@@ -24,22 +23,19 @@ import CategoryDetailPanel from "./components/CategoryDetailPanel";
  * render what the container loaded and never reach for data themselves.
  */
 const Categories = () => {
-  const context = useAppSelector((s) => s.app);
-  const search = useAppSelector((s) => s.search);
-  const user = useAppSelector((s) => s.user);
   const cats = useCategoriesCtx();
   // Called exactly once per mounted page — it installs the item-loading
   // effect, and the mobile layout receives these as props rather than
   // calling the hook again.
   const { runSearch, loadHourly, applyLocation } = useCategoryData();
 
-  const [searchOpen, setSearchOpen] = useState(false);
-  const [storeId, setStoreId] = useState(search.lastStore || 0);
+  const [searchOpen, setSearchOpen] = useState<boolean>(false);
+  const [storeId, setStoreId] = useState<number>(cats.lastStore || 0);
 
   // Mobile shares one ungraded screen with Sub Dept Margins and Vendors —
   // same item rows, grouped by category instead. It owns its own fetch, so
   // nothing above reaches categoriesSlice on this path.
-  if (context.isMobile)
+  if (cats.isMobile)
     return (
       <ItemPerfMobile
         dimension="category"
@@ -53,7 +49,7 @@ const Categories = () => {
       title="Category Performance"
       description="Pick a store and a week. Categories are graded against last week and the same week last year."
       buttonLabel="Load categories"
-      stores={user.assignedStores}
+      stores={cats.assignedStores}
       selectedStoreId={storeId}
       onStoreSelect={setStoreId}
       onSearch={() => {

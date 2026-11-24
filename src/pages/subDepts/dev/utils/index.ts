@@ -12,15 +12,16 @@ import {
   marginPct,
   type MarginDollars,
 } from "../../../../utils/grading";
+import { subDeptKey } from "../../../../utils/subDeptKey";
 
 // Interfaces
-import type { MarginTier, SubDeptGrade, GradingMetric } from "../../../../features/dev/devSubMarginSlice";
 import type {
-  SubDept,
-  SubDeptMargin,
-  SubMarginsJsonResp,
-} from "../../../../interfaces";
-import type { RawSearch } from "../interfaces";
+  MarginTier,
+  SubDeptGrade,
+  GradingMetric,
+} from "../../../../features/dev/devSubMarginSlice";
+import type { SubDeptMargin, SubMarginsJsonResp } from "../../../../interfaces";
+import type { RawSearch, SubDeptEntry } from "../interfaces";
 
 /** The figure a sub department is graded and ranked on: last year when it
  * covers every day of the week, else last week when that does, else nothing.
@@ -82,7 +83,8 @@ export const buildDayComparisons = (
     rows.reduce((s, m) => s + (m.total_sales - m.total_tax), 0);
   const cogs = (rows: SubDeptMargin[]) =>
     rows.reduce(
-      (s, m) => s + calculateCogs(m.net_cost, m.cost, m.case_size, m.qty, m.weight),
+      (s, m) =>
+        s + calculateCogs(m.net_cost, m.cost, m.case_size, m.qty, m.weight),
       0,
     );
   const pct = (n: number, c: number) => (n > 0 ? ((n - c) / n) * 100 : 0);
@@ -105,7 +107,11 @@ export const buildDayComparisons = (
   });
 };
 
-export const getTier = (grade: SubDeptGrade, threshold: number, metric: GradingMetric): MarginTier => {
+export const getTier = (
+  grade: SubDeptGrade,
+  threshold: number,
+  metric: GradingMetric,
+): MarginTier => {
   const delta = getGradeDelta(grade, metric);
   if (delta === null) return "ungraded";
   if (delta >= 0) return "healthy";
@@ -136,7 +142,13 @@ const bucketByDay = (rows: MarginRow[]): Record<string, DayBucket> => {
       bucket.cogs += m.cogs;
     } else {
       bucket.net += m.total_sales - m.total_tax;
-      bucket.cogs += calculateCogs(m.net_cost, m.cost, m.case_size, m.qty, m.weight);
+      bucket.cogs += calculateCogs(
+        m.net_cost,
+        m.cost,
+        m.case_size,
+        m.qty,
+        m.weight,
+      );
     }
     out[key] = bucket;
   }
@@ -162,7 +174,10 @@ export const storeMarginPctOf = (dollars: MarginDollars[]): number | null => {
   if (dollars.length === 0) return null;
   const net = dollars.reduce((acc, d) => acc + d.net, 0);
   if (net <= 0) return null;
-  return marginPct(net, dollars.reduce((acc, d) => acc + d.cogs, 0));
+  return marginPct(
+    net,
+    dollars.reduce((acc, d) => acc + d.cogs, 0),
+  );
 };
 
 /**
@@ -191,8 +206,7 @@ export const storeMarginDeltaOf = (
 export type SubDeptSalesTotals = { net: number; qty: number };
 
 type NetRow =
-  | { sale_date: string; total_sales: number; total_tax: number }
-  | RollupRow;
+  { sale_date: string; total_sales: number; total_tax: number } | RollupRow;
 
 export const netByDay = (rows: NetRow[]): Record<string, number> => {
   const out: Record<string, number> = {};
@@ -261,36 +275,6 @@ export const computeStoreDayMatched = (
       lyM.refNet > 0 ? ((lyM.tyNet - lyM.refNet) / lyM.refNet) * 100 : 0,
   };
 };
-
-/**
- * Sub-department sales totals, using the same formula as Sales' aggSubDepts
- * (`total_sales - total_tax`).
- *
- * Takes any rows carrying a department, sales, tax and quantity, so it works
- * on `subs/sub_sales` rows or on `subs/subs` item rows.
- *
- * This used to insist on `sub_sales`: `subs/subs` matched only
- * `item_ring_type = 'ITEM'` while `sub_sales` matched `'ITEM','SUBD'`, so
- * totals built from item rows ran short by every sale rung straight to a
- * department rather than to an item. **That has since been fixed on the
- * backend** — `subs/subs` now carries both ring types, and all three sales
- * endpoints agree once aggregated.
- */
-export const aggSubDeptSales = (
-  rows: {
-    sub_department: number;
-    total_sales: number;
-    total_tax: number;
-    qty: number;
-  }[],
-): Record<number, SubDeptSalesTotals> =>
-  rows.reduce((acc: Record<number, SubDeptSalesTotals>, s) => {
-    const cur = acc[s.sub_department] ?? { net: 0, qty: 0 };
-    cur.net += s.total_sales - s.total_tax;
-    cur.qty += s.qty;
-    acc[s.sub_department] = cur;
-    return acc;
-  }, {});
 
 /** The counterpart rows that actually pair with a TY day — used where a view
  * needs the matched row SET rather than totals (e.g. to display an LW figure
@@ -372,7 +356,10 @@ export const computeMarginDayMatched = (
     counterpart: Record<string, DayBucket>,
     mapDate: (d: string) => string,
   ) => {
-    let tyNet = 0, tyCogs = 0, refNet = 0, refCogs = 0;
+    let tyNet = 0,
+      tyCogs = 0,
+      refNet = 0,
+      refCogs = 0;
     for (const d of tyDates) {
       const match = counterpart[mapDate(d)];
       if (!match) continue;
@@ -422,17 +409,17 @@ export const computeMarginDayMatched = (
       ? ((lyMatch.tyNet - lyMatch.refNet) / lyMatch.refNet) * 100
       : 0,
     /**
-      * Margin percentages are rates, so both sides are scoped to the matched
-      * days — comparing a 3-day TY rate against a 7-day LW rate is the same
-      * category of error as doing it with totals.
-      *
-      * And both sides need sales, because a rate needs something to be a rate
-      * OF. The matched days can leave THIS week's side empty while the prior
-      * one has something: a department selling on different days each week
-      * matches on a day it did not sell, `marginPct` answers 0 for that, and
-      * the delta reads as a collapse nobody can find. Null says there is no
-      * comparison, and grades ungraded — see the Vendors fix, same shape.
-      */
+     * Margin percentages are rates, so both sides are scoped to the matched
+     * days — comparing a 3-day TY rate against a 7-day LW rate is the same
+     * category of error as doing it with totals.
+     *
+     * And both sides need sales, because a rate needs something to be a rate
+     * OF. The matched days can leave THIS week's side empty while the prior
+     * one has something: a department selling on different days each week
+     * matches on a day it did not sell, `marginPct` answers 0 for that, and
+     * the delta reads as a collapse nobody can find. Null says there is no
+     * comparison, and grades ungraded — see the Vendors fix, same shape.
+     */
     ptsDelta:
       hasLY && lyMatch.tyNet > 0
         ? marginPct(lyMatch.tyNet, lyMatch.tyCogs) -
@@ -447,8 +434,10 @@ export const computeMarginDayMatched = (
 };
 
 /** A signed percent to two places, and a signed point change. */
-export const fmtPct = (pct: number) => `${pct >= 0 ? "+" : ""}${pct.toFixed(2)}%`;
-export const fmtPts = (pts: number) => `${pts >= 0 ? "+" : ""}${pts.toFixed(2)} pts`;
+export const fmtPct = (pct: number) =>
+  `${pct >= 0 ? "+" : ""}${pct.toFixed(2)}%`;
+export const fmtPts = (pts: number) =>
+  `${pts >= 0 ? "+" : ""}${pts.toFixed(2)} pts`;
 
 /** Net sales and margin % over margin rows. */
 export const agg = (rows: SubDeptMargin[]) => {
@@ -466,7 +455,12 @@ export const byDate = (src: SubDeptMargin[], dateStr: string) =>
   src.filter((m) => m.sale_date.split("T")[0] === dateStr);
 
 /** Worst-first order of the margin tiers. */
-export const SEV_RANK: Record<MarginTier, number> = { critical: 0, watch: 1, healthy: 2, ungraded: 3 };
+export const SEV_RANK: Record<MarginTier, number> = {
+  critical: 0,
+  watch: 1,
+  healthy: 2,
+  ungraded: 3,
+};
 
 /** The list's Margin / Sales toggle. */
 export const TOGGLE_OPTS: { key: GradingMetric; label: string }[] = [
@@ -600,11 +594,12 @@ export const inRange = (rows: SubDeptMargin[], start: string, end: string) =>
 
 /** Item rows keyed by the department each row says it belongs to. */
 export const groupBySubDept = (rows: SubDeptMargin[]) => {
-  const by = new Map<number, SubDeptMargin[]>();
+  const by = new Map<string, SubDeptMargin[]>();
   for (const row of rows) {
-    const found = by.get(row.sub_department);
+    const key = subDeptKey(row);
+    const found = by.get(key);
     if (found) found.push(row);
-    else by.set(row.sub_department, [row]);
+    else by.set(key, [row]);
   }
   return by;
 };
@@ -677,36 +672,47 @@ export const computeTotalsGrade = (
   };
 };
 
-/** Rollup rows keyed by department. The key is the department number as
- *  text, "0" for none, which is the number the item rows carry. */
+/** The `subDeptKey` of a rollup row: its number ("0" for none) and name. */
+export const rollupDeptKey = (row: RollupRow) =>
+  subDeptKey({
+    sub_department: Number(row.key),
+    sub_department_description: row.name,
+  });
+
+/** Rollup rows keyed by department. The rollup groups by number only and
+ *  names the row after one of them, so an ACE store's department-0 lines
+ *  arrive as one row until the item rows split them. */
 export const groupTotalsBySubDept = (rows: RollupRow[]) => {
-  const by = new Map<number, RollupRow[]>();
+  const by = new Map<string, RollupRow[]>();
   for (const row of rows) {
-    const id = Number(row.key);
-    const found = by.get(id);
+    const key = rollupDeptKey(row);
+    const found = by.get(key);
     if (found) found.push(row);
-    else by.set(id, [row]);
+    else by.set(key, [row]);
   }
   return by;
 };
 
-// No sub_department !== 0 filter — Sales doesn't exclude it (aggSubDepts takes
-// every row), so dropping it here made this page show one fewer sub department
-// and a lower total than Sales.
+// No sub_department !== 0 filter — Sales keeps department 0, so dropping it
+// here made this page show one fewer sub department and a lower total than
+// Sales.
 export const deriveSubDepts = (
   rows: { sub_department: number; sub_department_description: string }[],
-): SubDept[] =>
-  rows
-    .reduce((acc: SubDept[], curr) => {
-      if (!acc.some((s) => s.id === curr.sub_department)) {
-        acc.push({
-          id: curr.sub_department,
-          desc: curr.sub_department_description,
-        });
-      }
-      return acc;
-    }, [])
-    .sort((a, b) => a.id - b.id);
+): SubDeptEntry[] => {
+  const byKey = new Map<string, SubDeptEntry>();
+  for (const r of rows) {
+    const key = subDeptKey(r);
+    if (!byKey.has(key))
+      byKey.set(key, {
+        id: r.sub_department,
+        key,
+        desc: r.sub_department_description,
+      });
+  }
+  return [...byKey.values()].sort(
+    (a, b) => a.id - b.id || a.desc.localeCompare(b.desc),
+  );
+};
 
 /** A sub department's grade from TY, LY and LW margins and the coverage. */
 export const computeSubDeptGrade = (

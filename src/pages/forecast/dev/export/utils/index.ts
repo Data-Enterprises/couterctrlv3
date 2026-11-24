@@ -56,15 +56,14 @@ export const NOT_FOUND_HEADERS = [
 /** How many rows the Custom preview shows. */
 export const PREVIEW_ROWS = 8;
 
-/** The export modal's checkbox, radio, section label and download button classes. */
+/** The export modal's checkbox, radio and section label classes. */
 export const CHECKBOX =
   "mt-0.5 h-3.5 w-3.5 rounded border-line_strong accent-brand_navy cursor-pointer flex-shrink-0 disabled:cursor-not-allowed";
-export const CUSTOM_CHECKBOX = "accent-brand_navy h-3.5 w-3.5 rounded flex-shrink-0";
+export const CUSTOM_CHECKBOX =
+  "accent-brand_navy h-3.5 w-3.5 rounded flex-shrink-0";
 export const CUSTOM_RADIO = "accent-brand_navy h-3.5 w-3.5";
 export const SECTION_LABEL =
   "text-[10px] font-semibold uppercase tracking-wide text-content mb-2";
-export const DOWNLOAD_BTN =
-  "flex items-center gap-1.5 bg-brand_navy hover:bg-brand_navy_hover disabled:opacity-40 text-custom-white text-[12px] font-medium px-3 py-1.5 rounded-md transition-colors";
 
 /** One ranked row's text for one export column. */
 export const cell = (row: RankedRow, key: ColKey) => {

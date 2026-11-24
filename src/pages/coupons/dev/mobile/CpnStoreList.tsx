@@ -17,9 +17,9 @@ import type { CouponItem } from "../../../../interfaces";
 import PerfCardHeader from "../../../../components-dev/mobile/perf/PerfCardHeader";
 import InfoModal from "../../../../components-dev/InfoModal";
 import CpnExportSheet from "./CpnExportSheet";
-import CpnListControls from "./CpnListControls";
-import CpnSectionRow from "./CpnSectionRow";
-import CpnTotalsCard from "./CpnTotalsCard";
+import CpnListControls from "./components/CpnListControls";
+import CpnSectionRow from "./components/CpnSectionRow";
+import CpnTotalsCard from "./components/CpnTotalsCard";
 
 interface CpnStoreListProps {
   coupons: CouponItem[];
@@ -46,7 +46,8 @@ const CpnStoreList = ({
   const [exportOpen, setExportOpen] = useState(false);
   // Store names come from assignedStores, never the coupon payload; groupStores
   // covers searched-group stores this user isn't assigned to.
-  const { assignedStores, selectedGroupStores: groupStores } = useCouponContext();
+  const { assignedStores, selectedGroupStores: groupStores } =
+    useCouponContext();
   const [infoOpen, setInfoOpen] = useState(false);
   // Still needed for the All-stores row; the card derives its own.
   const totalAmount = sumCouponAmount(coupons);

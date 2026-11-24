@@ -100,9 +100,9 @@ const TicketRow = ({
           {storesOf(ticket).length > 0 && (
             <span
               title={storesOf(ticket)
-                .map((st) => `#${st.store_number} ${st.store_name}`)
+                .map((st) => st.store_name)
                 .join(", ")}
-              className="rounded bg-bkg px-1.5 py-[1px] font-mono text-[10px] text-content/95"
+              className="rounded bg-bkg px-1.5 py-[1px] text-[10px] text-content/95"
             >
               {storeChipText(storesOf(ticket))}
             </span>

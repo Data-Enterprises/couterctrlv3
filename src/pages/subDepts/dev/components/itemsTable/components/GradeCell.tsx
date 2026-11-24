@@ -10,7 +10,12 @@ interface GradeCellProps {
 }
 
 /** A change, coloured by its grade unless the period is missing days. */
-const GradeCell = ({ pct, threshold, isPts, partial = false }: GradeCellProps) => {
+const GradeCell = ({
+  pct,
+  threshold,
+  isPts,
+  partial = false,
+}: GradeCellProps) => {
   if (pct === null)
     return <span className="text-[13px] font-semibold text-content/95">—</span>;
   return (

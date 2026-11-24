@@ -9,6 +9,8 @@ import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 
 // Interfaces
 import type { CouponItem, ThresholdValue, TransactionListItem } from "../../interfaces";
+import type { SEARCH_TYPE } from "../searchSlice";
+import type { Group } from "../groupSlice";
 
 /** The detail grid's applied column filters. */
 export interface CouponGridFilters {
@@ -19,6 +21,39 @@ export interface CouponGridFilters {
 }
 
 const noGridFilters: CouponGridFilters = { upc: "", product: "", subDept: "", amount: null };
+
+/** The search the loaded coupons answer, kept with them so the labels name
+ *  it rather than whatever the shared picker has moved to since. */
+export interface CouponSearchedScope {
+  type: SEARCH_TYPE;
+  startDate: string;
+  endDate: string;
+  lastStore: number;
+  lastGroup: number;
+  selectedGroup: Group;
+}
+
+/** What the coupon lists sort by, desktop and phone alike. */
+export type CouponSortMetric = "amount" | "qty";
+
+/** Where the phone is: its screen, the store picked (null is every store in a
+ *  group), the grouping tab and the section open. */
+export interface CouponMobilePlace {
+  screen: "entry" | "stores" | "overview" | "detail";
+  storeId: number | null;
+  /** Co-located stores share a storeid; the number picks the location. */
+  storeNumber: string | null;
+  tab: "subdept" | "date" | "cashier";
+  section: { key: string; label: string } | null;
+}
+
+const mobileStart: CouponMobilePlace = {
+  screen: "entry",
+  storeId: null,
+  storeNumber: null,
+  tab: "subdept",
+  section: null,
+};
 
 export type FilterType =
   | "Store"
@@ -61,6 +96,12 @@ interface CouponState {
   receiptLines: TransactionListItem[];
   /** Kept when the page is left; a new search clears them. */
   gridFilters: CouponGridFilters;
+  /** The desktop list's picked store, `storeid__store_number`; "" is all. */
+  selectedKey: string;
+  sortMetric: CouponSortMetric;
+  mobile: CouponMobilePlace;
+  /** Null until the first search. */
+  searched: CouponSearchedScope | null;
 }
 
 const initialState: CouponState = {
@@ -86,6 +127,10 @@ const initialState: CouponState = {
   showSubsMobileFilter: false,
   receiptLines: [],
   gridFilters: noGridFilters,
+  selectedKey: "",
+  sortMetric: "amount",
+  mobile: mobileStart,
+  searched: null,
 };
 
 const couponSlice = createSlice({
@@ -275,6 +320,24 @@ const couponSlice = createSlice({
     setShowSubsMobileFilter: (state, action: PayloadAction<boolean>) => {
       state.showSubsMobileFilter = action.payload;
     },
+    setCouponSelectedKey: (state, action: PayloadAction<string>) => {
+      state.selectedKey = action.payload;
+    },
+    setCouponSortMetric: (state, action: PayloadAction<CouponSortMetric>) => {
+      state.sortMetric = action.payload;
+    },
+    setCouponMobilePlace: (
+      state,
+      action: PayloadAction<Partial<CouponMobilePlace>>,
+    ) => {
+      state.mobile = { ...state.mobile, ...action.payload };
+    },
+    resetCouponMobilePlace: (state) => {
+      state.mobile = mobileStart;
+    },
+    setCouponSearched: (state, action: PayloadAction<CouponSearchedScope>) => {
+      state.searched = action.payload;
+    },
     resetCouponsSlice: () => initialState,
   },
 });
@@ -293,6 +356,11 @@ export const {
   setThresh,
   setNoCouponsFound,
   resetCouponsSlice,
+  setCouponSelectedKey,
+  setCouponSortMetric,
+  setCouponMobilePlace,
+  resetCouponMobilePlace,
+  setCouponSearched,
   setCouponMobileStage,
   setUniqueCpnDates,
   setUniqueSubDepts,

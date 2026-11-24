@@ -50,14 +50,20 @@ interface RecapShapeCardProps {
  * No fixed height of its own: it fills its grid row and keeps a floor, so it
  * is never squeezed below its contents.
  */
-const RecapShapeCard = ({ day, period, narrow, short }: RecapShapeCardProps) => {
+const RecapShapeCard = ({
+  day,
+  period,
+  narrow,
+  short,
+}: RecapShapeCardProps) => {
   const shape = day.hours;
   const top = shape.peak?.net ?? 0;
   const ticks = niceTicks(top);
   const axisTop = ticks[ticks.length - 1] || 1;
   const dayNet = shape.hours.reduce((t, h) => t + h.net, 0);
   const salesPerHour = perTradingHour(day.net, day);
-  const basketsPerHour = day.transactions > 0 ? perTradingHour(day.transactions, day) : null;
+  const basketsPerHour =
+    day.transactions > 0 ? perTradingHour(day.transactions, day) : null;
   const { tip, track, clear } = useCursorTip<number>();
   const tipHour = tip ? shape.hours.find((h) => h.hour === tip.key) : undefined;
   const at = (v: number) => `calc((100% - ${HEADROOM_PX}px) * ${v / axisTop})`;
@@ -75,7 +81,12 @@ const RecapShapeCard = ({ day, period, narrow, short }: RecapShapeCardProps) => 
       shape.slowest ? money0(shape.slowest.net) : "",
       false,
     ),
-    fact("Sales per hour", salesPerHour === null ? "—" : money(salesPerHour), "", false),
+    fact(
+      "Sales per hour",
+      salesPerHour === null ? "—" : money(salesPerHour),
+      "",
+      false,
+    ),
     fact(
       "Baskets per hour",
       basketsPerHour === null ? "—" : one(basketsPerHour),
@@ -96,7 +107,9 @@ const RecapShapeCard = ({ day, period, narrow, short }: RecapShapeCardProps) => 
             : `flex-none w-[250px] my-3.5 px-[18px] border-r-2 border-brand_navy/85 flex flex-col`
         }
       >
-        <h4 className="mb-0.5 text-[14px] font-semibold text-content">Hourly</h4>
+        <h4 className="mb-0.5 text-[14px] font-semibold text-content">
+          Hourly
+        </h4>
         <div
           className={
             narrow
@@ -108,9 +121,13 @@ const RecapShapeCard = ({ day, period, narrow, short }: RecapShapeCardProps) => 
         </div>
       </aside>
 
-      <div className={`flex-1 min-w-0 flex flex-col pl-2.5 pr-[18px] ${short ? "py-2.5" : "pt-3.5 pb-3"}`}>
+      <div
+        className={`flex-1 min-w-0 flex flex-col pl-2.5 pr-[18px] ${short ? "py-2.5" : "pt-3.5 pb-3"}`}
+      >
         {shape.hours.length === 0 ? (
-          <div className="pl-2 text-[13px] text-content">No hourly sales {period}.</div>
+          <div className="pl-2 text-[13px] text-content">
+            No hourly sales {period}.
+          </div>
         ) : (
           <>
             <div
@@ -195,7 +212,9 @@ const RecapShapeCard = ({ day, period, narrow, short }: RecapShapeCardProps) => 
           </>
         )}
       </div>
-      {tip && tipHour && <RecapHourTip hour={tipHour} dayNet={dayNet} x={tip.x} y={tip.y} />}
+      {tip && tipHour && (
+        <RecapHourTip hour={tipHour} dayNet={dayNet} x={tip.x} y={tip.y} />
+      )}
     </section>
   );
 };

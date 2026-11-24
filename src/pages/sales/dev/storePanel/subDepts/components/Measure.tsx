@@ -16,7 +16,15 @@ interface MeasureProps {
  * shorter one is this store, the longer one is the other, and the line
  * underneath says by how much in the only terms anybody repeats out loud.
  */
-const Measure = ({ title, mine, theirs, us, them, fmt, better }: MeasureProps) => {
+const Measure = ({
+  title,
+  mine,
+  theirs,
+  us,
+  them,
+  fmt,
+  better,
+}: MeasureProps) => {
   const widest = Math.max(Math.abs(mine), Math.abs(theirs), 1);
   const pct =
     theirs === 0 ? null : Math.round(Math.abs(mine / theirs - 1) * 100);

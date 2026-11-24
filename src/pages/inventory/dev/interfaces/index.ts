@@ -12,9 +12,11 @@ export interface InventoryScope {
 
 export interface SubDeptSummary {
   id: number;
+  /** `subDeptKey`: number and name, the department's identity. */
+  key: string;
   description: string;
   sales: number;
-  /** Items can't be counted until the department is opened (`subs/sub_sales`
+  /** Items can't be counted until the department is opened (`subs/daily`
    *  aggregates above the item line); null means not loaded, shown as nothing. */
   itemCount: number | null;
 }

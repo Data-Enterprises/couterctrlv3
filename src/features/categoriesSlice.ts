@@ -1,6 +1,16 @@
+
+// Utils
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
-import type { CategoryMetric, CategoryRow, CategoryTier } from "../interfaces";
-import type { CatItem, CatSalesDaily, CatSalesHourly } from "../interfaces";
+
+// Interfaces
+import type {
+  CategoryMetric,
+  CategoryRow,
+  CategoryTier,
+  CatItem,
+  CatSalesDaily,
+  CatSalesHourly,
+} from "../interfaces";
 
 /** Categories (Performance).
  *

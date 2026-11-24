@@ -1,6 +1,6 @@
 // Hooks
 import { useEffect, useRef, useState } from "react";
-import { useAppDispatch, useAppSelector } from "../../../hooks";
+import { useAppDispatch } from "../../../hooks";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import { useUpcDevCtx } from "./hooks/useUpcDevCtx";
 
@@ -20,6 +20,7 @@ import { getStoresAssignedToUserGroup } from "../../../api/groups";
 // Utils
 import { upcQueue } from "./upcQueue";
 import { buildScopeKey, sameStores } from "./utils";
+import { NONE_ASSIGNED, onlyAssigned } from "../../../utils/assignedStores";
 
 // Components
 import SearchPopup from "../../../components-dev/SearchPopup";
@@ -34,7 +35,7 @@ const UpcList = () => {
   const ctx = useUpcDevCtx();
   const dispatch = useAppDispatch();
   const toast = useToast();
-  const searchState = useAppSelector((s) => s.search);
+  const searchState = ctx.liveSearch;
   const [reSearchOpen, setReSearchOpen] = useState(false);
   /**
    * Which search is the newest. Each search takes a number; one whose group
@@ -71,12 +72,21 @@ const UpcList = () => {
           searchState.selectedGroup.userid,
           searchState.selectedGroup.id,
         );
-        const stores = (res.data?.stores ?? []).filter((s: { active: number }) => s.active === 1);
-        if (!stores.length) {
+        const active: { storeid: number }[] = (res.data?.stores ?? []).filter(
+          (s: { active: number }) => s.active === 1,
+        );
+        if (!active.length) {
           toast.warn("No active stores in this group");
           return null;
         }
-        return stores.map((s: { storeid: number }) => s.storeid).join(",");
+        // Read with the group owner's id, so a shared group can list stores
+        // this user isn't assigned; sending one fails the whole request.
+        const stores = onlyAssigned(active, ctx.assignedStores);
+        if (!stores.length) {
+          toast.warn(NONE_ASSIGNED);
+          return null;
+        }
+        return stores.map((s) => s.storeid).join(",");
       } catch {
         toast.error("Failed to load group stores");
         return null;
@@ -106,7 +116,12 @@ const UpcList = () => {
     // A search that only removed UPCs is a subset of what's loaded, so it is
     // answered by pruning rows (keyed on product_code) instead of re-fetching.
     // Only when the store/group and dates are the same and nothing was added.
-    if (ctx.dataLoaded && scopeKey === ctx.searchedScopeKey && removed.length && !added.length) {
+    if (
+      ctx.dataLoaded &&
+      scopeKey === ctx.searchedScopeKey &&
+      removed.length &&
+      !added.length
+    ) {
       // Anything still loading is fetching the old UPC set and would put the
       // removed UPC back; aborting leaves it unloaded, and removeDevUpcs's
       // version bump re-asks for the reduced set on the next visit.
@@ -147,7 +162,9 @@ const UpcList = () => {
     // A group can hold different stores than last time, so the stores just
     // looked up are compared too, not only the group in the scope key.
     const incremental =
-      ctx.dataLoaded && scopeKey === ctx.searchedScopeKey && sameStores(storeids, ctx.storeids);
+      ctx.dataLoaded &&
+      scopeKey === ctx.searchedScopeKey &&
+      sameStores(storeids, ctx.storeids);
     if (incremental) {
       if (removed.length) dispatch(removeDevUpcs(removed));
     } else {

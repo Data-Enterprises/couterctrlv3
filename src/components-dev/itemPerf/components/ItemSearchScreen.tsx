@@ -1,6 +1,6 @@
 // Hooks
-import { useAppDispatch, useAppSelector } from "../../../hooks";
-import { useCarriedScroll, useItemPerfCtx } from "../hooks";
+import { useAppDispatch } from "../../../hooks";
+import { useCarriedScroll, useItemPerfCtx, useItemPerfState } from "../hooks";
 import { useScanGun } from "../../scanner/useScanGun";
 
 // Redux
@@ -15,7 +15,7 @@ import {
 } from "../../../features/dev/devItemPerfSlice";
 
 // Utils
-import { RECENTS_INLINE } from "../utils";
+import { RECENTS_INLINE, SEARCH_RESULT_TAG } from "../utils";
 import { TY_COLOR } from "../../mobile/perf/perfColors";
 
 // Components
@@ -34,7 +34,7 @@ import ItemPerfInfoSheet from "./ItemPerfInfoSheet";
  *  you type, then matches. */
 const ItemSearchScreen = () => {
   const dispatch = useAppDispatch();
-  const perf = useAppSelector((s) => s.dev.itemPerf);
+  const { perf } = useItemPerfState();
   const { storeName, windowLabel, query, recents, rows } = useItemPerfCtx();
   // A scan gun trigger pull does what a camera read does: the code becomes
   // the query and the camera closes.
@@ -133,7 +133,11 @@ const ItemSearchScreen = () => {
         </div>
       </header>
 
-      <div ref={scroller} onScroll={onScroll} className="flex-1 overflow-y-auto pb-14">
+      <div
+        ref={scroller}
+        onScroll={onScroll}
+        className="flex-1 overflow-y-auto pb-14"
+      >
         <div className="flex flex-col gap-3 p-3">
           {perf.scannerOpen && (
             <section className="cc-card-phone p-3">
@@ -150,8 +154,8 @@ const ItemSearchScreen = () => {
                 Recent items
               </div>
               {recents.slice(0, RECENTS_INLINE).map((r) => (
-                  <RecentRow key={r.key} row={r} />
-                ))}
+                <RecentRow key={r.key} row={r} />
+              ))}
               {recents.length > RECENTS_INLINE && (
                 <button
                   type="button"
@@ -171,16 +175,16 @@ const ItemSearchScreen = () => {
                 Search the whole store
               </p>
               <p className="mt-1 text-[12px] text-content/95">
-                Type a name or UPC, or scan a barcode. Results carry the
-                department they came from.
+                Type a name or UPC, or scan a barcode. Each result shows its UPC
+                and {SEARCH_RESULT_TAG[perf.active]}.
               </p>
             </section>
           ) : (
             <section className="cc-card-phone">
-                <MarginRowList
-                  onRow={(r) => dispatch(selectPerfItem(r.key))}
-                  emptyText={`Nothing matches "${query}".`}
-                />
+              <MarginRowList
+                onRow={(r) => dispatch(selectPerfItem(r.key))}
+                emptyText={`Nothing matches "${query}".`}
+              />
             </section>
           )}
         </div>
@@ -192,8 +196,8 @@ const ItemSearchScreen = () => {
             Recent items
           </div>
           {recents.map((r) => (
-              <RecentRow key={r.key} row={r} />
-            ))}
+            <RecentRow key={r.key} row={r} />
+          ))}
         </BottomSheet>
       )}
       <ItemPerfInfoSheet />

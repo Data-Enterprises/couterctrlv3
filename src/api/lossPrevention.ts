@@ -101,12 +101,9 @@ export const getCashierTable = async (
    * `"product"` is one row per basket per product description — the shape every
    * existing caller receives, and the default so none of them change.
    *
-   * `"cashier"` is the per-cashier-per-week rollup LP Actions builds in the
-   * browser, built in SQL instead: same baskets, same filters, about three
-   * orders of magnitude fewer rows. It is a mode on this endpoint rather than a
-   * separate route so a rollup cannot drift from the rows it summarises — and a
-   * drifting rollup surfaces as wrong GRADES, which is worse and less visible
-   * than missing rows.
+   * `"cashier"` was planned as a per-cashier-per-week rollup built in SQL.
+   * Neither the dev nor the refactored backend has it: the field is ignored
+   * and the rows come back per product, so no caller passes it.
    */
   groupBy: "product" | "cashier" = "product",
 ) => {

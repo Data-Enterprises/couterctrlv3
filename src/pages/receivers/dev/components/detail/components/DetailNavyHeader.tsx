@@ -38,9 +38,7 @@ const DetailNavyHeader = ({ setExportOpen }: DetailNavyHeaderProps) => {
             </div>
           </>
         ) : (
-          <div className="text-[13px] cc-navy-title">
-            Receiver Detail
-          </div>
+          <div className="text-[13px] cc-navy-title">Receiver Detail</div>
         )}
       </div>
       {hasDetails && (

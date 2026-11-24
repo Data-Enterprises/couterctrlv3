@@ -1,85 +1,36 @@
 // Hooks
 import { useState } from "react";
-import { useAppDispatch, useAppSelector } from "../../../hooks";
-import { useToast } from "../../../components/toasts/hooks/useToast";
-import { useCouponContext } from "./hooks";
+import { useCouponContext, useCouponSearch } from "./hooks";
 
 // Redux
-import { setSelectedGroupStores } from "../../../features/userSlice";
 import {
-  setIsFetching,
-  setNoCouponsFound,
-  setCoupons,
+  setCouponSelectedKey,
+  setCouponSortMetric,
 } from "../../../features/dev/devCouponSlice";
-import { isGroupSearch } from "../../../features/searchSlice";
-
-// API
-import { getCoupons } from "../../../api/coupons";
-import { getStoresAssignedToUserGroup } from "../../../api/groups";
-
-// Utils
-import { formatGoliathDate } from "../../../utils";
-
-// Interfaces
-import type { CouponsResponse, JsonError } from "../../../interfaces";
 
 // Components
 import SearchCard from "../../../components-dev/SearchCard";
 import LoadingIndicator from "../../../components-dev/loading/LoadingIndicator";
 import SearchPopup from "../../../components-dev/SearchPopup";
 import CouponsMobile from "./mobile/CouponsMobile";
-import CouponListPanel from "./components/CouponListPanel";
-import CouponDetailPanel from "./components/detailPanel/CouponDetailPanel";
+import CouponListPanel from "./listPanel/CouponListPanel";
+import CouponDetailPanel from "./detailPanel/CouponDetailPanel";
 
 /** The Coupons page: a search card to load coupon activity for a store or group and date range, then a store list
  *  beside the detail panel. Phones get the mobile screens instead. */
 const Coupons = () => {
-  const toast = useToast();
-  const dispatch = useAppDispatch();
   const context = useCouponContext();
-  const { url, token } = useAppSelector((s) => s.app);
-  const { userid } = useAppSelector((s) => s.user);
-  const [selectedKey, setSelectedKey] = useState("");
-  const [sortMetric, setSortMetric] = useState<"amount" | "qty">("amount");
-  const [searchModalOpen, setSearchModalOpen] = useState(false);
+  const [searchModalOpen, setSearchModalOpen] = useState<boolean>(false);
+  const { runSearch } = useCouponSearch(context);
+
+  // The picked store and the sort live in the slice, so coming back to the
+  // page lands where it was left; a new search starts from all stores.
+  const setSelectedKey = (key: string) =>
+    context.dispatch(setCouponSelectedKey(key));
 
   const getData = () => {
     setSelectedKey("");
-    dispatch(setCoupons([]));
-    if (isGroupSearch(context.type)) {
-      getStoresAssignedToUserGroup(url, token, userid, context.lastGroup)
-        .then((resp) => {
-          if (resp.data.error === 0) {
-            dispatch(setSelectedGroupStores(resp.data.stores.filter((s: any) => s.active)));
-          } else {
-            toast.warn(resp.data.msg);
-          }
-        })
-        .catch(() => {});
-    }
-    dispatch(setIsFetching(true));
-    // Cleared on every search: leaving it set means a later failure shows
-    // this notice describing the *previous* search alongside the error toast.
-    dispatch(setNoCouponsFound(false));
-    const useGroups = isGroupSearch(context.type) ? 1 : 0;
-    const singleStore = context.type === "Store" ? 1 : 0;
-    const searchValue = isGroupSearch(context.type) ? context.lastGroup : context.lastStore;
-    const start = formatGoliathDate(context.startDate);
-    const end = formatGoliathDate(context.endDate);
-
-    getCoupons(context.url, context.token, start, end, useGroups, singleStore, searchValue)
-      .then((resp) => {
-        const j: CouponsResponse = resp.data;
-        if (j.error !== 0) {
-          toast.warn(j.msg ?? "Failed to load coupons");
-        } else if (j.records.length > 0) {
-          dispatch(setCoupons(j.records));
-        } else {
-          dispatch(setNoCouponsFound(true));
-        }
-      })
-      .catch((err: JsonError) => toast.error(err.message))
-      .finally(() => dispatch(setIsFetching(false)));
+    runSearch();
   };
 
   // This page only ever rendered with devMode on, so phones already got the
@@ -125,20 +76,26 @@ const Coupons = () => {
             title="Coupons"
             description="Select a store or group and date range to load coupon activity."
             buttonLabel="Load Coupons"
-            onSearch={() => { setSearchModalOpen(false); getData(); }}
+            onSearch={() => {
+              setSearchModalOpen(false);
+              getData();
+            }}
             loading={context.isFetching}
             loadingMessage="Finding coupons..."
           />
         </SearchPopup>
       )}
       <CouponListPanel
-        selectedKey={selectedKey}
+        selectedKey={context.selectedKey}
         onSelect={setSelectedKey}
-        sortMetric={sortMetric}
-        onSortMetric={setSortMetric}
+        sortMetric={context.sortMetric}
+        onSortMetric={(m) => context.dispatch(setCouponSortMetric(m))}
         onOpenSearch={() => setSearchModalOpen(true)}
       />
-      <CouponDetailPanel selectedKey={selectedKey} sortMetric={sortMetric} />
+      <CouponDetailPanel
+        selectedKey={context.selectedKey}
+        sortMetric={context.sortMetric}
+      />
     </div>
   );
 };

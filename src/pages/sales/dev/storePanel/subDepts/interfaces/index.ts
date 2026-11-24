@@ -4,7 +4,11 @@ import type { Severity, SevFilter } from "../../../../../../utils/severity";
 
 /** One sub department in the left list: this week, last week, last year. */
 export type DeptRow = {
+  /** The number, which the item lookup sends to `subs/subs`. */
   id: number;
+  /** `subDeptKey`: number and name. A row's identity, since ACE stores file
+   *  several departments under one number. */
+  key: string;
   desc: string;
   tw: number;
   lw: number;

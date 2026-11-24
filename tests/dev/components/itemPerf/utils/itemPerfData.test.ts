@@ -187,7 +187,7 @@ describe("buildItemRows", () => {
   ];
 
   it("lists only the items inside a drilled group", () => {
-    expect(buildItemRows(rows, [], "subdept", null, "1", "")).toHaveLength(1);
+    expect(buildItemRows(rows, [], "subdept", null, "1|Grocery", "")).toHaveLength(1);
     expect(buildItemRows(rows, [], "vendor", null, "91", "")).toHaveLength(1);
   });
 

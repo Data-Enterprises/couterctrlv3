@@ -6,7 +6,10 @@ import { searchReceiversByItem } from "../../../../../api/receivers";
 // Utils
 import { fetchAllPages } from "../../../../../utils/paging";
 import { shiftIso } from "../../../../../utils/grading";
-import { scopeToStoreNumber, scopeRowsToStore } from "../../../../../utils/storeIdentity";
+import {
+  scopeToStoreNumber,
+  scopeRowsToStore,
+} from "../../../../../utils/storeIdentity";
 
 // Interfaces
 import type {
@@ -119,13 +122,18 @@ export interface Scope {
 export const scopeKey = (s: Scope) =>
   [
     s.url,
-    s.mine.storeid, s.mine.storeNumber,
-    s.theirs.storeid, s.theirs.storeNumber,
+    s.mine.storeid,
+    s.mine.storeNumber,
+    s.theirs.storeid,
+    s.theirs.storeNumber,
     s.mine.subDept,
     s.theirs.subDept,
-    s.tw.start, s.tw.end,
-    s.lw.start, s.lw.end,
-    s.ly.start, s.ly.end,
+    s.tw.start,
+    s.tw.end,
+    s.lw.start,
+    s.lw.end,
+    s.ly.start,
+    s.ly.end,
   ].join("|");
 
 /** The supply window, derived from the sales week's end. */
@@ -179,11 +187,15 @@ const fetchPeriod = async (
   // store that sold nothing in that department, not a failure.
   if (body.error !== 0) return { rows: [], pricePoints: [] };
 
-  const rows = await fetchAllPages(body, [...(body.subs ?? [])], async (page) => {
-    const b: SubMarginsPricePointsResp = (await ask(page)).data;
-    if (b.error !== 0) throw new Error(b.msg ?? `page ${page} failed`);
-    return b.subs ?? [];
-  });
+  const rows = await fetchAllPages(
+    body,
+    [...(body.subs ?? [])],
+    async (page) => {
+      const b: SubMarginsPricePointsResp = (await ask(page)).data;
+      if (b.error !== 0) throw new Error(b.msg ?? `page ${page} failed`);
+      return b.subs ?? [];
+    },
+  );
 
   return {
     rows: scopeToStoreNumber(rows, store.storeNumber),
@@ -469,8 +481,12 @@ export const codesIn = (sales: SalesWave): string[] =>
   [
     ...new Set(
       [
-        sales.mineTw, sales.mineLw, sales.mineLy,
-        sales.theirsTw, sales.theirsLw, sales.theirsLy,
+        sales.mineTw,
+        sales.mineLw,
+        sales.mineLy,
+        sales.theirsTw,
+        sales.theirsLw,
+        sales.theirsLy,
       ]
         .flat()
         .map((r) => String(r.product_code ?? "").trim()),

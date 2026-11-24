@@ -1,22 +1,16 @@
 // Hooks
 import { useEffect, useMemo, useState } from "react";
 import { useSalesCtx, useSalesState } from "../../../hooks";
-
-// API
-import { getHourly } from "../../../../../../api/sales";
+import { useCounterpartHours } from "../hooks";
 
 // Utils
-import { shiftIso } from "../../../../../../utils/grading";
-import { formatCurrency2, formatBigNumber, sameWeekDayLastYear } from "../../../../../../utils";
-import { scopeToStoreNumber } from "../../../utils/ledgerUtils";
-import { byHour, day, hourLabel, MINUS } from "../utils";
-
-// Interfaces
-import type { HourlySale } from "../../../../../../interfaces";
-import type { Row } from "../interfaces";
+import { metricFormat } from "../../../utils";
+import { compareHourRows, hourBars, hourLabel, HOUR_COLS } from "../utils";
 
 // Components
 import LoadingIndicator from "../../../../../../components-dev/loading/LoadingIndicator";
+import CompareHourRow from "./CompareHourRow";
+import HourStat from "./HourStat";
 
 interface HourlySideBySideProps {
   openStoreName: string;
@@ -75,152 +69,62 @@ const HourlySideBySide = ({
   lyWeekDates,
   onBack,
 }: HourlySideBySideProps) => {
-  // A day picked in the strip above narrows both sides to that day.
-  const { selectedDate, gradingMetric, url, token } = useSalesCtx();
+  const { gradingMetric } = useSalesCtx();
   // The open store's three weeks are already here — the panel fetched them
   // for its own Hourly tab, which is why only the counterpart is asked for.
   const { hourlySales, hourlySalesLastWeek, hourlySalesLastYear } =
     useSalesState();
+  const { theirs, failed } = useCounterpartHours({
+    compareStoreId,
+    compareStoreNumber,
+    twStart,
+    twEnd,
+    lwStart,
+    lwEnd,
+    lyStart,
+    lyEnd,
+    lwWeekDates,
+    lyWeekDates,
+  });
 
-  const [theirs, setTheirs] = useState<{
-    tw: HourlySale[];
-    lw: HourlySale[];
-    ly: HourlySale[];
-  } | null>(null);
-  const [failed, setFailed] = useState(false);
   const [mode, setMode] = useState<"money" | "mix">("money");
   const [picked, setPicked] = useState<number | null>(null);
-
-  const isQty = gradingMetric === "qty";
-  const fmt = (v: number) => (isQty ? formatBigNumber(v, 0) : formatCurrency2(v));
-
-  const lwKey = lwWeekDates.join(",");
-  const lyKey = lyWeekDates.join(",");
-
+  // A new counterpart or window starts on the first hour again.
   useEffect(() => {
-    let live = true;
-    setTheirs(null);
-    setFailed(false);
-    setPicked(null);
+    if (theirs === null) setPicked(null);
+  }, [theirs]);
 
-    const ask = (from: string, to: string) =>
-      getHourly(url, token, from, to, 0, compareStoreId, 1);
+  const fmt = metricFormat(gradingMetric === "qty");
 
-    Promise.all([ask(twStart, twEnd), ask(lwStart, lwEnd), ask(lyStart, lyEnd)])
-      .then(([tw, lw, ly]) => {
-        if (!live) return;
-        // The house convention: a 200 carrying `error`, so `error === 0` is
-        // the success test. Scoped by store NUMBER, because co-located stores
-        // share an id.
-        const take = (resp: { data: { error: number; subs: HourlySale[] } }) =>
-          resp.data.error === 0
-            ? scopeToStoreNumber(resp.data.subs ?? [], compareStoreNumber)
-            : [];
+  const rows = useMemo(
+    () =>
+      theirs
+        ? compareHourRows(
+            {
+              tw: hourlySales,
+              lw: hourlySalesLastWeek,
+              ly: hourlySalesLastYear,
+            },
+            theirs,
+            gradingMetric,
+          )
+        : [],
+    [
+      theirs,
+      hourlySales,
+      hourlySalesLastWeek,
+      hourlySalesLastYear,
+      gradingMetric,
+    ],
+  );
 
-        // Narrowed exactly as the open store's were on the way in.
-        const lwSet = new Set(lwWeekDates);
-        const lySet = new Set(lyWeekDates);
-        const lwDay = selectedDate
-          ? shiftIso(selectedDate, -7)
-          : null;
-        const lyDay = selectedDate ? sameWeekDayLastYear(selectedDate).date : null;
-
-        setTheirs({
-          tw: selectedDate
-            ? take(tw).filter((h) => day(h.sale_date) === selectedDate)
-            : take(tw),
-          lw: take(lw).filter((h) =>
-            lwDay ? day(h.sale_date) === lwDay : lwSet.has(day(h.sale_date)),
-          ),
-          ly: take(ly).filter((h) =>
-            lyDay ? day(h.sale_date) === lyDay : lySet.has(day(h.sale_date)),
-          ),
-        });
-      })
-      .catch(() => live && setFailed(true));
-
-    return () => {
-      live = false;
-    };
-  }, [
-    url, token,
-    twStart, twEnd, lwStart, lwEnd, lyStart, lyEnd,
-    compareStoreId, compareStoreNumber,
-    lwKey, lyKey, selectedDate,
-    lwWeekDates, lyWeekDates,
-  ]);
-
-  const rows = useMemo<Row[]>(() => {
-    if (!theirs) return [];
-    const mineTw = byHour(hourlySales, gradingMetric);
-    const mineLw = byHour(hourlySalesLastWeek, gradingMetric);
-    const mineLy = byHour(hourlySalesLastYear, gradingMetric);
-    const theirTw = byHour(theirs.tw, gradingMetric);
-    const theirLw = byHour(theirs.lw, gradingMetric);
-    const theirLy = byHour(theirs.ly, gradingMetric);
-
-    // Every hour either store traded in any period. An hour one of them is
-    // shut for is a finding, not a row to drop.
-    const hours = [
-      ...new Set(
-        [mineTw, mineLw, mineLy, theirTw, theirLw, theirLy]
-          .flatMap((m) => Object.keys(m))
-          .map(Number),
-      ),
-    ].sort((x, y) => x - y);
-
-    return hours.map((h) => {
-      const a = mineTw[h] ?? 0;
-      const b = theirTw[h] ?? 0;
-      return {
-        hour: h,
-        label: hourLabel(h),
-        a,
-        b,
-        tyDiff: a - b,
-        lwDiff: (mineLw[h] ?? 0) - (theirLw[h] ?? 0),
-        lyDiff: (mineLy[h] ?? 0) - (theirLy[h] ?? 0),
-      };
-    });
-  }, [theirs, hourlySales, hourlySalesLastWeek, hourlySalesLastYear, gradingMetric]);
-
-  const mineTotal = rows.reduce((t, r) => t + r.a, 0);
-  const theirsTotal = rows.reduce((t, r) => t + r.b, 0);
-  const shareMine = (r: Row) => (mineTotal > 0 ? (r.a / mineTotal) * 100 : 0);
-  const shareTheirs = (r: Row) => (theirsTotal > 0 ? (r.b / theirsTotal) * 100 : 0);
-
-  const barMax =
-    mode === "money"
-      ? Math.max(1, ...rows.flatMap((r) => [r.a, r.b]))
-      : Math.max(1, ...rows.flatMap((r) => [shareMine(r), shareTheirs(r)]));
-
-  const widthOf = (v: number) => Math.min(100, (v / barMax) * 100) + "%";
-  const gapOf = (r: Row) =>
-    mode === "money" ? r.tyDiff : shareMine(r) - shareTheirs(r);
-  const gapText = (r: Row) => {
-    const g = gapOf(r);
-    const sign = g >= 0 ? "+" : MINUS;
-    return mode === "money"
-      ? sign + fmt(Math.abs(g))
-      : sign + Math.abs(g).toFixed(1) + " pts";
-  };
+  const { shareMine, shareTheirs, widthOf, gapOf, gapText } = hourBars(
+    rows,
+    mode,
+    fmt,
+  );
 
   const focus = rows.find((r) => r.hour === picked) ?? rows[0] ?? null;
-  const COLS = "70px minmax(90px,2fr) 104px";
-
-  const stat = (key: string, v: number) => (
-    <div className="flex items-baseline gap-2 px-3 py-2 bg-custom-white">
-      <span className="text-[11.5px] text-content/95 w-[52px] flex-shrink-0">{key}</span>
-      <span
-        className={`ml-auto tabular-nums text-[13.5px] font-bold ${
-          v >= 0 ? "text-delta_positive_text" : "text-delta_negative_text"
-        }`}
-      >
-        {v >= 0 ? "+" : MINUS}
-        {fmt(Math.abs(v))}
-      </span>
-    </div>
-  );
 
   return (
     <div className="h-full flex flex-col overflow-hidden">
@@ -232,10 +136,11 @@ const HourlySideBySide = ({
           &lsaquo; All stores
         </button>
         <span className="text-[12px] text-content/95 truncate">
-          How <span className="font-semibold text-content">{openStoreName}</span>{" "}
+          How{" "}
+          <span className="font-semibold text-content">{openStoreName}</span>{" "}
           trades against{" "}
-          <span className="font-semibold text-content">{compareStoreName}</span>,
-          hour by hour
+          <span className="font-semibold text-content">{compareStoreName}</span>
+          , hour by hour
         </span>
 
         <span className="ml-auto inline-flex rounded-full border border-brand_line overflow-hidden flex-shrink-0">
@@ -268,72 +173,30 @@ const HourlySideBySide = ({
           <div className="flex-1 min-w-0 flex flex-col border-r border-brand_navy/15">
             <div
               className="flex-shrink-0 grid gap-2.5 items-center px-3 py-1.5 border-b border-brand_navy/15 text-[11px] cc-caps"
-              style={{ gridTemplateColumns: COLS }}
+              style={{ gridTemplateColumns: HOUR_COLS }}
             >
               <span>Hour</span>
               <span>
                 {openStoreNumber} against {compareStoreNumber}
               </span>
-              <span className="text-right">{mode === "money" ? "vs TY" : "Share"}</span>
+              <span className="text-right">
+                {mode === "money" ? "vs TY" : "Share"}
+              </span>
             </div>
 
             <div className="flex-1 min-h-0 overflow-auto thin-scrollbar">
-              {rows.map((r) => {
-                const g = gapOf(r);
-                const on = focus?.hour === r.hour;
-                return (
-                  <button
-                    key={r.hour}
-                    onClick={() => setPicked(r.hour)}
-                    className={`w-full text-left grid gap-2.5 items-center px-3 py-2 border-b transition-colors ${
-                      on
-                        ? "cc-row-selected"
-                        : "border-brand_navy/15 hover:bg-fill_soft"
-                    }`}
-                    style={{ gridTemplateColumns: COLS }}
-                  >
-                    <span className="tabular-nums text-[12.5px] font-medium text-content">
-                      {r.label}
-                    </span>
-
-                    <span className="grid gap-[3px] min-w-0">
-                      <span className="block h-2 rounded-sm bg-bkg">
-                        <span
-                          className="block h-2 rounded-sm bg-store_open"
-                          style={{ width: widthOf(mode === "money" ? r.a : shareMine(r)) }}
-                        />
-                      </span>
-                      {/* An hour they were shut gets a hatched full track, not
-                          a zero-width bar nobody can see. */}
-                      <span className="block h-2 rounded-sm bg-bkg">
-                        <span
-                          className="block h-2 rounded-sm"
-                          style={
-                            r.b === 0
-                              ? {
-                                  width: "100%",
-                                  background:
-                                    "repeating-linear-gradient(45deg, rgb(var(--color-severity-watch-bg)) 0 4px, transparent 4px 8px)",
-                                }
-                              : {
-                                  width: widthOf(mode === "money" ? r.b : shareTheirs(r)),
-                                  background: "rgb(var(--color-store-compare))",
-                                }
-                          }
-                        />
-                      </span>
-                    </span>
-
-                    <span
-                      className={`text-right tabular-nums text-[12px] font-semibold ${
-                        g >= 0 ? "text-delta_positive_text" : "text-delta_negative_text"
-                      }`}
-                    >
-                      {gapText(r)}
-                    </span>
-                  </button>
-                );
-              })}
+              {rows.map((r) => (
+                <CompareHourRow
+                  key={r.hour}
+                  row={r}
+                  on={focus?.hour === r.hour}
+                  mineWidth={widthOf(mode === "money" ? r.a : shareMine(r))}
+                  theirsWidth={widthOf(mode === "money" ? r.b : shareTheirs(r))}
+                  gap={gapOf(r)}
+                  gapText={gapText(r)}
+                  onPick={() => setPicked(r.hour)}
+                />
+              ))}
 
               {rows.length === 0 && (
                 <div className="px-3 py-6 text-center text-[12.5px] text-content/95">
@@ -349,7 +212,8 @@ const HourlySideBySide = ({
                 <div className="text-[15px] font-bold text-content leading-snug">
                   {focus.label}
                   <span className="text-[12px] font-medium text-content/95">
-                    {" "}&ndash; {hourLabel((focus.hour + 1) % 24)}
+                    {" "}
+                    &ndash; {hourLabel((focus.hour + 1) % 24)}
                   </span>
                 </div>
                 {focus.b === 0 && (
@@ -379,9 +243,9 @@ const HourlySideBySide = ({
               </div>
 
               <div className="grid gap-px bg-brand_navy/15 rounded-md overflow-hidden">
-                {stat("vs TY", focus.tyDiff)}
-                {stat("vs LW", focus.lwDiff)}
-                {stat("vs LY", focus.lyDiff)}
+                <HourStat label="vs TY" value={focus.tyDiff} fmt={fmt} />
+                <HourStat label="vs LW" value={focus.lwDiff} fmt={fmt} />
+                <HourStat label="vs LY" value={focus.lyDiff} fmt={fmt} />
               </div>
 
               <p className="text-[11.5px] text-content/95 leading-relaxed">
@@ -401,7 +265,10 @@ const HourlySideBySide = ({
                     {" "}
                     &mdash;{" "}
                     <span className="font-semibold text-content">
-                      {Math.abs(shareMine(focus) - shareTheirs(focus)).toFixed(1)} points
+                      {Math.abs(shareMine(focus) - shareTheirs(focus)).toFixed(
+                        1,
+                      )}{" "}
+                      points
                     </span>{" "}
                     busier at{" "}
                     {shareMine(focus) > shareTheirs(focus)
@@ -416,9 +283,12 @@ const HourlySideBySide = ({
                   a reader hunting for one. An hour does not name a department,
                   and the investigation needs one. */}
               <p className="mt-auto text-[10.5px] text-content/95 leading-snug border-t border-brand_navy/15 pt-2.5">
-                Hours say <span className="font-semibold text-content">when</span>{" "}
-                the two diverge. For <span className="font-semibold text-content">what</span>,
-                use Sub depts &mdash; the item investigation is scoped to a department.
+                Hours say{" "}
+                <span className="font-semibold text-content">when</span> the two
+                diverge. For{" "}
+                <span className="font-semibold text-content">what</span>, use
+                Sub depts &mdash; the item investigation is scoped to a
+                department.
               </p>
             </div>
           )}

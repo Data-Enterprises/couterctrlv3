@@ -1,33 +1,17 @@
 // Hooks
 import { useEffect, useState } from "react";
-import { useAppSelector, useAppDispatch } from "../../../hooks";
-import { useToast } from "../../../components/toasts/hooks/useToast";
+import { useAppDispatch } from "../../../hooks";
+import {
+  useReceiversCtx,
+  useReceiversSearch,
+  useReceiversState,
+} from "./hooks";
 
 // Redux
 import {
-  reQuery,
-  resetReceiverSlice,
-  setIsFetchingList,
-  setListGridData,
-  setNoReceivers,
   setReceiverDetails,
-  setReceiversList,
-  setAvailableStoreNumbers,
-  setSelectedStoreNumber,
   setStoreId,
 } from "../../../features/dev/devReceiversSlice";
-
-// API
-import { getReceiversList } from "../../../api/receivers";
-
-// Utils
-import {
-  scopeToStoreNumber,
-  storeNumbersIn,
-} from "../../../utils/storeIdentity";
-
-// Interfaces
-import type { JsonError, ReceiverListResponse } from "../../../interfaces";
 
 // Components
 import DatePickers from "../../../components-dev/datePickers/DatePickers";
@@ -41,13 +25,10 @@ import ReceiversMobile from "./mobile/ReceiversMobile";
 /** The Receivers page: a store and date search card, then the receiver list beside its detail panel.
  *  Shows a loading state, a no-results card, and the phone view on mobile. */
 const Receivers = () => {
-  const toast = useToast();
   const dispatch = useAppDispatch();
   const [searchModalOpen, setSearchModalOpen] = useState(false);
-  const state = useAppSelector((state) => state.dev.receivers);
-  const { url, token, isMobile } = useAppSelector((state) => state.app);
-  const { assignedStores } = useAppSelector((state) => state.user);
-  const { startDate, endDate } = useAppSelector((state) => state.search);
+  const state = useReceiversState();
+  const { isMobile, assignedStores } = useReceiversCtx();
 
   useEffect(() => {
     if (state.listGridData.length === 0) {
@@ -55,42 +36,7 @@ const Receivers = () => {
     }
   }, [state.listGridData]);
 
-  const getReceivers = () => {
-    if (!state.storeid) {
-      toast.warn("Please select a store");
-      return;
-    }
-    dispatch(reQuery());
-    dispatch(setIsFetchingList(true));
-    // Cleared on every search: leaving it set means a later failure shows
-    // this notice describing the *previous* search alongside the error toast.
-    dispatch(setNoReceivers(false));
-    getReceiversList(url, token, state.storeid, startDate, endDate)
-      .then((resp) => {
-        const j: ReceiverListResponse = resp.data;
-        if (j.error !== 0) {
-          toast.warn(j.msg ?? "Failed to load receivers");
-        } else if (j.recievers.length > 0) {
-          // Fetched by storeid, so a co-located storeid returns both locations
-          // mixed together. Discover them and default to the first, matching
-          // how Sub Dept Margins presents the same situation.
-          const numbers = storeNumbersIn(j.recievers);
-          dispatch(setAvailableStoreNumbers(numbers));
-          const scope = numbers.length > 1 ? numbers[0] : null;
-          dispatch(setSelectedStoreNumber(scope));
-          const rows = scope
-            ? scopeToStoreNumber(j.recievers, scope)
-            : j.recievers;
-          dispatch(setReceiversList(j.recievers));
-          dispatch(setListGridData(rows));
-        } else {
-          toast.warn("No receivers came back for this search.");
-          dispatch(setNoReceivers(true));
-        }
-      })
-      .catch((err: JsonError) => toast.error(err.message))
-      .finally(() => dispatch(setIsFetchingList(false)));
-  };
+  const getReceivers = useReceiversSearch();
 
   const setSelectedStore = (id: number) => {
     dispatch(setStoreId(id));
@@ -118,9 +64,7 @@ const Receivers = () => {
           stores={assignedStores}
           selectedStoreId={state.storeid}
           onStoreSelect={setSelectedStore}
-          onSearch={() => {
-            dispatch(resetReceiverSlice());
-          }}
+          onSearch={getReceivers}
           datePicker={
             <DatePickers showBtn={false} handleQuery={getReceivers} />
           }

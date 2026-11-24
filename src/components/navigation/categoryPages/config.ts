@@ -35,7 +35,8 @@ export const configPages: Navigation[] = [
     mobile: false,
     children: [],
     childOpen: false,
-    userLevels: ["5", "7", "8", "9"],
+    // Admin opens at level 7 in both trees (ADMIN_MIN_LEVEL).
+    userLevels: ["7", "8", "9"],
     isHovering: false,
     isVisible: true,
   },

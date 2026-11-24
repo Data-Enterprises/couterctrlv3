@@ -71,7 +71,7 @@ const InboxFilters = ({
         <MultiSelectFilter
           options={storeOptions.map((s) => ({
             value: String(s.storeid),
-            label: `#${s.store_number} ${s.store_name}`,
+            label: s.store_name,
           }))}
           values={filters.stores}
           onChange={(values) => onFilters({ stores: values })}

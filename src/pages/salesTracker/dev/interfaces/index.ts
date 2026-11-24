@@ -52,7 +52,6 @@ export interface TrackerScope {
   token: string;
   useGroups: number;
   searchValue: number;
-  singleStore: number;
 }
 
 export type DayTotal = {
@@ -97,7 +96,10 @@ export type WeekTotal = {
 };
 
 export type SubDeptTotal = {
+  /** The number; the Sub Dept column sorts on it. */
   id: number;
+  /** `subDeptKey`: number and name, the row's identity. */
+  key: string;
   desc: string;
   weeks: WeekTotal[];
   salesTy: number;

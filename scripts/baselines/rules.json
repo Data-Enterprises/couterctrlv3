@@ -133,21 +133,9 @@
   "src/components-dev/modals/ExportModal.tsx": {
     "any-in-props": 1
   },
-  "src/components/BottomSheet.tsx": {
-    "doc-comment": 1,
-    "labels": 1
-  },
   "src/components/Carousel.tsx": {
     "doc-comment": 1,
     "labels": 1
-  },
-  "src/components/DayCardStrip.tsx": {
-    "doc-comment": 1,
-    "labels": 1,
-    "shape-extra-type": 1
-  },
-  "src/components/EmptyPrompt.tsx": {
-    "doc-comment": 1
   },
   "src/components/ErrorBoundary.tsx": {
     "doc-comment": 1,
@@ -155,67 +143,15 @@
     "shape-extra-type": 1,
     "shape-props-name": 1
   },
-  "src/components/HeaderIconButton.tsx": {
-    "doc-comment": 1,
-    "labels": 1,
-    "shape-props-name": 1
-  },
-  "src/components/InfoButton.tsx": {
-    "doc-comment": 1,
-    "labels": 1,
-    "shape-extra-code": 2
-  },
   "src/components/InfoPopover.tsx": {
     "doc-comment": 1,
     "labels": 1,
     "shape-extra-type": 1
   },
-  "src/components/ItemMarginsTable.tsx": {
-    "doc-comment": 1,
-    "labels": 1,
-    "one-line-per-source": 1,
-    "shape-extra-code": 2,
-    "shape-extra-component": 2,
-    "shape-extra-type": 1,
-    "shape-props-name": 1
-  },
-  "src/components/KpiTileGrid.tsx": {
-    "doc-comment": 1,
-    "shape-extra-type": 1,
-    "shape-props-name": 1
-  },
-  "src/components/Modal.tsx": {
-    "doc-comment": 1,
-    "labels": 1
-  },
-  "src/components/SearchCard.tsx": {
-    "doc-comment": 1,
-    "labels": 1
-  },
-  "src/components/SeverityBadge.tsx": {
-    "doc-comment": 1,
-    "labels": 1,
-    "one-line-per-source": 1
-  },
-  "src/components/SingleStoreSearchCard.tsx": {
-    "doc-comment": 1,
-    "labels": 1
-  },
-  "src/components/SortHeader.tsx": {
-    "labels": 1,
-    "shape-extra-code": 1,
-    "shape-named-export": 1
-  },
   "src/components/TextInput.tsx": {
     "commented-code": 1,
     "doc-comment": 1,
     "labels": 1
-  },
-  "src/components/UpcContextMenu.tsx": {
-    "doc-comment": 1,
-    "labels": 1,
-    "shape-extra-code": 1,
-    "shape-extra-type": 1
   },
   "src/components/UserDataLoader.tsx": {
     "commented-code": 1,
@@ -224,133 +160,15 @@
     "one-line-per-source": 1,
     "shape-extra-code": 1
   },
-  "src/components/datePickers/Calendar.tsx": {
-    "commented-code": 1,
-    "doc-comment": 1,
-    "labels": 1,
-    "shape-props-name": 1
-  },
-  "src/components/datePickers/DatePickers.tsx": {
-    "doc-comment": 1,
-    "labels": 1,
-    "shape-props-name": 1
-  },
-  "src/components/datePickers/EndDatePicker.tsx": {
-    "commented-code": 1,
-    "doc-comment": 1,
-    "labels": 1
-  },
-  "src/components/datePickers/SingleDatePicker.tsx": {
-    "doc-comment": 1,
-    "labels": 1
-  },
-  "src/components/datePickers/StartDatePicker.tsx": {
-    "commented-code": 1,
-    "doc-comment": 1,
-    "labels": 1
-  },
-  "src/components/filters/ColFilter.tsx": {
-    "doc-comment": 1,
-    "labels": 1
-  },
-  "src/components/filters/ColFilterPopover.tsx": {
-    "doc-comment": 1,
-    "labels": 1,
-    "shape-props-name": 1
-  },
-  "src/components/filters/FilterBar.tsx": {
-    "doc-comment": 1,
-    "labels": 1
-  },
-  "src/components/filters/LocationTabs.tsx": {
-    "doc-comment": 1
-  },
-  "src/components/filters/MultiSelectFilter.tsx": {
-    "doc-comment": 1,
-    "labels": 1,
-    "shape-extra-type": 1,
-    "shape-props-name": 1
-  },
-  "src/components/filters/SelectFilter.tsx": {
-    "doc-comment": 1,
-    "labels": 1,
-    "shape-extra-type": 1
-  },
-  "src/components/filters/ThresholdFilter.tsx": {
-    "doc-comment": 1,
-    "labels": 1,
-    "shape-extra-code": 2,
-    "shape-props-name": 1
-  },
-  "src/components/filters/ThresholdSlider.tsx": {
-    "doc-comment": 1,
-    "labels": 1
-  },
-  "src/components/inputs/CheckBox.tsx": {
-    "doc-comment": 1,
-    "labels": 1,
-    "shape-props-name": 1
-  },
-  "src/components/inputs/PasswordInput.tsx": {
-    "doc-comment": 1,
-    "labels": 1,
-    "shape-props-name": 1
-  },
-  "src/components/loading/EntryCardLoading.tsx": {
-    "labels": 1,
-    "shape-props-name": 1
-  },
   "src/components/mobile/MobileInfoSheet.tsx": {
     "labels": 1,
     "shape-props-name": 1
   },
-  "src/components/mobile/MobilePerfCard.tsx": {
-    "labels": 1,
-    "shape-props-name": 1
-  },
-  "src/components/mobile/MobilePerfDetail.tsx": {
-    "labels": 1,
-    "shape-extra-type": 1,
-    "shape-props-name": 1
-  },
-  "src/components/mobile/MobilePerfHeader.tsx": {
-    "doc-comment": 1,
-    "labels": 1,
-    "shape-props-name": 1
-  },
-  "src/components/mobile/MobileSortChips.tsx": {
-    "doc-comment": 1,
-    "shape-extra-type": 1,
-    "shape-props-name": 1
-  },
-  "src/components/mobile/perf/PairedBars.tsx": {
-    "labels": 1,
-    "shape-props-name": 1
-  },
-  "src/components/mobile/perf/PerfCardHeader.tsx": {
-    "labels": 1,
-    "shape-props-name": 1
-  },
-  "src/components/mobile/perf/PerfDayChart.tsx": {
-    "labels": 1,
-    "shape-props-name": 1
-  },
   "src/components/modals/ExportModal.tsx": {
-    "any-in-props": 1,
-    "doc-comment": 1,
-    "labels": 1
-  },
-  "src/components/modals/ResizableModalShell.tsx": {
-    "doc-comment": 1,
-    "labels": 1
+    "any-in-props": 1
   },
   "src/components/navigation/TitleBar.tsx": {
-    "prod-imports-dev": 2
-  },
-  "src/components/scanner/ScannerView.tsx": {
-    "labels": 1,
-    "shape-extra-code": 4,
-    "shape-props-name": 1
+    "prod-imports-dev": 1
   },
   "src/components/toasts/Toast.tsx": {
     "doc-comment": 1,
@@ -376,19 +194,10 @@
   "src/components/toasts/types/index.ts": {
     "types-folder": 1
   },
-  "src/components/transactions/Transaction.tsx": {
-    "commented-code": 1,
-    "doc-comment": 1,
-    "labels": 1,
-    "shape-extra-code": 3
-  },
   "src/content/posts.ts": {
     "labels": 1
   },
   "src/content/releaseNotes.ts": {
-    "labels": 1
-  },
-  "src/features/adminPageSlice.ts": {
     "labels": 1
   },
   "src/features/appSlice.ts": {
@@ -397,20 +206,7 @@
   "src/features/baseGroupSlice.ts": {
     "labels": 1
   },
-  "src/features/cashiersSlice.ts": {
-    "labels": 1
-  },
-  "src/features/categoriesSlice.ts": {
-    "labels": 1,
-    "one-line-per-source": 1
-  },
   "src/features/companySlice.ts": {
-    "labels": 1
-  },
-  "src/features/couponSalesSlice.ts": {
-    "labels": 1
-  },
-  "src/features/couponSlice.ts": {
     "labels": 1
   },
   "src/features/ctxMenuSlice.ts": {
@@ -418,13 +214,6 @@
   },
   "src/features/dev/devExportBuilderSlice.ts": {
     "file-length": 1
-  },
-  "src/features/eventPerfSlice.ts": {
-    "labels": 1
-  },
-  "src/features/forecastDevSlice.ts": {
-    "labels": 1,
-    "one-line-per-source": 1
   },
   "src/features/forecastSlice.ts": {
     "file-length": 1,
@@ -437,19 +226,7 @@
     "labels": 1,
     "one-line-per-source": 1
   },
-  "src/features/itemLookupSlice.ts": {
-    "labels": 1
-  },
-  "src/features/itemPerfSlice.ts": {
-    "labels": 1
-  },
-  "src/features/itemReportSlice.ts": {
-    "labels": 1
-  },
   "src/features/itemScanSlice.ts": {
-    "labels": 1
-  },
-  "src/features/lossPreventionSlice.ts": {
     "labels": 1
   },
   "src/features/lpActionsSlice.ts": {
@@ -462,24 +239,8 @@
   "src/features/ordersSlice.ts": {
     "labels": 1
   },
-  "src/features/organizationSlice.ts": {
-    "labels": 1
-  },
   "src/features/qsSlice.ts": {
     "labels": 1
-  },
-  "src/features/receiversSlice.ts": {
-    "labels": 1
-  },
-  "src/features/salesLedgerSlice.ts": {
-    "labels": 1
-  },
-  "src/features/salesPerfSlice.ts": {
-    "labels": 1
-  },
-  "src/features/salesSlice.ts": {
-    "labels": 1,
-    "one-line-per-source": 1
   },
   "src/features/salesTrackerSlice.ts": {
     "labels": 1
@@ -490,17 +251,10 @@
   "src/features/storeSlice.ts": {
     "labels": 1
   },
-  "src/features/subMarginSlice.ts": {
-    "labels": 1,
-    "one-line-per-source": 1
-  },
   "src/features/suggestedSlice.ts": {
     "labels": 1
   },
   "src/features/ticketsMockData.ts": {
-    "labels": 1
-  },
-  "src/features/upcDevSlice.ts": {
     "labels": 1
   },
   "src/features/upcSlice.ts": {
@@ -513,13 +267,6 @@
   "src/features/userSlice.ts": {
     "labels": 1
   },
-  "src/features/usersSlice.ts": {
-    "labels": 1
-  },
-  "src/features/vendorsSlice.ts": {
-    "labels": 1,
-    "one-line-per-source": 1
-  },
   "src/hooks/index.ts": {
     "labels": 1
   },
@@ -528,10 +275,6 @@
   },
   "src/hooks/useApiContext.ts": {
     "labels": 1
-  },
-  "src/hooks/useCriticalReport.ts": {
-    "labels": 1,
-    "one-line-per-source": 1
   },
   "src/hooks/useDevApi.ts": {
     "labels": 1
@@ -556,115 +299,11 @@
     "commented-code": 2,
     "labels": 2
   },
-  "src/pages/admin/Admin.tsx": {
-    "labels": 1
+  "src/pages/exportBuilder/dev/preview/components/CsvTable.tsx": {
+    "commented-code": 2
   },
-  "src/pages/cashiers/Cashiers.tsx": {
-    "labels": 1
-  },
-  "src/pages/categories/Categories.tsx": {
-    "labels": 1
-  },
-  "src/pages/couponSales/CouponSales.tsx": {
-    "labels": 1
-  },
-  "src/pages/coupons/Coupons.tsx": {
-    "labels": 1
-  },
-  "src/pages/exportBuilder/ExportBuilder.tsx": {
-    "labels": 1
-  },
-  "src/pages/exportBuilder/dev/ConfigPanel.tsx": {
-    "doc-comment": 1,
-    "file-length": 1,
-    "labels": 1,
-    "shape-extra-code": 8,
-    "shape-extra-component": 3,
-    "shape-extra-type": 1
-  },
-  "src/pages/exportBuilder/dev/CsvPreview.tsx": {
-    "commented-code": 2,
-    "doc-comment": 1,
-    "labels": 1
-  },
-  "src/pages/exportBuilder/dev/DownloadsModal.tsx": {
-    "labels": 1,
-    "shape-extra-code": 2
-  },
-  "src/pages/exportBuilder/dev/ExportBar.tsx": {
-    "labels": 1,
-    "shape-extra-code": 2,
-    "shape-named-export": 1
-  },
-  "src/pages/exportBuilder/dev/ExportBuilder.tsx": {
-    "labels": 1
-  },
-  "src/pages/exportBuilder/dev/QueryPanel.tsx": {
-    "doc-comment": 1,
-    "labels": 1,
-    "shape-props-name": 1
-  },
-  "src/pages/exportBuilder/dev/SavedExportsModal.tsx": {
-    "labels": 1,
-    "shape-extra-code": 1
-  },
-  "src/pages/exportBuilder/dev/SourcePicker.tsx": {
-    "labels": 1
-  },
-  "src/pages/exportBuilder/dev/SqlModal.tsx": {
-    "labels": 1
-  },
-  "src/pages/exportBuilder/dev/SummaryPreview.tsx": {
-    "commented-code": 3,
-    "labels": 1
-  },
-  "src/pages/exportBuilder/dev/aggregates.ts": {
-    "labels": 1
-  },
-  "src/pages/exportBuilder/dev/dateFormats.ts": {
-    "labels": 1
-  },
-  "src/pages/exportBuilder/dev/hooks.ts": {
-    "file-length": 1,
-    "labels": 1,
-    "one-line-per-source": 1
-  },
-  "src/pages/exportBuilder/dev/query/applyQuery.ts": {
-    "labels": 1
-  },
-  "src/pages/exportBuilder/dev/query/configToQuery.ts": {
-    "labels": 1
-  },
-  "src/pages/exportBuilder/dev/query/evalQuery.ts": {
-    "labels": 1,
-    "one-line-per-source": 1
-  },
-  "src/pages/exportBuilder/dev/query/parseQuery.ts": {
-    "labels": 1
-  },
-  "src/pages/exportBuilder/dev/query/sketchExpr.ts": {
-    "labels": 1
-  },
-  "src/pages/exportBuilder/dev/rollup.ts": {
-    "labels": 1
-  },
-  "src/pages/exportBuilder/dev/sampleRows.ts": {
-    "labels": 1
-  },
-  "src/pages/exportBuilder/dev/savedExports.ts": {
-    "labels": 1
-  },
-  "src/pages/exportBuilder/dev/sortRows.ts": {
-    "labels": 1
-  },
-  "src/pages/exportBuilder/dev/sources.ts": {
-    "labels": 1
-  },
-  "src/pages/exportBuilder/dev/useColumnDrag.ts": {
-    "labels": 1
-  },
-  "src/pages/forecast/Forecasting.tsx": {
-    "labels": 1
+  "src/pages/exportBuilder/dev/preview/components/SummaryTable.tsx": {
+    "commented-code": 3
   },
   "src/pages/home/Home.tsx": {
     "doc-comment": 1
@@ -763,12 +402,6 @@
     "shape-props-name": 1
   },
   "src/pages/home/portal/walkthrough/walkthroughContent.ts": {
-    "labels": 1
-  },
-  "src/pages/inventory/InventorySubDept.tsx": {
-    "labels": 1
-  },
-  "src/pages/inventory/InventoryVendor.tsx": {
     "labels": 1
   },
   "src/pages/invoices/Invoices.tsx": {

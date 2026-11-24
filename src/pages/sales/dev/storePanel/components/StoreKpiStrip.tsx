@@ -39,16 +39,20 @@ const StoreKpiStrip = ({ days }: StoreKpiStripProps) => {
         <div className="text-[10px] cc-caps-strong">
           {isQty ? "TY Qty" : "TY Net Sales"}
         </div>
-        <div className="text-[10px] font-bold text-content mb-0.5">{twDateLabel}</div>
+        <div className="text-[10px] font-bold text-content mb-0.5">
+          {twDateLabel}
+        </div>
         <div className="text-[14px] font-bold text-content">
-          {isQty ? formatBigNumber(headerTwTotal, 0) : formatCurrency2(headerTwTotal)}
+          {isQty
+            ? formatBigNumber(headerTwTotal, 0)
+            : formatCurrency2(headerTwTotal)}
         </div>
       </div>
       <div className="px-4 pt-2.5 text-center">
-        <div className="text-[10px] cc-caps-strong">
-          vs Last Week
+        <div className="text-[10px] cc-caps-strong">vs Last Week</div>
+        <div className="text-[10px] font-bold text-content mb-0.5">
+          {lwDateLabel}
         </div>
-        <div className="text-[10px] font-bold text-content mb-0.5">{lwDateLabel}</div>
         <div className="flex items-baseline justify-center gap-2">
           <span className="text-[14px] font-bold text-content">
             {headerLwTotal !== null
@@ -76,10 +80,10 @@ const StoreKpiStrip = ({ days }: StoreKpiStripProps) => {
         )}
       </div>
       <div className="px-4 pt-2.5 text-center">
-        <div className="text-[10px] cc-caps-strong">
-          vs Last Year
+        <div className="text-[10px] cc-caps-strong">vs Last Year</div>
+        <div className="text-[10px] font-bold text-content mb-0.5">
+          {lyDateLabel}
         </div>
-        <div className="text-[10px] font-bold text-content mb-0.5">{lyDateLabel}</div>
         <div className="flex items-baseline justify-center gap-2">
           {/* No day of the week has a matching date on file. $0.00 would read
               as a store that sold nothing; it simply has no history there. */}

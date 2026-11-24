@@ -6,7 +6,11 @@ import { effectiveStores } from "../../utils";
 
 // Interfaces
 import type { AccessPicks } from "../../interfaces";
-import type { BaseGroup, CompanyBaseGroup, Store } from "../../../../../../interfaces";
+import type {
+  BaseGroup,
+  CompanyBaseGroup,
+  Store,
+} from "../../../../../../interfaces";
 
 // Components
 import TextFilter from "../../../../../../components-dev/filters/TextFilter";
@@ -114,9 +118,7 @@ const EffectiveStoresPanel = ({
     <div className="h-full flex flex-col min-h-0 bg-custom-white">
       <div className="px-3 py-2.5 border-b border-line_hair flex-shrink-0">
         <div className="flex items-baseline justify-between gap-2 mb-1.5">
-          <span className="text-[9px] cc-caps-strong">
-            Effective stores
-          </span>
+          <span className="text-[9px] cc-caps-strong">Effective stores</span>
           <span className="text-[10.5px] text-content/95 tabular-nums">
             {pending ? "counting…" : `${rows.length} · read only`}
           </span>

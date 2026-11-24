@@ -18,7 +18,7 @@ export const VENDORS_HELP: HelpContent = {
           pre: "Choose a store and a week-ending date, then press",
           chip: "Load vendors",
           post: ". You get the seven days ending on that date.",
-          see: "Every vendor that sold in that store that week, weakest first.",
+          see: "Every vendor that sold in that store that week, Crit first, then Watch and OK, biggest sellers first within each.",
           anchor: "search",
         },
         {
@@ -30,7 +30,7 @@ export const VENDORS_HELP: HelpContent = {
         },
         {
           title: "Sort it your way",
-          pre: "Click the TY, vs LW or vs LY heading to sort, again to reverse, and a third time to go back to weakest-first.",
+          pre: "Click the TY, vs LW or vs LY heading to sort, again to reverse, and a third time to go back to the grade order.",
           anchor: "sort",
         },
       ],
@@ -69,7 +69,7 @@ export const VENDORS_HELP: HelpContent = {
           id: "which",
           title: "What is the row showing?",
           options: [
-            { label: "A grey percentage with a day count", result: "partial" },
+            { label: "A grey percentage, or “days matched”", result: "partial" },
             { label: "A grey dot and no grade", result: "ungraded" },
           ],
         },

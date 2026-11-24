@@ -23,14 +23,14 @@ export const CATEGORIES_PHONE_HELP: PhoneHelp = {
     {
       q: "What do the bars show?",
       a: [
-        "Sales this year (TY), last year (LY) and last week (LW), on the cards and every category and item. The percentage on a card is how much its sales changed from last year. When last year has nothing on file it compares with last week instead, and the TY bar's colour follows the same rule, so the two always agree.",
+        "Sales this year (TY), last year (LY) and last week (LW), on the cards and every category and item. The percentage on a card is how much its sales (or units) changed from last year. When last year has nothing on file it compares with last week instead, and the TY bar's colour follows the same rule, so the two always agree.",
         "The day chart compares this week with last year, or with last week when the store has no last year. Its legend says which.",
       ],
     },
     {
       q: "Can I see units instead of dollars?",
       a: [
-        "Yes. Tap Units on the switch beside the ? on the store's card. The bars and the size sort then count units, with weighed items counted by the pound. Margin, gross profit and cost stay as they are. The switch carries across Categories, Vendors and Sub Dept Margins.",
+        "Yes. Tap Units on the switch beside the ? on the store's card. The bars, the change on each card and the sorts then count units, with weighed items counted by the pound. Margin, gross profit and cost stay as they are. The switch carries across Categories, Vendors and Sub Dept Margins.",
       ],
     },
     {
@@ -74,7 +74,7 @@ export const CATEGORIES_PHONE_HELP: PhoneHelp = {
   terms: [
     {
       term: "The card at the top",
-      def: "The store you searched, for the whole week — its margin, and its sales against last year. It doesn't open, because what is inside it is the list of categories underneath.",
+      def: "The store you searched, for the week or the day you tapped — its margin, and its sales against last year. It doesn't open, because what is inside it is the list of categories underneath.",
     },
     {
       term: "TY margin / LY margin",
@@ -86,7 +86,7 @@ export const CATEGORIES_PHONE_HELP: PhoneHelp = {
     },
     {
       term: "Sales | Units",
-      def: "The switch beside the ? on the store's card. Units makes the bars and the size sort count units, with weighed items counted by the pound. Margin, gross profit and cost stay as they are. The switch carries across Categories, Vendors and Sub Dept Margins.",
+      def: "The switch beside the ? on the store's card. Units makes the bars, the change on each card and the sorts count units, with weighed items counted by the pound. Margin, gross profit and cost stay as they are. The switch carries across Categories, Vendors and Sub Dept Margins.",
     },
     {
       term: "Gross profit / Cost",
@@ -102,7 +102,7 @@ export const CATEGORIES_PHONE_HELP: PhoneHelp = {
     },
     {
       term: "Tap a day",
-      def: "Inside an open category, scopes that category to the day — its figures and its items. It belongs to that card only, and clears when you open a different one. Tap the same day again for the full week.",
+      def: "Inside an open category, scopes the screen to that day: the store card, every category in the list, and its items. It clears when you open or close a card. Tap the same day again for the full week.",
     },
     {
       term: "View items",
@@ -114,7 +114,7 @@ export const CATEGORIES_PHONE_HELP: PhoneHelp = {
     },
     {
       term: "Find an item or scan",
-      def: "Searches every item in the store's week, not just one category — by name, by UPC, or by scanning a barcode. Each result names the category it came from, and tapping one goes straight to that item's week.",
+      def: "Searches every item in the store's week, not just one category — by name, by UPC, or by scanning a barcode. Each result shows its UPC and vendor, and tapping one goes straight to that item's week.",
     },
     {
       term: "Filtering and scanning a list",

@@ -1,11 +1,31 @@
+
+// Utils
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
+import {
+  cycleSort,
+  type CmpBasis,
+  type PairSort,
+  type SortState,
+} from "../utils/perfPairs";
+
+// Interfaces
 import type {
   HourlySale,
   SubDeptMargin,
   SubSale,
   WeeklySale,
 } from "../interfaces";
-import { cycleSort, type PairSort, type SortState } from "../utils/perfPairs";
+import type { SEARCH_TYPE } from "./searchSlice";
+
+/** What a phone Performance search asked for. Card and item loads and the
+ *  labels read this, not the live picker, which other pages move. */
+export interface PerfSearched {
+  singleDate: string;
+  type: SEARCH_TYPE;
+  lastStore: number;
+  lastGroup: number;
+  groupName: string;
+}
 
 /** Which list a sort preference belongs to. The store list is the screen;
  *  subs and hours are drills inside an expanded card. All three render the
@@ -49,13 +69,32 @@ export interface PerfBundle {
   subsLy: SubSale[];
   hourlyTy: HourlySale[];
   hourlyLy: HourlySale[];
+  /** Last week, re-dated into last year's slots (`asLastYearSlots`), shown
+   *  beside last year. Optional for the same reason as `basis`. */
+  subsLw?: SubSale[];
+  hourlyLw?: HourlySale[];
+  /** Which period `subsLy`/`hourlyLy` actually came from. A bundle is always
+   *  one scope, so one answer covers it.
+   *
+   *  Optional, and absent from `emptyBundle`: the dev and prod slices must
+   *  start every shared field identically — `sliceIsolation` enforces it — and
+   *  an unfetched bundle has no comparison to describe anyway. Read it with a
+   *  default rather than assuming it is set. */
+  basis?: CmpBasis;
 }
 
 /** One sub department's item rows for one store, both periods. */
 export interface PerfItems {
   ty: SubDeptMargin[];
+  /** Resolved: last year, or last week re-dated into its slots. */
   ly: SubDeptMargin[];
+  basis: CmpBasis;
+  /** Last week, re-dated into last year's slots, shown beside last year. */
+  lw: SubDeptMargin[];
 }
+
+/** What every figure, bar and sort on the screen measures. */
+export type PerfMeasure = "sales" | "units";
 
 export const emptyBundle = (): PerfBundle => ({
   subsTy: [],
@@ -72,11 +111,16 @@ export const emptyBundle = (): PerfBundle => ({
  * none of it. Sharing one slice would mean either carrying dead grading state
  * or gutting a slice the graded screen still depends on while both exist.
  *
- * Every period here is THIS YEAR against LAST YEAR. There is no last week:
- * the screen compares two points, and a third made every row a paragraph.
+ * Every figure is this year against last year, with last week beside it.
+ * Last week was left out once, on the grounds that a third period made every
+ * row a paragraph; a client asked for it back (Amanda, 28 Oct), as desktop
+ * shows it. The bars stay two: this year and last year. Last week is a second
+ * change figure, not a third bar.
  */
 interface SalesPerfState {
   hasSearched: boolean;
+  /** The last search's scope and week; null before one. */
+  searched: PerfSearched | null;
   loading: boolean;
 
   /**
@@ -87,7 +131,17 @@ interface SalesPerfState {
    * store list, the day chart, and the sales and tax figures at any scope.
    */
   weekTy: WeeklySale[];
+  /** The resolved comparison: last year where a store has one, last week
+   *  where it does not. Re-dated into last year's slots either way, so
+   *  everything downstream matches it without knowing which it is. */
   weekLy: WeeklySale[];
+  /** Which period each store's comparison came from, keyed by `storeKeyOf`. */
+  cmpBasis: Record<string, CmpBasis>;
+  /** Last week for every store, re-dated into last year's slots, so it pairs
+   *  and matches exactly the way `weekLy` does. */
+  weekLw: WeeklySale[];
+  /** Sales or units. A preference, so a new search keeps it. */
+  measure: PerfMeasure;
 
   /** Sub-department and hourly rows for the whole search, aggregated across
    *  every store. Cannot be filtered by store — a group response does not say
@@ -143,7 +197,8 @@ interface SalesPerfState {
 
   /** The sub department whose items the drill is showing, or null for the
    *  sub department list. Closed by changing tab, store or search. */
-  openSubDept: { id: number; label: string } | null;
+  /** `subDeptKey` (number and name) and the label shown. */
+  openSubDept: { key: string; label: string } | null;
 
   /**
    * Item rows keyed `${storeScope}|${subDeptId}`, fetched when a department is
@@ -199,9 +254,13 @@ interface SalesPerfState {
 
 const initialState: SalesPerfState = {
   hasSearched: false,
+  searched: null,
   loading: false,
   weekTy: [],
   weekLy: [],
+  cmpBasis: {},
+  weekLw: [],
+  measure: "sales",
   groupData: emptyBundle(),
   storeData: {},
   storeLoading: null,
@@ -228,15 +287,28 @@ const salesPerfSlice = createSlice({
     setPerfLoading: (state, action: PayloadAction<boolean>) => {
       state.loading = action.payload;
     },
+    setPerfSearched: (state, action: PayloadAction<PerfSearched | null>) => {
+      state.searched = action.payload;
+    },
     setPerfHasSearched: (state, action: PayloadAction<boolean>) => {
       state.hasSearched = action.payload;
     },
     setPerfWeek: (
       state,
-      action: PayloadAction<{ ty: WeeklySale[]; ly: WeeklySale[] }>,
+      action: PayloadAction<{
+        ty: WeeklySale[];
+        ly: WeeklySale[];
+        basis: Record<string, CmpBasis>;
+        lw: WeeklySale[];
+      }>,
     ) => {
       state.weekTy = action.payload.ty;
       state.weekLy = action.payload.ly;
+      state.cmpBasis = action.payload.basis;
+      state.weekLw = action.payload.lw;
+    },
+    setPerfMeasure: (state, action: PayloadAction<PerfMeasure>) => {
+      state.measure = action.payload;
     },
     setPerfGroupData: (state, action: PayloadAction<PerfBundle>) => {
       state.groupData = action.payload;
@@ -291,9 +363,9 @@ const salesPerfSlice = createSlice({
     },
     openPerfSubDept: (
       state,
-      action: PayloadAction<{ id: number; label: string } | null>,
+      action: PayloadAction<{ key: string; label: string } | null>,
     ) => {
-      if (state.openSubDept?.id !== action.payload?.id) state.itemQuery = "";
+      if (state.openSubDept?.key !== action.payload?.key) state.itemQuery = "";
       state.openSubDept = action.payload;
     },
     setPerfItemQuery: (state, action: PayloadAction<string>) => {
@@ -374,7 +446,9 @@ const salesPerfSlice = createSlice({
 export const {
   setPerfLoading,
   setPerfHasSearched,
+  setPerfSearched,
   setPerfWeek,
+  setPerfMeasure,
   setPerfGroupData,
   clearPerfStoreCache,
   setPerfStoreLoading,

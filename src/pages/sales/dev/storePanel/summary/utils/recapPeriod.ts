@@ -2,7 +2,12 @@
 import { NO_EXCEPTIONS, byTypeOrder } from "./recapExceptions";
 
 // Interfaces
-import type { DayMixState, RecapExceptions, RecapExceptionType, RecapMix } from "../interfaces/index";
+import type {
+  DayMixState,
+  RecapExceptions,
+  RecapExceptionType,
+  RecapMix,
+} from "../interfaces/index";
 
 /**
  * Several days' mixes as one, so the week's cards read exactly as a day's.
@@ -20,7 +25,8 @@ export const combineMix = (states: DayMixState[]): DayMixState => {
   const ready = states.filter(
     (s): s is { status: "ready"; mix: RecapMix } => s.status === "ready",
   );
-  if (ready.length < states.length || !ready.length) return { status: "loading" };
+  if (ready.length < states.length || !ready.length)
+    return { status: "loading" };
   const codes = new Set<string>();
   const mix: RecapMix = {
     items: 0,

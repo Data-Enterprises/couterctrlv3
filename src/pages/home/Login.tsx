@@ -40,7 +40,7 @@ import {
   peekSignOutReason,
 } from "../../utils/sessionGuard";
 
-const VERSION = "Last updated 11/23/2026 @ 9:39 AM CST";
+const VERSION = "Last updated 11/24/2026 @ 11:38 AM CST";
 
 /** PLACEHOLDER: `/html_pages/` only exists on the dev API today, and this page
  *  runs before sign-in, so it cannot follow `apiEnv` (which now defaults to

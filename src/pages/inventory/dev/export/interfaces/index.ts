@@ -21,3 +21,10 @@ export interface Col {
   label: string;
   defaultOn: boolean;
 }
+
+/** One choice in the pop-up's source list, with the line under it. */
+export interface Preset {
+  source: Source;
+  title: string;
+  caption: string;
+}

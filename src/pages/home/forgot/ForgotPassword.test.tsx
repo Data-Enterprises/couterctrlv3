@@ -103,6 +103,43 @@ describe("forgot password", () => {
     expect(screen.getByLabelText("Username")).toHaveValue("snelson");
   });
 
+  it("says when too many wrong answers have locked the question", async () => {
+    const user = userEvent.setup();
+    open();
+    await toQuestion(user);
+    api.answer.mockReturnValue(refused("Too many attempts. Please try again later."));
+    await user.type(screen.getByLabelText("Answer"), "Rex");
+    await user.click(screen.getByTestId("forgot-submit"));
+    expect(await screen.findByRole("alert")).toHaveTextContent("Wait 15 minutes");
+  });
+
+  it("sends the matched answer's reset token with the new password", async () => {
+    const user = userEvent.setup();
+    open();
+    await toQuestion(user);
+    api.answer.mockReturnValue(ok({ msg: "Answers Match!", reset_token: "tok-1" }));
+    await user.type(screen.getByLabelText("Answer"), "Biscuit");
+    await user.click(screen.getByTestId("forgot-submit"));
+    await screen.findByText("Choose a new password");
+    api.reset.mockReturnValue(ok({ msg: "Password updated!" }));
+    await user.type(screen.getByLabelText("New password"), "Long-enough-Pass1");
+    await user.type(screen.getByLabelText("Confirm password"), "Long-enough-Pass1");
+    await user.click(screen.getByTestId("forgot-submit"));
+    expect(api.reset.mock.calls[0].slice(1)).toEqual(["snelson", "Long-enough-Pass1", "tok-1"]);
+  });
+
+  it("goes back to the question when the reset token has expired", async () => {
+    const user = userEvent.setup();
+    open();
+    await toPassword(user);
+    api.reset.mockRejectedValue({ response: { status: 401 } });
+    await user.type(screen.getByLabelText("New password"), "Long-enough-Pass1");
+    await user.type(screen.getByLabelText("Confirm password"), "Long-enough-Pass1");
+    await user.click(screen.getByTestId("forgot-submit"));
+    expect(await screen.findByRole("alert")).toHaveTextContent("Answer your security question again");
+    expect(screen.getByLabelText("Answer")).toBeInTheDocument();
+  });
+
   it("won't change the password until the rules pass and both match, Enter included", async () => {
     const user = userEvent.setup();
     open();
@@ -126,7 +163,8 @@ describe("forgot password", () => {
     await user.type(screen.getByLabelText("New password"), "Long-enough-Pass1");
     await user.type(screen.getByLabelText("Confirm password"), "Long-enough-Pass1");
     await user.click(screen.getByTestId("forgot-submit"));
-    expect(api.reset.mock.calls[0].slice(1)).toEqual(["snelson", "Long-enough-Pass1"]);
+    // No token: a backend from before the reset token sends none.
+    expect(api.reset.mock.calls[0].slice(1)).toEqual(["snelson", "Long-enough-Pass1", undefined]);
     await user.click(await screen.findByTestId("forgot-back-to-sign-in"));
     await waitFor(() => expect(screen.queryByTestId("forgot-password")).not.toBeInTheDocument());
     expect(store.getState().user.username).toBe("snelson");

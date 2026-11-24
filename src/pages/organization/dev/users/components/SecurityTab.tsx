@@ -10,8 +10,11 @@ import { setRefresh } from "../../../../../features/dev/devUsersSlice";
 import { setTempPassword } from "../../../../../api/security";
 import { resetUserSecurityQuestion } from "../../../../../api/team";
 
+// Utils
+import { reasonOf } from "../../../../../utils/serverError";
+
 // Interfaces
-import type { JsonError, User } from "../../../../../interfaces";
+import type { User } from "../../../../../interfaces";
 
 // Components
 import PasswordInput from "../../../../../components-dev/inputs/PasswordInput";
@@ -48,8 +51,8 @@ const SecurityTab = ({ user }: SecurityTabProps) => {
           toast.warn("Error setting temporary password: " + j.msg);
         }
       })
-      .catch((err: JsonError) =>
-        toast.error("Error setting temp password: " + err.message),
+      .catch((err) =>
+        toast.error("Error setting temp password: " + reasonOf(err)),
       );
   };
 
@@ -65,8 +68,8 @@ const SecurityTab = ({ user }: SecurityTabProps) => {
           toast.warn("Error resetting security question: " + j.msg);
         }
       })
-      .catch((err: JsonError) =>
-        toast.error("Error resetting security question: " + err.message),
+      .catch((err) =>
+        toast.error("Error resetting security question: " + reasonOf(err)),
       );
   };
 

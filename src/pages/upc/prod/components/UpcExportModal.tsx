@@ -3,11 +3,20 @@ import ResizableModalShell from "../../../../components/modals/ResizableModalShe
 import { XMarkIcon, ArrowDownTrayIcon } from "@heroicons/react/16/solid";
 import { useUpcDevCtx } from "../hooks/useUpcDevCtx";
 import type { UpcDevTab, AssociationItem } from "../../../../features/upcDevSlice";
-import { computeUpcSalesCompStats, DAYS, DAY_SHORT } from "../modules/salesComp/salesCompStats";
-import { getTrendStatus, impactUnits } from "../modules/trend/trendStats";
-import { pricePoints, elasticityFromPoints } from "../modules/priceOpt/priceOptStats";
-import { isWeighted, pricedUnits, pricedUnitLabel } from "../../../../utils/pricedUnits";
 import {
+  computeUpcSalesCompStats,
+  salesCompCodes,
+  salesCompRange,
+  DAYS,
+  DAY_SHORT,
+} from "../modules/salesComp/salesCompStats";
+import { getTrendStatus, impactUnits, isDecline } from "../modules/trend/trendStats";
+import { computePriceOptRowSummary } from "../modules/priceOpt/priceOptStats";
+import { movementCsv, movementStores } from "../modules/movement/movementStats";
+import { useMovementWindow } from "../modules/movement/useMovementWindow";
+import { exportWaitReason } from "./exportWait";
+import {
+  seedDataFor,
   getDisplayItems,
   getDepartmentBreakdown,
   getQueryDepartments,
@@ -28,6 +37,10 @@ const SHAPES: { id: ExportShape; label: string }[] = [
 
 const PRESETS: Record<UpcDevTab, Preset[]> = {
   salesComp: [
+    { id: "all", label: "All UPCs" },
+    { id: "selected", label: "Selected UPCs" },
+  ],
+  movement: [
     { id: "all", label: "All UPCs" },
     { id: "selected", label: "Selected UPCs" },
   ],
@@ -56,6 +69,7 @@ const PRESETS: Record<UpcDevTab, Preset[]> = {
 
 const TAB_LABELS: Record<UpcDevTab, string> = {
   salesComp: "Sales Comp",
+  movement: "Movement",
   forecast: "Forecast",
   priceOpt: "Price Opt",
   trend: "Trend",
@@ -76,26 +90,65 @@ const download = (blob: Blob, filename: string) => {
   URL.revokeObjectURL(url);
 };
 
+/** The UPC List export pop-up: picks the export type (and shape on Sales Comp) for the
+ *  active tab and downloads it as a CSV. Disabled with a reason while data is still loading. */
 const UpcExportModal = ({ onClose }: Props) => {
   const ctx = useUpcDevCtx();
+  const movementWindow = useMovementWindow();
   // "New since pivot" is a status that only exists behind the flag, so on
   // prod the preset would filter to nothing.
   const presets = PRESETS[ctx.activeTab].filter((p) => ctx.fixes || p.id !== "new");
   const [selectedPreset, setSelectedPreset] = useState(presets[0].id);
   const [exportShape, setExportShape] = useState<ExportShape>("summary");
 
+  /** Ticked in the left list. Nothing ticked means nothing, as on screen,
+   *  which reads "No UPCs selected" -- it used to mean every UPC, so "Selected
+   *  UPCs" with none ticked downloaded all of them. */
+  const isSelected = (pc: string) => ctx.selectedUpcs.includes(pc);
+  const nothingSelected = ctx.selectedUpcs.length === 0;
+  // The seed answer only if it is for the UPCs ticked now: see seedDataFor.
+  const seedData = seedDataFor(
+    ctx.selectedUpcs,
+    ctx.associationSeedData,
+    ctx.associationSeedDataKey,
+  );
+
+  const waitReason = exportWaitReason({
+    tab: ctx.activeTab,
+    preset: selectedPreset,
+    shape: exportShape,
+    searchedUpcs: ctx.searchedUpcs,
+    selectedUpcs: ctx.selectedUpcs,
+    salesCompCoverage: ctx.salesCompCoverage,
+    salesCompLYLoading: ctx.salesCompLYLoading,
+    priceOptCoverage: ctx.priceOptCoverage,
+    trendCoverage: ctx.trendCoverage,
+    movementCoverage: ctx.movementCoverage,
+    associationSeedReady: seedData !== null,
+    associationSeedError: ctx.associationSeedError,
+    associationRerootUpc: ctx.associationRerootUpc,
+    associationRerootLoaded: Boolean(
+      ctx.associationRerootUpc && ctx.associationRerootCache[ctx.associationRerootUpc],
+    ),
+  });
+
   const handleExport = () => {
+    if (waitReason) return;
     const tab = ctx.activeTab;
     const sel = selectedPreset;
-    const isSelected = (pc: string) => ctx.selectedUpcs.length === 0 || ctx.selectedUpcs.includes(pc);
 
     switch (tab) {
       case "salesComp": {
         const data = ctx.salesComp.filter((s) => sel === "all" || isSelected(s.product_code));
         if (exportShape === "summary") {
           const dataLY = ctx.salesCompLY.filter((s) => sel === "all" || isSelected(s.product_code));
-          const upcCodes = [...new Set(data.map((s) => s.product_code))];
-          const stats = computeUpcSalesCompStats(upcCodes, data, dataLY, ctx.endDate);
+          const upcCodes = salesCompCodes(data, dataLY);
+          const stats = computeUpcSalesCompStats(
+            upcCodes,
+            data,
+            dataLY,
+            salesCompRange(ctx.startDate, ctx.endDate),
+          );
           const headers = ["UPC", "Description", "TY Total", "LY Total", "vs LY %", "WoW %", "Peak Day", "Peak Shifted vs LY"];
           const rows = stats.map((s) => [
             s.code,
@@ -104,7 +157,7 @@ const UpcExportModal = ({ onClose }: Props) => {
             s.hasLY ? String(Math.round(s.lyPeriodTotal)) : "",
             s.vsLYPct === null ? "" : s.vsLYPct.toFixed(2),
             s.wowPct === null ? "" : s.wowPct.toFixed(2),
-            DAY_SHORT[s.peakIdx],
+            s.peakIdx >= 0 ? DAY_SHORT[s.peakIdx] : "",
             s.hasLY ? (s.peakShifted ? "Yes" : "No") : "",
           ]);
           download(toBlobCsv(headers, rows), `sales_comp_summary_${sel}.csv`);
@@ -140,20 +193,19 @@ const UpcExportModal = ({ onClose }: Props) => {
         const headers = ctx.fixes
           ? ["UPC", "Description", "Best Price", "Best Revenue", "Best Volume", "Unit", "Elasticity", "Price Points"]
           : ["UPC", "Description", "Best Price", "Best Revenue", "Best Qty", "Elasticity", "Price Points"];
+        // The panel's own summary, so the file's points, elasticity and
+        // volume are the ones on screen.
         const rows = data.map((row) => {
-          const points = pricePoints(ctx.optBestPrices, row.product_code);
-          const weighted =
-            ctx.fixes && (isWeighted(row.total_weight) || points.some((p) => p.weight > 0));
-          const elasticity = elasticityFromPoints(points, weighted);
+          const s = computePriceOptRowSummary(row, ctx.optBestPrices, ctx.fixes);
           return [
             row.product_code,
             row.product_description,
             String(row.price),
-            String(row.total_revenue),
-            String(weighted ? pricedUnits(row.total_qty, row.total_weight) : row.total_qty),
-            ...(ctx.fixes ? [pricedUnitLabel(weighted ? row.total_weight : 0)] : []),
-            elasticity !== null ? elasticity.toFixed(2) : "",
-            String(points.length),
+            String(ctx.fixes ? s.bestRevenue : row.total_revenue),
+            String(ctx.fixes ? s.bestUnits : row.total_qty),
+            ...(ctx.fixes ? [s.weighted ? "lb" : "ea"] : []),
+            s.elasticity !== null ? s.elasticity.toFixed(2) : "",
+            String(s.points.length),
           ];
         });
         download(toBlobCsv(headers, rows), `price_opt_${sel}.csv`);
@@ -163,13 +215,36 @@ const UpcExportModal = ({ onClose }: Props) => {
         const src = ctx.upcTrends.filter((t) => {
           if (!isSelected(t.product_code)) return false;
           if (sel === "all") return true;
-          const status = getTrendStatus(t, ctx.fixes);
-          if (sel === "declining") return status === "declining" || status === "accelerating";
+          const status = getTrendStatus(t, ctx.fixes, ctx.trendWindow);
+          if (sel === "declining") return isDecline(status);
           return status === sel;
         });
         const headers = ["UPC", "Description", "Status", "Slope Before", "Slope After", "Slope Change", "Confidence", "Mean Before", "Mean After", "Pct Change Mean", "Impact Units"];
-        const rows = src.map((t) => [t.product_code, t.product_description, getTrendStatus(t, ctx.fixes), String(t.slope_before), String(t.slope_after), String(t.slope_change), String(t["r2-after"]), String(t.mean_before), String(t.mean_after), String(t.pct_change_mean), ctx.fixes ? String(Math.round(impactUnits(t, ctx.fixes))) : String(t.impact_units)]);
+        const rows = src.map((t) => [t.product_code, t.product_description, getTrendStatus(t, ctx.fixes, ctx.trendWindow), String(t.slope_before), String(t.slope_after), String(t.slope_change), String(t["r2-after"]), String(t.mean_before), String(t.mean_after), String(t.pct_change_mean), ctx.fixes ? String(Math.round(impactUnits(t, ctx.fixes, ctx.trendWindow))) : String(t.impact_units)]);
         download(toBlobCsv(headers, rows), `trends_${sel}.csv`);
+        break;
+      }
+      case "movement": {
+        // The grid's shape: a line per UPC per store, a column per week
+        // ending. Every store in the search is in it for every UPC, blanks
+        // included, as on screen.
+        const codes = ctx.searchedUpcs.filter((u) => sel === "all" || isSelected(u));
+        const stores = movementStores(
+          ctx.storeids.split(",").map(Number).filter((n) => Number.isFinite(n) && n > 0),
+          ctx.assignedStores,
+          ctx.movementRows,
+        );
+        const { headers, lines } = movementCsv(
+          ctx.movementRows,
+          codes,
+          new Map(ctx.upcItems.map((i) => [i.product_code, i.description])),
+          stores,
+          movementWindow.weekEndings,
+        );
+        download(
+          toBlobCsv(headers, lines),
+          `movement_${movementWindow.weeks}wk_ending_${movementWindow.endIso}_${sel}.csv`,
+        );
         break;
       }
       case "association": {
@@ -180,9 +255,9 @@ const UpcExportModal = ({ onClose }: Props) => {
         // reroot state, matching the left panel's own persistent list.
         const rerootUpc = ctx.associationRerootUpc;
         const rerootResult = rerootUpc ? ctx.associationRerootCache[rerootUpc] : null;
-        const activeResult = rerootUpc ? rerootResult : ctx.associationSeedData;
+        const activeResult = rerootUpc ? rerootResult : seedData;
         const activeItems = activeResult ? getDisplayItems(activeResult.items, rerootUpc) : [];
-        const seedItems = (ctx.associationSeedData?.items ?? []).filter((i) => i.is_seed);
+        const seedItems = (seedData?.items ?? []).filter((i) => i.is_seed);
         const rerootTargetItem = rerootUpc ? rerootResult?.items.find((i) => i.is_seed) : undefined;
 
         const itemFields = (item: AssociationItem) => [
@@ -237,12 +312,12 @@ const UpcExportModal = ({ onClose }: Props) => {
         {/* header */}
         <div className="bg-brand_navy px-5 py-3 flex items-center justify-between">
           <div>
-            <div className="text-[13px] font-semibold text-custom-white">Export CSV</div>
+            <div className="text-[13px] cc-navy-title">Export CSV</div>
             <div className="text-[10px] mt-0.5" style={{ color: "rgb(var(--color-custom-white) / 0.50)" }}>
               {TAB_LABELS[ctx.activeTab]}
             </div>
           </div>
-          <button onClick={onClose} className="text-custom-white/60 hover:text-custom-white transition-colors">
+          <button onClick={onClose} className="cc-navy-link">
             <XMarkIcon className="h-4 w-4" />
           </button>
         </div>
@@ -251,7 +326,7 @@ const UpcExportModal = ({ onClose }: Props) => {
           {/* shape — sales comp only: what the rows represent */}
           {ctx.activeTab === "salesComp" && (
             <div>
-              <div className="text-[10px] font-semibold uppercase tracking-wide text-content/85 mb-2">
+              <div className="text-[10px] cc-caps mb-2">
                 Export shape
               </div>
               <div className="flex flex-col gap-1.5">
@@ -263,7 +338,7 @@ const UpcExportModal = ({ onClose }: Props) => {
                       onChange={() => setExportShape(s.id)}
                       className="accent-brand_navy"
                     />
-                    <span className="text-[11px] text-content/85">{s.label}</span>
+                    <span className="text-[11px] text-content/95">{s.label}</span>
                   </label>
                 ))}
               </div>
@@ -272,33 +347,50 @@ const UpcExportModal = ({ onClose }: Props) => {
 
           {/* presets — scope: which UPCs */}
           <div>
-            <div className="text-[10px] font-semibold uppercase tracking-wide text-content/85 mb-2">
+            <div className="text-[10px] cc-caps mb-2">
               Export type
             </div>
             <div className="flex flex-col gap-1.5">
-              {presets.map((p) => (
-                <label key={p.id} className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="radio"
-                    checked={selectedPreset === p.id}
-                    onChange={() => setSelectedPreset(p.id)}
-                    className="accent-brand_navy"
-                  />
-                  <span className="text-[11px] text-content/85">{p.label}</span>
-                </label>
-              ))}
+              {presets.map((p) => {
+                const unavailable = p.id === "selected" && nothingSelected;
+                return (
+                  <label
+                    key={p.id}
+                    className={`flex items-center gap-2 ${unavailable ? "opacity-40 cursor-not-allowed" : "cursor-pointer"}`}
+                  >
+                    <input
+                      type="radio"
+                      checked={selectedPreset === p.id}
+                      disabled={unavailable}
+                      onChange={() => setSelectedPreset(p.id)}
+                      className="accent-brand_navy"
+                    />
+                    <span className="text-[11px] text-content/95">
+                      {p.label}
+                      {unavailable ? " (none selected)" : ""}
+                    </span>
+                  </label>
+                );
+              })}
             </div>
           </div>
 
           {ctx.selectedUpcs.length > 0 && (
-            <div className="text-[10px] text-content/85 bg-gray-50 rounded px-3 py-2">
+            <div className="text-[10px] text-content/95 bg-fill_soft rounded px-3 py-2">
               {ctx.selectedUpcs.length} UPC{ctx.selectedUpcs.length !== 1 ? "s" : ""} selected — "Selected UPCs" presets will use this filter.
+            </div>
+          )}
+
+          {waitReason && (
+            <div className="text-[10px] text-content/95 bg-fill_soft rounded px-3 py-2">
+              {waitReason}
             </div>
           )}
 
           <button
             onClick={handleExport}
-            className="w-full py-2.5 rounded-lg text-[12px] font-semibold text-custom-white flex items-center justify-center gap-2 transition-opacity"
+            disabled={waitReason !== null}
+            className="w-full py-2.5 rounded-lg text-[12px] font-semibold text-custom-white flex items-center justify-center gap-2 transition-opacity disabled:opacity-40"
             style={{ background: "rgb(var(--color-brand-navy))" }}
           >
             <ArrowDownTrayIcon className="h-3.5 w-3.5" />

@@ -1,13 +1,17 @@
 // Utils
 import { rowsToCsv } from "../../../../../../utils/csvExport";
 import { NO_VENDOR } from "../../summary/utils/recapItems";
-import { DEFAULT_ITEM_SORT, sortItemRows } from "../../summary/utils/recapItemSort";
+import {
+  DEFAULT_ITEM_SORT,
+  sortItemRows,
+} from "../../summary/utils/recapItemSort";
 
 // Interfaces
 import type { RecapItemRow } from "../../summary/interfaces/index";
 
 /** Every vendor that sold the item, biggest first; blank where it had none. */
-const vendorCell = (r: RecapItemRow) => r.vendors.filter((v) => v !== NO_VENDOR).join("; ");
+const vendorCell = (r: RecapItemRow) =>
+  r.vendors.filter((v) => v !== NO_VENDOR).join("; ");
 
 /**
  * The Items Sold download (Export CSV): Summary's item grid as a file.

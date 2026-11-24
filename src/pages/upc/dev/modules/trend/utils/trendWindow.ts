@@ -28,11 +28,19 @@ export function trendRequest(
   baselineDays: number,
   today: Date = new Date(),
 ): { periods: number; window: UpcTrendWindow } {
-  const midnight = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  const midnight = new Date(
+    today.getFullYear(),
+    today.getMonth(),
+    today.getDate(),
+  );
   const since = Math.max(daysBetween(fromMdy(startMdy), midnight), 0);
   return {
     periods: since + baselineDays,
-    window: { pivot: startMdy, beforeDays: baselineDays, afterDays: Math.max(since, 1) },
+    window: {
+      pivot: startMdy,
+      beforeDays: baselineDays,
+      afterDays: Math.max(since, 1),
+    },
   };
 }
 

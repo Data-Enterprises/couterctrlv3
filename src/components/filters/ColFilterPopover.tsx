@@ -1,7 +1,10 @@
+// Hooks
 import { useEffect, useRef, useState } from "react";
+
+// Components
 import { MagnifyingGlassIcon } from "@heroicons/react/16/solid";
 
-interface Props {
+interface ColFilterPopoverProps {
   label: string;
   active: boolean;
   /** What the filter is currently set to. When given, the header shows the
@@ -20,6 +23,9 @@ interface Props {
   children: React.ReactNode;
 }
 
+/** A column-header filter: the label opens a popover holding the filter control
+ *  passed as children, with Apply and Clear buttons. The header shows the
+ *  active value, or a dot, while it filters. */
 // The richer sibling of filters/ColFilter: it can show the active value in the
 // header, right-align its popover and take a label size. Lived in
 // pages/upc/components until Forecast and User Management used it too.
@@ -29,7 +35,7 @@ interface Props {
 // and others — centralized here instead of adding a 7th copy. Label toggles
 // an absolutely-positioned popover holding whatever filter control is passed
 // as children (typically a text input), with built-in Apply/Clear.
-const ColFilter = ({
+const ColFilterPopover = ({
   label,
   active,
   activeValue,
@@ -38,7 +44,7 @@ const ColFilter = ({
   onApply,
   onClear,
   children,
-}: Props) => {
+}: ColFilterPopoverProps) => {
   const [open, setOpen] = useState(false);
   const wrapRef = useRef<HTMLDivElement>(null);
 
@@ -109,7 +115,7 @@ const ColFilter = ({
                   onClear();
                   setOpen(false);
                 }}
-                className="px-2 rounded py-1 text-[10px] text-content border border-gray-200 hover:text-content transition-colors"
+                className="px-2 rounded py-1 text-[10px] text-content border border-line_field hover:text-content transition-colors"
               >
                 Clear
               </button>
@@ -121,4 +127,4 @@ const ColFilter = ({
   );
 };
 
-export default ColFilter;
+export default ColFilterPopover;

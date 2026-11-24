@@ -15,7 +15,11 @@ interface SaleTypeTimelineProps {
  * One non-Sale type's days. Cost and margin are left off: a voided or
  * restored line isn't a sale, so neither means anything against it.
  */
-const SaleTypeTimeline = ({ buckets, weighed, saleType }: SaleTypeTimelineProps) => {
+const SaleTypeTimeline = ({
+  buckets,
+  weighed,
+  saleType,
+}: SaleTypeTimelineProps) => {
   const grid = {
     gridTemplateColumns: `repeat(${weighed ? 5 : 4}, minmax(0, 1fr))`,
   };
@@ -35,18 +39,28 @@ const SaleTypeTimeline = ({ buckets, weighed, saleType }: SaleTypeTimelineProps)
         <div
           key={b.date}
           className={`grid px-2 py-2 text-[12px] tabular-nums border-b border-line_faint ${
-            b.hasSale ? "even:bg-row_stripe text-content" : "bg-fill_soft/60 text-content/95"
+            b.hasSale
+              ? "even:bg-row_stripe text-content"
+              : "bg-fill_soft/60 text-content/95"
           }`}
           style={grid}
           aria-label={b.hasSale ? `${saleType} on ${b.label}` : undefined}
         >
           <span>{b.label}</span>
-          <span className="text-right">{b.hasSale ? b.qty.toLocaleString() : "—"}</span>
+          <span className="text-right">
+            {b.hasSale ? b.qty.toLocaleString() : "—"}
+          </span>
           {weighed && (
-            <span className="text-right">{b.hasSale ? formatUnits(b.units, true) : "—"}</span>
+            <span className="text-right">
+              {b.hasSale ? formatUnits(b.units, true) : "—"}
+            </span>
           )}
-          <span className="text-right">{b.hasSale ? formatCurrency2(b.revenue) : "—"}</span>
-          <span className="text-right">{b.hasSale ? formatCurrency2(b.listPrice) : "—"}</span>
+          <span className="text-right">
+            {b.hasSale ? formatCurrency2(b.revenue) : "—"}
+          </span>
+          <span className="text-right">
+            {b.hasSale ? formatCurrency2(b.listPrice) : "—"}
+          </span>
         </div>
       ))}
     </>

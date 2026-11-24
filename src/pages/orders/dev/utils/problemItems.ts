@@ -10,7 +10,12 @@ import {
 } from "./orderEdit";
 
 // Interfaces
-import type { OrderDraft, ProblemItem, Figures, ItemStoreRow } from "../interfaces";
+import type {
+  OrderDraft,
+  ProblemItem,
+  Figures,
+  ItemStoreRow,
+} from "../interfaces";
 import type { AllOrder } from "../../../../interfaces";
 import type { OrderFlag } from "../../../../features/dev/devOrdersSlice";
 
@@ -193,7 +198,9 @@ export const itemStoreRows = (
       after,
       changes:
         afterLines !== null &&
-        afterLines.some((l, i) => Math.abs(l.base_cost - ls[i].base_cost) > 1e-6),
+        afterLines.some(
+          (l, i) => Math.abs(l.base_cost - ls[i].base_cost) > 1e-6,
+        ),
     };
   });
 };

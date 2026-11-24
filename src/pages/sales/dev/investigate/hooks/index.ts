@@ -1,9 +1,11 @@
 // Hooks
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../../../../hooks";
+import { useSalesCtx } from "../../hooks";
 
 // Redux
 import { rememberInvestigation } from "../../../../../features/dev/devSalesCacheSlice";
+import { setInvestigationGrid } from "../../../../../features/dev/devSalesLedgerSlice";
 
 // Utils
 import {
@@ -19,10 +21,14 @@ import {
   type Scope,
 } from "../utils/investigationData";
 import { buildFacts, summarise } from "../utils/investigationFacts";
+import { nextSort, sortRows } from "../../../../../utils/useTriStateSort";
+import { PAGE_ROWS } from "../utils";
+import { sortValue } from "../utils/columns";
 
 // Interfaces
 import type {
   Cause,
+  Col,
   ItemVerdict,
   FilterKind,
   Investigation,
@@ -30,15 +36,19 @@ import type {
   Stage,
 } from "../interfaces";
 
-/** The grid's four column filters and the list they leave. The cause filter
- *  is also set from the other tabs, which is why the page holds it. */
+/** The grid's four column filters and the list they leave. The applied
+ *  filters are in the slice, since the other tabs set the cause and vendor;
+ *  the text still being typed stays here. */
 export const useItemFilters = (items: ItemVerdict[]) => {
-  const [only, setOnly] = useState<Cause | null>(null);
-  const [itemQ, setItemQ] = useState("");
-  const [itemDraft, setItemDraft] = useState("");
-  const [upcQ, setUpcQ] = useState("");
-  const [upcDraft, setUpcDraft] = useState("");
-  const [vendorQ, setVendorQ] = useState("");
+  const dispatch = useAppDispatch();
+  const { investigationGrid } = useSalesCtx();
+  const { cause: only, itemQ, upcQ, vendorQ } = investigationGrid;
+  const [itemDraft, setItemDraft] = useState(itemQ);
+  const [upcDraft, setUpcDraft] = useState(upcQ);
+  const setOnly = (cause: Cause | null) =>
+    dispatch(setInvestigationGrid({ cause }));
+  const setVendorQ = (v: string) =>
+    dispatch(setInvestigationGrid({ vendorQ: v }));
 
   /** Every vendor in the department, so the vendor filter is a list to pick
    *  from rather than a spelling to guess at. */
@@ -74,17 +84,17 @@ export const useItemFilters = (items: ItemVerdict[]) => {
   /** Text filters commit on Apply; the two pickers have already committed by
    *  the time the button is reachable, so Apply just closes the popover. */
   const applyFilter = (k: FilterKind) => {
-    if (k === "item") setItemQ(itemDraft);
-    if (k === "upc") setUpcQ(upcDraft);
+    if (k === "item") dispatch(setInvestigationGrid({ itemQ: itemDraft }));
+    if (k === "upc") dispatch(setInvestigationGrid({ upcQ: upcDraft }));
   };
 
   const clearFilter = (k: FilterKind) => {
     if (k === "item") {
-      setItemQ("");
+      dispatch(setInvestigationGrid({ itemQ: "" }));
       setItemDraft("");
     }
     if (k === "upc") {
-      setUpcQ("");
+      dispatch(setInvestigationGrid({ upcQ: "" }));
       setUpcDraft("");
     }
     if (k === "vendor") setVendorQ("");
@@ -185,6 +195,91 @@ export const useRowSelection = (
 };
 
 /**
+ * The Items grid: filtered, sorted and paged, with the open item.
+ *
+ * The state is in the slice, so the page (the header's export, the other
+ * tabs' "show in grid") and the Items tab read the same grid.
+ */
+export const useItemsGrid = (items: ItemVerdict[]) => {
+  const dispatch = useAppDispatch();
+  const { investigationGrid } = useSalesCtx();
+  const { sort, page, picked, supplyUpcs } = investigationGrid;
+  const filters = useItemFilters(items);
+
+  const sorted = sortRows(filters.shown, sort, sortValue);
+  const pages = Math.max(1, Math.ceil(sorted.length / PAGE_ROWS));
+  /* Clamped rather than reset: a filter that shortens the list below the
+     current page should land on the last one, not throw the reader back to
+     the first. */
+  const at_ = Math.min(page, pages - 1);
+  const from = at_ * PAGE_ROWS;
+  const capped = sorted.slice(from, from + PAGE_ROWS);
+
+  const handleSort = (col: Col) =>
+    dispatch(setInvestigationGrid({ sort: nextSort(sort, col) }));
+  const setPage = (p: number) => dispatch(setInvestigationGrid({ page: p }));
+  const setPicked = (code: string | null) =>
+    dispatch(setInvestigationGrid({ picked: code }));
+  const setSupplyUpcs = (upcs: string) =>
+    dispatch(setInvestigationGrid({ supplyUpcs: upcs }));
+
+  /**
+   * An item chosen anywhere else lands on the page that holds it.
+   *
+   * The Summary tab's list and the hand-off's lists both pick an item and
+   * switch to the grid. Without this the grid stays on page one and the
+   * selected row is somewhere the reader cannot see, which reads as the
+   * click having done nothing.
+   */
+  const show = (code: string) => {
+    const i = sorted.findIndex((r) => r.productCode === code);
+    dispatch(
+      setInvestigationGrid(
+        i >= 0
+          ? { page: Math.floor(i / PAGE_ROWS), picked: code }
+          : { picked: code },
+      ),
+    );
+  };
+
+  /** Stepping walks the list the GRID is showing, not every item in the
+   *  department: arrowing through "never ordered" should not wander out of
+   *  it halfway down. It walks the whole filtered list rather than the
+   *  page, because a page boundary is a fact about the table and not about
+   *  the items — the page follows the rail instead. */
+  const at = sorted.findIndex((r) => r.productCode === picked);
+  const stepItem = (d: number) => {
+    const next = sorted[at + d];
+    if (next)
+      dispatch(
+        setInvestigationGrid({
+          page: Math.floor((at + d) / PAGE_ROWS),
+          picked: next.productCode,
+        }),
+      );
+  };
+
+  return {
+    filters,
+    sort,
+    handleSort,
+    sorted,
+    pages,
+    at_,
+    from,
+    capped,
+    setPage,
+    picked,
+    setPicked,
+    show,
+    at,
+    stepItem,
+    supplyUpcs,
+    setSupplyUpcs,
+  };
+};
+
+/**
  * The investigation, answered in three waves.
  *
  * Each wave updates state as it lands rather than waiting for the slowest, so
@@ -211,7 +306,9 @@ const NO_ORDERS: OrdersWave = {
 };
 const NO_RECEIPTS: ReceiptsWave = { ok: true, mine: [], theirs: [] };
 
-export const useDeptInvestigation = (args: InvestigationArgs): Investigation => {
+export const useDeptInvestigation = (
+  args: InvestigationArgs,
+): Investigation => {
   const dispatch = useAppDispatch();
   const { url, token } = useAppSelector((state) => ({
     url: state.app.url,
@@ -227,10 +324,13 @@ export const useDeptInvestigation = (args: InvestigationArgs): Investigation => 
   // Primitives in the dependency list, because a Scope object rebuilt every
   // render would restart the whole cascade on every keystroke elsewhere.
   const {
-    metric, enabled,
+    metric,
+    enabled,
     mine: { storeid: mineId, storeNumber: mineNo, subDept: mineDept },
     theirs: { storeid: theirsId, storeNumber: theirsNo, subDept: theirsDept },
-    tw, lw, ly,
+    tw,
+    lw,
+    ly,
   } = args;
 
   const mineName = args.mine.name;
@@ -238,7 +338,8 @@ export const useDeptInvestigation = (args: InvestigationArgs): Investigation => 
 
   const scope = useMemo<Scope>(
     () => ({
-      url, token,
+      url,
+      token,
       mine: {
         storeid: mineId,
         storeNumber: mineNo,
@@ -257,9 +358,22 @@ export const useDeptInvestigation = (args: InvestigationArgs): Investigation => 
     }),
     [
       // No `metric`: it is applied over the rows, not asked for — see Scope.
-      url, token, mineDept, theirsDept,
-      mineId, mineNo, mineName, theirsId, theirsNo, theirsName,
-      tw.start, tw.end, lw.start, lw.end, ly.start, ly.end,
+      url,
+      token,
+      mineDept,
+      theirsDept,
+      mineId,
+      mineNo,
+      mineName,
+      theirsId,
+      theirsNo,
+      theirsName,
+      tw.start,
+      tw.end,
+      lw.start,
+      lw.end,
+      ly.start,
+      ly.end,
     ],
   );
 
@@ -334,7 +448,11 @@ export const useDeptInvestigation = (args: InvestigationArgs): Investigation => 
       dispatch(
         rememberInvestigation({
           key,
-          value: { sales: salesWave, orders: ordersWave, receipts: receiptsWave },
+          value: {
+            sales: salesWave,
+            orders: ordersWave,
+            receipts: receiptsWave,
+          },
         }),
       );
     })();

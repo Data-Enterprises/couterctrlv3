@@ -3,7 +3,12 @@ import { rowPricedUnits as pricedUnits } from "../../../../utils/pricedUnits";
 
 // Interfaces
 import type { SubsPricePoint, SubDeptMargin } from "../../../../interfaces";
-import type { CostStep, CostHistory, PriceRead, ReceiptLine } from "../interfaces";
+import type {
+  CostStep,
+  CostHistory,
+  PriceRead,
+  ReceiptLine,
+} from "../interfaces";
 
 /**
  * The arithmetic behind Item Actions.
@@ -26,7 +31,6 @@ import type { CostStep, CostHistory, PriceRead, ReceiptLine } from "../interface
  *   side, which is gone: the codes it took to find them had to travel as the
  *   `receivers/item_search` request body, five figures of them on a full store.
  */
-
 
 /** A price has to hold this long before it counts as a period worth comparing.
  *  One day at an odd price is a markdown or a keying error. */

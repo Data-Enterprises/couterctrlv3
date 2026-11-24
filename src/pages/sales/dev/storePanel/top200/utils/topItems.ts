@@ -6,7 +6,10 @@ import {
 } from "../../../../../../utils/pricedUnits";
 
 // Interfaces
-import type { TopItemRow, TopItemPricePoint } from "../../../../../../api/topItems";
+import type {
+  TopItemRow,
+  TopItemPricePoint,
+} from "../../../../../../api/topItems";
 
 /**
  * Top items — the arithmetic, with no React in it.

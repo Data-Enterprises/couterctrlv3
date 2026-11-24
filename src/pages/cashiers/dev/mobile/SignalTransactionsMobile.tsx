@@ -11,18 +11,16 @@ import { formatCurrency2 } from "../../../../utils";
 import {
   describeSignal,
   groupSignalByTransaction,
-  formatClock,
   lensListLabel,
   receiptLinesFor,
-  transactionLabel,
 } from "../utils";
 
 // Components
-import { ChevronRightIcon } from "@heroicons/react/20/solid";
 import BottomSheet from "../../../../components-dev/BottomSheet";
 import MobilePerfDetail from "../../../../components-dev/mobile/MobilePerfDetail";
 import Transaction from "../../../../components-dev/transactions/Transaction";
-import Meta from "./components/Meta";
+import PhoneFigure from "./components/PhoneFigure";
+import TxnRowMobile from "./components/TxnRowMobile";
 
 interface SignalTransactionsMobileProps {
   onBack: () => void;
@@ -34,7 +32,9 @@ interface SignalTransactionsMobileProps {
  * The band under the header is `describeSignal()`, the explorer's reading of
  * what the signal means.
  */
-const SignalTransactionsMobile = ({ onBack }: SignalTransactionsMobileProps) => {
+const SignalTransactionsMobile = ({
+  onBack,
+}: SignalTransactionsMobileProps) => {
   const {
     explorerSignalKey,
     explorerLens,
@@ -90,61 +90,29 @@ const SignalTransactionsMobile = ({ onBack }: SignalTransactionsMobileProps) => 
           </p>
 
           <div className="grid grid-cols-3 gap-x-4 gap-y-2.5 border-b border-brand_line px-3.5 py-2.5">
-            {(
-              [
-                ["Trans", signal.transactions.toLocaleString()],
-                ["Lines", signal.count.toLocaleString()],
-                ["Total", formatCurrency2(signal.amount)],
-              ] as [string, string][]
-            ).map(([k, v]) => (
-              <div key={k} className="flex flex-col items-center text-center">
-                <span className="cc-caps-mono text-[9.5px]">
-                  {k}
-                </span>
-                <span className="font-display text-[15px] font-bold tabular-nums text-content">
-                  {v}
-                </span>
-              </div>
-            ))}
+            <PhoneFigure
+              label="Trans"
+              value={signal.transactions.toLocaleString()}
+              tabular
+            />
+            <PhoneFigure
+              label="Lines"
+              value={signal.count.toLocaleString()}
+              tabular
+            />
+            <PhoneFigure
+              label="Total"
+              value={formatCurrency2(signal.amount)}
+              tabular
+            />
           </div>
 
           {rows.map((r) => (
-            <button
+            <TxnRowMobile
               key={r.saleId}
-              type="button"
-              onClick={() => dispatch(setExplorerReceipt(r.saleId))}
-              className="block w-full border-t border-brand_line px-3.5 py-3 text-left first:border-t-0 active:bg-bkg"
-            >
-              <div className="flex items-baseline gap-2">
-                <span className="flex-none font-display text-[13.5px] font-semibold text-content">
-                  #{transactionLabel(r.saleId)}
-                </span>
-                {/* The cashier is the answer on every lens but Cashier. */}
-                <span className="min-w-0 flex-1 truncate text-[12.5px] text-content/95">
-                  {r.cashierName}
-                </span>
-                <span className="flex-none font-display text-[13px] font-bold tabular-nums text-content">
-                  {formatCurrency2(r.amount)}
-                </span>
-                <ChevronRightIcon className="h-4 w-4 flex-none self-center text-content/95" />
-              </div>
-              {/* Each figure carries its own label, date and time included. */}
-              <div className="mt-1 flex items-center gap-2">
-                <span className="min-w-0 truncate font-mono text-[12px] tabular-nums text-content/95">
-                  <Meta label="Date">
-                    {r.saleDate.split("T")[0].slice(5).replace("-", "/")}
-                  </Meta>
-                  {r.startTime && (
-                    <>
-                      {" · "}
-                      <Meta label="Time">{formatClock(r.startTime)}</Meta>
-                    </>
-                  )}
-                  {" · "}
-                  <Meta label="Qty">{r.qty}</Meta>
-                </span>
-              </div>
-            </button>
+              txn={r}
+              onOpen={() => dispatch(setExplorerReceipt(r.saleId))}
+            />
           ))}
         </section>
       </MobilePerfDetail>
@@ -156,7 +124,11 @@ const SignalTransactionsMobile = ({ onBack }: SignalTransactionsMobileProps) => 
         >
           {/* saleType is passed so the receipt doesn't read Loss
               Prevention's own selected type. */}
-          <Transaction trans={receipt} saleType={explorerFetchedException} compact />
+          <Transaction
+            trans={receipt}
+            saleType={explorerFetchedException}
+            compact
+          />
         </BottomSheet>
       )}
     </>

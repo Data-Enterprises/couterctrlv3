@@ -1,4 +1,7 @@
+// Hooks
 import { useAppSelector } from "../../hooks";
+
+// Components
 import ProdAdmin from "./prod/Admin";
 import DevAdmin from "./dev/Admin";
 

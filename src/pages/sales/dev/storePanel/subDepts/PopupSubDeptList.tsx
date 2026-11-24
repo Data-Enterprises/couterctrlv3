@@ -45,7 +45,7 @@ const PopupSubDeptList = ({
   twRealDates,
 }: PopupSubDeptListProps) => {
   const dispatch = useAppDispatch();
-  const { gradingMetric, subDeptThreshold, selectedSubDeptId } = useSalesCtx();
+  const { gradingMetric, subDeptThreshold, selectedSubDeptKey } = useSalesCtx();
   const { subSales, subSalesWk2, subSalesWk3 } = useSalesState();
   const itemsLoading = useSubDeptItems(storeId, storeNumber, twRealDates);
 
@@ -69,10 +69,17 @@ const PopupSubDeptList = ({
 
   useEffect(() => {
     setItemSevFilter("all");
-  }, [selectedSubDeptId]);
+  }, [selectedSubDeptKey]);
 
   const { rows, coverage } = useMemo(
-    () => buildDeptRows(subSales, subSalesWk2, subSalesWk3, threshold, gradingMetric),
+    () =>
+      buildDeptRows(
+        subSales,
+        subSalesWk2,
+        subSalesWk3,
+        threshold,
+        gradingMetric,
+      ),
     [subSales, subSalesWk2, subSalesWk3, threshold, gradingMetric],
   );
 
@@ -93,8 +100,8 @@ const PopupSubDeptList = ({
   }
 
   const selected =
-    selectedSubDeptId !== null
-      ? (rows.find((r) => r.id === selectedSubDeptId) ?? null)
+    selectedSubDeptKey !== null
+      ? (rows.find((r) => r.key === selectedSubDeptKey) ?? null)
       : null;
 
   return (

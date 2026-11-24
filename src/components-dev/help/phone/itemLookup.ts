@@ -23,19 +23,19 @@ export const ITEM_LOOKUP_PHONE_HELP: PhoneHelp = {
     {
       q: "What dates does it cover?",
       a: [
-        "Always the last 14 days, ending yesterday, because today's sales are still coming in. The dates are shown under the store name.",
+        "Always the last 14 days, ending yesterday, because today's sales are still coming in. The dates are shown beside the store name, under the item.",
       ],
     },
     {
       q: "What do the figures mean?",
       a: [
-        "Amount, Qty, COGS (cost of goods) and Margin are totals for the 14 days, and the rows below show each day. \"No cost\" means no cost is on file for the item, so a margin can't be worked out. A red \"Selling below cost\" line means the margin is negative.",
+        "The big figure is what the item took over the days it sold, with how much moved and its average price. The tiles under it show the pace per selling day and, when the item has a cost, Margin and COGS (cost of goods); without one, the best day and the shelf price. The rows below show each day. \"No cost on file\" means a margin can't be worked out. A \"Selling below cost\" line at the top means the margin is negative.",
       ],
     },
     {
-      q: "Why do some items show \"Lb\" and \"Cost/lb\"?",
+      q: "Why do some items show pounds?",
       a: [
-        "Those items are sold by weight. Qty is how many times the item was rung up, and Lb is the pounds sold. Cost is shown per pound.",
+        "Those items are sold by weight, so they are measured in pounds instead of a count, and prices and costs read per pound.",
       ],
     },
     {
@@ -47,13 +47,13 @@ export const ITEM_LOOKUP_PHONE_HELP: PhoneHelp = {
     {
       q: "What is \"By sale type\"?",
       a: [
-        "It splits the item's register lines into Sale, Backup (restored transactions), Cancelled and Voided. Tap one to see its days, then tap Back to sales to return. The other figures count Sale lines only.",
+        "It splits the item's register lines into Sale, Backup (restored transactions), Cancelled and Voided. Tap one to read the chart, the big figure and the days for that type instead, then tap it again to go back to sales. Margin and COGS show for Sale lines only.",
       ],
     },
     {
       q: "How do I look up another item?",
       a: [
-        "Tap Back, beside the ? at the top, to return to the search. To see an item you checked recently, tap it in the list under the search, or tap the clock icon on the results screen.",
+        "Tap Back, beside the ? at the top, to return to the search. To see an item you checked recently, tap it in the list under the search.",
       ],
     },
   ],
@@ -81,7 +81,7 @@ export const ITEM_LOOKUP_PHONE_HELP: PhoneHelp = {
     },
     {
       term: "Share of window / vs typical day",
-      def: "Shown once a day is scoped. Share is that day against the whole window. Typical day compares it with the average of the days that SOLD — measured against the window it would flatter every day the item opened.",
+      def: "Shown once a day is scoped. Share is that day against the whole window. Typical day compares it with the average of the days that SOLD, so the days it sold nothing don't flatter every day it did.",
     },
     {
       term: "Cost and margin",
@@ -93,7 +93,7 @@ export const ITEM_LOOKUP_PHONE_HELP: PhoneHelp = {
     },
     {
       term: "By sale type",
-      def: "Every register line is a Sale, Backup (a restored transaction), Cancelled or Voided. The headline figures count Sale lines only. Tap another type to read its days instead; tap it again to come back. Cost and margin are left off those, since they are not sales.",
+      def: "Every register line is a Sale, Backup (a restored transaction), Cancelled or Voided. The figures count Sale lines until you tap another type; then the chart, the big figure and Day by day read that type's lines. Tap it again to come back. Cost and margin are left off those, since they are not sales.",
     },
     {
       term: "Day by day",
@@ -101,7 +101,7 @@ export const ITEM_LOOKUP_PHONE_HELP: PhoneHelp = {
     },
     {
       term: "Slowing down",
-      def: "Appears when the second week of the window moved noticeably less than the first, even if the item is still selling.",
+      def: "Appears when the second week of the window moved less than the first, even if the item is still selling.",
     },
     {
       term: "No sales in the last N days",
@@ -113,7 +113,7 @@ export const ITEM_LOOKUP_PHONE_HELP: PhoneHelp = {
     },
     {
       term: "Location",
-      def: "A few stores share one store ID across two locations. When that happens you can switch between them; the figures are never added together.",
+      def: "A few stores share one store ID across two locations. When that happens, tabs above the sale types switch between them, and Both adds the two together.",
     },
   ],
 };

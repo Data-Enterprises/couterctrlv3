@@ -49,9 +49,7 @@ const uniq = (ids: number[]) =>
  * held group says `all`, else `selected`, the reading that cannot widen anyone.
  * Edit and Duplicate both read it here. `mode` is null only for a group not held.
  */
-export const accessModeOf = (
-  held: { mode: GrantMode | null }[],
-): GrantMode =>
+export const accessModeOf = (held: { mode: GrantMode | null }[]): GrantMode =>
   held.length > 0 && held.every((g) => (g.mode ?? "selected") === "all")
     ? "all"
     : "selected";
@@ -233,9 +231,7 @@ const same = (a: number[], b: number[]) => {
 };
 
 const sameGrant = (a: GroupGrant, b: GroupGrant) =>
-  a.groupid === b.groupid &&
-  a.mode === b.mode &&
-  same(a.storeids, b.storeids);
+  a.groupid === b.groupid && a.mode === b.mode && same(a.storeids, b.storeids);
 
 /**
  * Which groups moved, and whether the companies did, so Save writes one call

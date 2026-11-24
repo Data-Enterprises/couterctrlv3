@@ -74,5 +74,7 @@ export const formatSignedPct = (pct: number): string =>
 /** A margin's text colour: red below zero, green above, plain when unknown. */
 export const marginColor = (marginPct: number | null) => {
   if (marginPct === null) return "text-content/95";
-  return marginPct < 0 ? "text-delta_negative_text" : "text-delta_positive_text";
+  return marginPct < 0
+    ? "text-delta_negative_text"
+    : "text-delta_positive_text";
 };

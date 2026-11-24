@@ -1,62 +1,23 @@
+// Hooks
 import { memo } from "react";
-import { formatCurrencyCompact } from "../../../../utils";
 import { useStoreName } from "../../../../hooks";
-import { severityDotClass, pillClass, PCT_COL_W } from "./utils";
-import { applyStoreNumberToName } from "../shared/ledgerUtils";
-import type { Severity } from "../../../../utils/severity";
+
+// Utils
+import { formatCurrencyCompact } from "../../../../utils";
+import { severityDotClass } from "../utils/index";
+import { selectionFor } from "../utils/storeComparison";
 import {
+  applyStoreNumberToName,
   isCompleteCoverage,
-  comparisonPillClass,
-  type GradeBasis,
-} from "../shared/ledgerUtils";
+} from "../utils/ledgerUtils";
+
+// Interfaces
 import type { GradingMetric } from "../../../../features/salesLedgerSlice";
+import type { StoreSelection } from "../../../../interfaces";
+import type { LedgerRowData } from "../interfaces";
 
-import type { DayDot, StoreSelection } from "../../../../interfaces";
-// Defined in src/interfaces — the Sales slices hold them.
-export type { DayDot, Severity, StoreSelection };
-
-export type LedgerRowData = {
-  storeid: number;
-  store_name: string;
-  store_number: string;
-  /** Every store_number this storeid returned. Length > 1 means co-located
-   * stores sharing one id — the name resolves by storeid and is identical for
-   * both, so the number is what tells them apart. Feeds
-   * applyStoreNumberToName, which needs the full set to know which digits in
-   * the name are the store number. */
-  storeNumbersForId: string[];
-  twTotal: number;
-  lwTotal: number;
-  lyTotal: number;
-  twQty: number;
-  lwQty: number;
-  lyQty: number;
-  /** The TW side of each comparison — only the days that found a match.
-   *  `twTotal` above is the whole week and is NOT the base of vsLWPct or
-   *  vsLYPct; a rollup that adds these instead stays weighted by store size
-   *  without ever dividing a seven-day figure by a three-day one. */
-  twTotalForLW: number;
-  twQtyForLW: number;
-  twTotalForLY: number;
-  twQtyForLY: number;
-  /** Coverage, so a percentage over three of seven days can be presented as
-   *  the weaker claim it is. */
-  dayCount: number;
-  lwDayCount: number;
-  lyDayCount: number;
-  vsLWPct: number;
-  vsLYPct: number;
-  vsLYDollar: number;
-  hasLW: boolean;
-  hasLY: boolean;
-  /** The comparison that decided `severity` — last year only when it covers
-   *  the whole week, else last week, else neither. */
-  gradedOn: GradeBasis;
-  /** Null when neither comparison covers the whole week: not graded, and not
-   *  counted under Critical, Watch or OK. */
-  severity: Severity | null;
-  days: DayDot[];
-};
+// Components
+import DeltaPill from "./DeltaPill";
 
 interface LedgerRowProps {
   row: LedgerRowData;
@@ -66,10 +27,9 @@ interface LedgerRowProps {
    *  dot does. Passed rather than selected here: the row is memoized against a
    *  threshold slider that moves every frame. */
   threshold: number;
+  /** Clicking the row that is already open closes it — see SalesLedger. */
   onClick: (selection: StoreSelection) => void;
 }
-
-const formatPct = (pct: number) => `${pct >= 0 ? "+" : ""}${pct.toFixed(2)}%`;
 
 /**
  * Graded on the same three bands as the rest of the app, via the shared
@@ -86,44 +46,6 @@ const formatPct = (pct: number) => `${pct >= 0 ? "+" : ""}${pct.toFixed(2)}%`;
  * Categories and the other performance pages already use. Nothing new is being
  * invented here; Sales was the one page that had drifted off it.
  */
-const DeltaPill = ({
-  has,
-  pct,
-  threshold,
-  complete,
-  matched,
-  days,
-  period,
-}: {
-  has: boolean;
-  pct: number;
-  threshold: number;
-  /** False when the comparison is missing days. It still shows its figure,
-   *  in grey: a partial week can't grade a store, so it doesn't get the
-   *  colour that says it did. */
-  complete: boolean;
-  matched: number;
-  days: number;
-  period: "last week" | "last year";
-}) => (
-  <span
-    className={`text-[13px] font-semibold px-1.5 py-1 rounded text-center flex-shrink-0 whitespace-nowrap ${
-      has
-        ? comparisonPillClass(pct, complete, threshold)
-        : // Null is the shared helper's own "no comparison" case.
-          pillClass(null, threshold)
-    }`}
-    style={{ minWidth: PCT_COL_W }}
-    title={
-      has && !complete
-        ? `Only ${matched} of ${days} days have a matching day ${period}, so this isn't used to grade the store.`
-        : undefined
-    }
-  >
-    {has ? formatPct(pct) : "—"}
-  </span>
-);
-
 const LedgerRow = ({
   row,
   isSelected,
@@ -141,41 +63,21 @@ const LedgerRow = ({
   const isQty = gradingMetric === "qty";
   const fmtMetric = (dollars: number, qty: number) =>
     isQty ? qty.toLocaleString() : formatCurrencyCompact(dollars);
-  const sortedDays = [...row.days].sort((a, b) =>
-    a.sale_date.localeCompare(b.sale_date),
-  );
-  const weekStart = sortedDays[0]?.sale_date.split("T")[0] ?? "";
-  const weekEnd =
-    sortedDays[sortedDays.length - 1]?.sale_date.split("T")[0] ?? "";
-
-  const handleClick = () => {
-    onClick({
-      storeId: row.storeid,
-      storeName: row.store_name,
-      storeNumber: row.store_number,
-      storeNumbersForId: row.storeNumbersForId,
-      start: weekStart,
-      end: weekEnd,
-      mode: "weekly",
-      days: sortedDays,
-      severity: row.severity,
-    });
-  };
+  // Built in shared/storeComparison so the group comparison opens a store the same way this row does.
+  const handleClick = () => onClick(selectionFor(row));
 
   return (
     <button
       onClick={handleClick}
       className={`w-full flex items-center gap-2.5 p-3 text-left transition-colors border-l-2 border-b border-b-brand_navy/15 ${
-        isSelected
-          ? "bg-row_selected border-row_selected_border"
-          : "border-transparent hover:bg-gray-50"
+        isSelected ? "cc-row-selected" : "border-transparent hover:bg-fill_soft"
       }`}
     >
       <span
         className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${
           // Grey: neither last week nor last year covers the whole week, so
           // there is nothing to grade on.
-          row.severity ? severityDotClass[row.severity] : "bg-gray-400"
+          row.severity ? severityDotClass[row.severity] : "bg-ungraded"
         }`}
         title={
           row.severity
@@ -187,7 +89,7 @@ const LedgerRow = ({
         <div className="text-[13px] font-medium text-content truncate">
           {displayName}
         </div>
-        <div className="text-[12px] text-content/85 truncate">
+        <div className="text-[12px] text-content/95 truncate">
           LW{" "}
           <span className="font-semibold">
             {row.hasLW ? fmtMetric(row.lwTotal, row.lwQty) : "—"}

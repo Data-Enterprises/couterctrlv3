@@ -57,9 +57,7 @@ export const summarizeAssign = (
       : " Nobody holds this group automatically, so no access changed.";
 
   const skippedNote =
-    skipped > 0
-      ? ` ${plural(skipped, "single-store user")} skipped.`
-      : "";
+    skipped > 0 ? ` ${plural(skipped, "single-store user")} skipped.` : "";
 
   const failedNote =
     failed.length > 0 ? ` ${failed.length} could not be added.` : "";
@@ -111,23 +109,6 @@ export const summarizeUnassign = (
   };
 };
 
-/**
- * The reason out of a failed call. The company guard answers 400 with FastAPI's
- * `detail`, so axios throws and the message is read from there.
- */
-export const callReason = (err: unknown): string => {
-  const e = err as {
-    response?: { data?: { detail?: string; msg?: string } };
-    message?: string;
-  };
-  return (
-    e.response?.data?.detail ??
-    e.response?.data?.msg ??
-    e.message ??
-    "The server refused it."
-  );
-};
-
 /** A base group's stores as CSV. */
 export const buildStoresCsv = (stores: Store[], label: string) => {
   const headers = ["Store ID", "Store #", "Store Name"];
@@ -144,7 +125,12 @@ export const buildUsersCsv = (
   const headers = ["Username", "First Name", "Last Name", "Email"];
   const body = rows.map((r) => {
     const u = byId.get(r.userid);
-    return [r.username, u?.first_name ?? "", u?.last_name ?? "", r.email ?? u?.email ?? ""];
+    return [
+      r.username,
+      u?.first_name ?? "",
+      u?.last_name ?? "",
+      r.email ?? u?.email ?? "",
+    ];
   });
   return `${label}\n${rowsToCsv(headers, body)}`;
 };

@@ -2,16 +2,15 @@
 import { useState } from "react";
 
 // Utils
-
-import type { CompanyRecord } from "../interfaces";
 import { membersOf, parentChoices, blankCompany, canSubmit } from "../utils";
 
 // Interfaces
 import type { Company } from "../../../../../interfaces";
+import type { CompanyRecord } from "../interfaces";
 
 // Components
 import Input from "../../../../../components-dev/inputs/Input";
-import SelectFilter from "../../../../../components-dev/filters/SelectFilter";
+import CompanyFamilyField from "./CompanyFamilyField";
 
 interface CompanyFormModalProps {
   initial: CompanyRecord | null;
@@ -38,7 +37,6 @@ const CompanyFormModal = ({
     initial?.parent_company_id ?? null,
   );
 
-  // Families are one level deep; see companyFamily for both rules.
   const parentOptions = parentChoices(companies, initial?.id);
   const members = membersOf(companies, initial?.id);
   const isParent = members.length > 0;
@@ -113,36 +111,12 @@ const CompanyFormModal = ({
             />
           </div>
 
-          {/* Displays which family the company belongs to */}
-          <div className="col-span-2">
-            <div className="text-[11px] font-medium text-content mb-1">
-              Belongs to
-            </div>
-            {isParent ? (
-              <p className="text-[11.5px] text-content/95 m-0">
-                {members.length}{" "}
-                {members.length === 1 ? "company belongs" : "companies belong"}{" "}
-                under this one ({members.map((m) => m.name).join(", ")}), so it
-                heads its family and can't belong under another.
-              </p>
-            ) : (
-              <>
-                <SelectFilter
-                  options={parentOptions}
-                  value={parent === null ? "" : String(parent)}
-                  onChange={(v) => setParent(v === "" ? null : Number(v))}
-                  placeholder="None — stands alone"
-                  searchable
-                  searchPlaceholder="Find a company…"
-                  className="w-full"
-                />
-                <p className="text-[10.5px] text-content/95 mt-1 m-0">
-                  Its managers and the parent's family administer each other's
-                  people. Houchens' companies belong under Houchens.
-                </p>
-              </>
-            )}
-          </div>
+          <CompanyFamilyField
+            members={members}
+            parentOptions={parentOptions}
+            parent={parent}
+            setParent={setParent}
+          />
         </div>
 
         <div className="flex justify-end gap-2">

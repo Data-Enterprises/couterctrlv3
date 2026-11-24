@@ -37,8 +37,8 @@ const SalesCompDetailPanel = ({ stats: s }: SalesCompDetailPanelProps) => {
       sub: !s.hasLY
         ? undefined
         : s.peakShifted
-        ? `was ${DAY_SHORT[s.lyPeakIdx]} LY`
-        : "same as LY",
+          ? `was ${DAY_SHORT[s.lyPeakIdx]} LY`
+          : "same as LY",
       subVariant: s.peakShifted ? "down" : "neutral",
     },
     { label: "Daily avg", value: formatCurrency2(s.avgDaily) },
@@ -190,7 +190,10 @@ const SalesCompDetailPanel = ({ stats: s }: SalesCompDetailPanelProps) => {
               Total
             </span>
             {DAYS.map((d) => {
-              const sum = s.weekRows.reduce((acc, { row }) => acc + (row[d] ?? 0), 0);
+              const sum = s.weekRows.reduce(
+                (acc, { row }) => acc + (row[d] ?? 0),
+                0,
+              );
               return (
                 <span
                   key={d}

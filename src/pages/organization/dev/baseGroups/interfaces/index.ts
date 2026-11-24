@@ -26,7 +26,4 @@ export interface MembershipSummary {
 export type StoreSplit = { assigned: Store[]; unassigned: Store[] };
 
 export type ExportDataset =
-  | "assigned"
-  | "unassigned"
-  | "assignedUsers"
-  | "unassignedUsers";
+  "assigned" | "unassigned" | "assignedUsers" | "unassignedUsers";

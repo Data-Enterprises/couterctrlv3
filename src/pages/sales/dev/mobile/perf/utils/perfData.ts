@@ -19,6 +19,7 @@ import {
   type PerfDay,
   type PerfPair,
 } from "../../../../../../utils/perfPairs";
+import { subDeptKey } from "../../../../../../utils/subDeptKey";
 
 // Interfaces
 import type {
@@ -43,7 +44,10 @@ export const pickFor = (measure: "sales" | "units"): Pick =>
 /** Units are whole things; a weighed line's qty can carry a fraction, which a
  *  total rounds away rather than printing. */
 export const fmtUnits = (n: number) => Math.round(n).toLocaleString("en-US");
-export { pickComparison, type CmpBasis } from "../../../../../../utils/perfPairs";
+export {
+  pickComparison,
+  type CmpBasis,
+} from "../../../../../../utils/perfPairs";
 
 /**
  * Last year per store, falling back to last week for the stores without one.
@@ -132,8 +136,10 @@ export const fmtChange = (pct: number) =>
 
 /** "3 of 7 days matched" — why last year is short of a full week. The same
  *  wording desktop Sales uses. */
-export const matchedNote = (p: { days?: number | null; lyDays?: number | null }) =>
-  `${p.lyDays} of ${p.days} days matched`;
+export const matchedNote = (p: {
+  days?: number | null;
+  lyDays?: number | null;
+}) => `${p.lyDays} of ${p.days} days matched`;
 
 /**
  * The week's day matching for a scope — one store, or every store in the
@@ -253,10 +259,20 @@ export const buildTotals = (
   // includes dates that match nothing (see DayMatch).
   const match = day ? null : scopeMatch(weekTy, weekLy, store);
   const salesForLy = match
-    ? sumFor(weekTy.filter((r) => match.tyDates.has(dayOf(r))), null, store, netOf)
+    ? sumFor(
+        weekTy.filter((r) => match.tyDates.has(dayOf(r))),
+        null,
+        store,
+        netOf,
+      )
     : sales;
   const salesLy = match
-    ? sumFor(weekLy.filter((r) => match.lyDates.has(dayOf(r))), null, store, netOf)
+    ? sumFor(
+        weekLy.filter((r) => match.lyDates.has(dayOf(r))),
+        null,
+        store,
+        netOf,
+      )
     : sumFor(weekLy, lyDay, store, netOf);
   const tax = sumFor(weekTy, day, store, (r) => r.total_tax);
   const transactions = sumFor(hourlyTy, day, null, (r) => r.transactions);
@@ -349,7 +365,7 @@ export const buildSubPairs = (
     subsLy,
     day,
     null,
-    (r) => String(r.sub_department),
+    subDeptKey,
     (r) => r.sub_department_description,
     pick,
     match,
