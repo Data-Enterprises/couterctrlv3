@@ -47,7 +47,7 @@ export const SALES_INVESTIGATE_HELP: HelpContent = {
         },
         {
           title: "Read the charts under it",
-          pre: "The card under the rows has three slides. Week by week says whether the gap is a standing difference or something that broke this week. Against the other store puts sales, units and margin on one rule, the other store at 100. Who supplies it lists every vendor in the shortfall.",
+          pre: "The card under the rows has up to three slides. Week by week says whether the gap is a standing difference or something that broke this week. Against <the other store> puts sales, units and margin on one rule, the other store at 100. Who supplies it, when there is a shortfall, lists every vendor in it.",
           see: "Each slide answers in a line before its bars. Picking a vendor opens Items narrowed to that vendor.",
           anchor: "inv-charts",
         },
@@ -60,8 +60,8 @@ export const SALES_INVESTIGATE_HELP: HelpContent = {
       ],
       issues: [
         {
-          q: "Two tabs are greyed out",
-          a: "Summary and Items need sales alone and draw straight away; the causes in Items sharpen as the orders and receivers land. Supply and Hand-off wait on those two reads. A tab that is not ready says what it is waiting for rather than showing a figure that will move.",
+          q: "Some tabs show a grey bar instead of an answer",
+          a: "Summary and Items need sales alone and open straight away. Items' own answer, and its causes, fill in once the orders and receivers land. Supply and Hand-off wait on those two reads: open one and it says what it is waiting for rather than showing a figure that will move.",
         },
         {
           q: "The totals do not match the Sub depts tab",
@@ -85,7 +85,7 @@ export const SALES_INVESTIGATE_HELP: HelpContent = {
         },
         {
           title: "Read the grid",
-          pre: "Every item in the department, both stores, biggest difference first. Search by UPC or description, or filter the vendor and cause columns.",
+          pre: "Every item in the department, both stores, biggest shortfall first. Search by UPC or description, or filter the vendor and cause columns.",
           see: "This store's week, the other store's week, and the difference between them — with the margin gap beside it once the costs are in.",
           anchor: "grid",
         },
@@ -111,7 +111,7 @@ export const SALES_INVESTIGATE_HELP: HelpContent = {
         },
         {
           q: "The grid is empty",
-          a: "A chip is still lit, or a search is still in the box. Click the lit chip again, or clear the search, to get the whole department back.",
+          a: "A chip is still lit, or a search or column filter is still set (picking a vendor on Summary sets one). Clear it to get the whole department back.",
         },
       ],
     },
@@ -304,7 +304,7 @@ export const SALES_INVESTIGATE_HELP: HelpContent = {
     },
     {
       term: "Selling fewer",
-      def: "Both stores sold it, at about the same price, and this one sold fewer units. Merchandising, or simply different customers — nothing in this data says which, and the label does not pretend otherwise.",
+      def: "Both stores sold it, this one sold fewer units, and the fewer units are the bigger part of the difference. Merchandising, or simply different customers; nothing in this data says which.",
       anchor: "causes",
     },
     {
@@ -324,7 +324,7 @@ export const SALES_INVESTIGATE_HELP: HelpContent = {
     },
     {
       term: "Units and price",
-      def: "How a row both stores rang is split. Each item's difference is split into what selling more or fewer units was worth and what taking more or less a unit was worth, each valued at the midpoint of the two stores, so neither store is the base and the two always add up to the difference. The row's figures are the items' own splits added up. Always in dollars, even on Quantity.",
+      def: "How a row both stores rang is split. Each item's difference is split into what selling more or fewer units was worth and what taking more or less a unit was worth, each valued at the midpoint of the two stores, so neither store is the base and the two always add up to the difference. The row's figures are the items' own splits added up. Always in dollars, even on Qty.",
       anchor: "inv-items",
     },
     {
@@ -344,7 +344,7 @@ export const SALES_INVESTIGATE_HELP: HelpContent = {
     },
     {
       term: "Week by week",
-      def: "This week's gap to the other store against last week's and last year's. Within a tenth of last week reads as a standing difference; wider is getting worse, narrower getting better. All three follow the Sales/Quantity switch.",
+      def: "This week's gap to the other store against last week's and last year's. Within a tenth of last week reads as a standing difference; wider is getting worse, narrower getting better. All three follow the Sales / Qty switch.",
       anchor: "inv-charts",
     },
     {

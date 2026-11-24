@@ -24,7 +24,7 @@ export const SALES_PHONE_HELP: PhoneHelp = {
     {
       q: "Can I see units instead of dollars?",
       a: [
-        "Yes. Tap Units on the switch beside the ? on the top card, or on the store's card when you search one store. Every figure, bar and sort then counts units. Transactions, average basket, tax and coupons stay in dollars. Tap Sales to switch back.",
+        "Yes. Tap Units on the switch beside the ? on the top card, or on the store's card when you search one store. Every figure, bar and sort then counts units. Transactions, average basket, tax and coupons do not change. Tap Sales to switch back.",
       ],
     },
     {
@@ -76,7 +76,7 @@ export const SALES_PHONE_HELP: PhoneHelp = {
     },
     {
       term: "Sales | Units",
-      def: "The switch beside the ? on the top card, or on the store's card when you search one store. Units makes every figure, bar and sort count units. Transactions, average basket, tax and coupons stay in dollars either way.",
+      def: "The switch beside the ? on the top card, or on the store's card when you search one store. Units makes every figure, bar and sort count units. Transactions, average basket, tax and coupons stay the same either way.",
     },
     {
       term: "The card at the top",
@@ -92,7 +92,7 @@ export const SALES_PHONE_HELP: PhoneHelp = {
     },
     {
       term: "Coupons",
-      def: "Every coupon redeemed, split by type: digital, electronic store, electronic in-store and paper store coupons.",
+      def: "Every coupon redeemed, split by type: Digital, E. Store, E. In-Store and Store.",
     },
     {
       term: "View details",
