@@ -2,7 +2,8 @@
 import type { HelpContent } from "../helpTypes";
 
 /**
- * Help for Admin → Store activity.
+ * Help for Admin: Sub dept exclusions and Stores for owners, then Store
+ * activity, which only support and level 9 see.
  *
  * Written against the screen, not from memory: every chip below is the label
  * as the button carries it, and every anchor is a `data-help` that exists in
@@ -11,14 +12,93 @@ import type { HelpContent } from "../helpTypes";
  * changes.
  */
 export const ADMIN_HELP: HelpContent = {
-  screen: "Store activity",
+  screen: "Admin",
   purpose:
-    "Shows, for one company and a date range, how many days each store actually sent sales — and which days are missing. It is how you tell a store that is closed from a store whose data stopped arriving.",
+    "Choose which sub departments count toward net sales, and rename your company's stores. Support also uses it to see which stores have stopped sending sales.",
 
   guides: [
     {
+      id: "exclude-sub-dept",
+      title: "Stop a sub department counting toward net sales",
+      desc: "For money that goes through the register but isn't sales, like lottery or money orders",
+      steps: [
+        {
+          title: "Open the tab",
+          pre: "Open",
+          chip: "Sub dept exclusions",
+          post: "at the top of Admin.",
+          see: "Every sub department that rang at your stores in the last 60 days.",
+          anchor: "excl-list",
+        },
+        {
+          title: "Pick the stores",
+          pre: "Leave",
+          chip: "Store",
+          post: "on all your stores to change every store at once, or pick one store.",
+          anchor: "excl-filters",
+        },
+        {
+          title: "Find the department",
+          pre: "Type its name in",
+          chip: "Search departments…",
+          post: ", or press Likely hash to bring the usual ones to the top.",
+          anchor: "likely-hash",
+        },
+        {
+          title: "Tick it",
+          pre: "Tick the box at the start of its row. When it is at more than one store you are asked to confirm, then press",
+          chip: "Yes, exclude at",
+          post: "and the number of stores.",
+          see: "Where it stands reads excluded at all of them.",
+          anchor: "excl-list",
+        },
+      ],
+      issues: [
+        {
+          q: "The department isn't in the list",
+          a: "It hasn't rung at your stores in the last 60 days, so there is nothing to exclude yet.",
+        },
+        {
+          q: "I want it to count again",
+          a: "Untick its box, and confirm. It counts toward net sales again at every store it was excluded at.",
+        },
+      ],
+    },
+    {
+      id: "rename-store",
+      title: "Rename a store",
+      desc: "Change the name a store shows everywhere",
+      steps: [
+        {
+          title: "Open the tab",
+          pre: "Open",
+          chip: "Stores",
+          post: "at the top of Admin.",
+          anchor: "store-list",
+        },
+        {
+          title: "Rename it",
+          pre: "Press the pencil at the end of the store's row, type the new name in",
+          chip: "Store name",
+          post: "and save.",
+          see: "The new name in the list.",
+          anchor: "store-list",
+        },
+      ],
+      issues: [
+        {
+          q: "There's no pencil on a store",
+          a: "The store doesn't belong to a company yet. Contact support to change it.",
+        },
+        {
+          q: "I need a new store, or to close one",
+          a: "Adding, closing and reopening stores is done by support. Send them the store and what needs doing.",
+        },
+      ],
+    },
+    {
       id: "find-missing",
-      title: "Find stores that stopped sending sales",
+      title: "Find stores that stopped sending sales (support)",
       desc: "Narrow a company and a range down to the stores with gaps",
       steps: [
         {
@@ -66,7 +146,7 @@ export const ADMIN_HELP: HelpContent = {
     },
     {
       id: "export-activity",
-      title: "Export what you are looking at",
+      title: "Export store activity (support)",
       desc: "Take the activity list out as a CSV",
       steps: [
         {
@@ -161,6 +241,21 @@ export const ADMIN_HELP: HelpContent = {
   ],
 
   terms: [
+    {
+      term: "Sub dept exclusion",
+      def: "A sub department that no longer counts toward net sales on the Performance pages. It still shows in every list, export and search.",
+      anchor: "excl-list",
+    },
+    {
+      term: "Where it stands",
+      def: "Whether the department counts at your stores, is excluded at all of them, or at some. \"Not present\" counts the stores where it didn't ring.",
+      anchor: "excl-list",
+    },
+    {
+      term: "Likely hash",
+      def: "Brings the departments that look like pass-through money, such as lottery, money orders and stamps, to the top. It doesn't tick anything for you.",
+      anchor: "likely-hash",
+    },
     {
       term: "Dates",
       def: "The range every figure on the screen is counted inside. Both ends are included.",
